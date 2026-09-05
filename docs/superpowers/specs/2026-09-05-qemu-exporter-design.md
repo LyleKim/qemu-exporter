@@ -3,7 +3,7 @@
 ## 배경
 
 OpenStack-Helm에서 libvirtd가 생성한 QEMU 프로세스는 `kubepods.slice`가 아닌
-`machine.slice`에 배치되어 kubelet/cAdvisor 자원 회계에서 누락된다. 이 프로젝트는
+`machine.slice`혹은 `machine`에 배치되어 kubelet/cAdvisor 자원 회계에서 누락된다. 이 프로젝트는
 호스트 cgroupfs/procfs에서 QEMU의 자원·경합 지표를 읽고, libvirt 소켓으로 Nova
 메타데이터를 조회해 상관시킨 뒤 Prometheus 형식으로 노출하는 exporter를 만든다.
 
@@ -56,10 +56,15 @@ libvirtsrc (식별)  →  cgroupsrc + procsrc (수집)  →  collector (노출)
 ```
 cmd/qemu-exporter/main.go     — flag 파싱, 계층 조립, graceful shutdown, :9179
 internal/libvirtsrc/
-  client.go      — go-libvirt 연결 (LIBVIRT_SOCK, 기본 /var/run/libvirt/libvirt-sock-ro)
+  client.go      — go-libvirt 연결. `qemu+unix:///system?socket=<LIBVIRT_SOCK>` URI로
+                   `libvirt.ConnectToURI` 호출 (기본 /var/run/libvirt/libvirt-sock-ro)
   domain.go      — Domain{UUID,Name,Flavor,ProjectID,PID,CgroupPath} + <nova:instance> XML 파싱
+                   + PID 확보(`<LIBVIRT_SOCK 디렉터리>/qemu/<domain-name>.pid` 파일을 읽음 —
+                   libvirt 공개 API엔 PID 반환 RPC가 없어 실무 표준인 pidfile 방식을 씀)
   cgrouppath.go  — PID → /proc/<pid>/cgroup 읽어서 실제 cgroup 상대경로 확정
-  cache.go       — uuid→Domain 캐시, lifecycle 이벤트 구독 + 60초 폴백 리프레시
+  cache.go       — uuid→Domain 캐시. 매 스크레이프마다 가벼운 `ConnectListAllDomains`로
+                   현재 활성 uuid 집합을 확인해 신규는 `GetXMLDesc`로 채우고, 더는
+                   활성이 아닌 uuid는 evict (아래 "캐시 무효화" 참고)
   source.go      — DomainSource 인터페이스 정의 + Cache가 이를 구현
   testdata/domain.xml
 internal/cgroupsrc/
@@ -106,17 +111,22 @@ func SumTaskSchedstat(hostProc string, pid int) (waitNanos uint64, err error) //
 ## 데이터 흐름 (스크레이프 1회)
 
 1. `collector.Collect()` 호출
-2. `DomainSource.Domains()` 호출 — 내부적으로 가벼운 `ListDomains` RPC로 현재 실행 중 ID 목록 확인
-3. 캐시에 없는 신규 도메인만 `GetXMLDesc` 1회 호출해 메타데이터 채움 (비싼 RPC는 캐시 미스 때만)
+2. `DomainSource.Domains()` 호출 — 내부적으로 가벼운 `ConnectListAllDomains(활성만)`로
+   현재 실행 중인 uuid 집합 확인
+3. 캐시에 없는 신규 uuid만 `GetXMLDesc` + pidfile 읽기로 `Domain` 채워서 캐시에 적재
+   (비싼 RPC·파일 I/O는 캐시 미스 때만), 캐시에는 있는데 더는 활성이 아닌 uuid는 evict
 4. 각 `Domain`의 `CgroupPath`·`PID`로 4개 파서 순차 호출
 5. 파서 하나 실패 → 해당 VM만 스킵 + `slog.Warn` + `qemu_exporter_scrape_errors_total` 증가, 나머지 계속
 6. 성공한 값을 `prometheus.MustNewConstMetric`으로 emit + exporter 자체 메트릭 2개 emit
 
 ## 캐시 무효화
 
-lifecycle 이벤트(정지/삭제) 수신 시 해당 uuid를 캐시에서 제거. 이벤트 구독이 끊기면
-60초 폴백 타이머가 `Domains()` 전체 재조회로 캐시를 재검증한다 (구독 실패가 크래시로
-이어지지 않는다).
+별도의 이벤트 구독이나 타이머를 두지 않는다. 매 스크레이프의 3번 단계(활성 uuid
+집합과 캐시를 대조)가 곧 무효화 메커니즘이다 — 신규 VM은 등장한 첫 스크레이프에서
+캐시에 적재되고, 사라진 VM은 사라진 첫 스크레이프에서 evict된다. "비싼 RPC는 VM
+생명주기 이벤트당 1번만" 목표를 lifecycle 이벤트 구독 없이 동일하게 달성한다.
+(go-libvirt의 이벤트 구독 API는 신뢰성 있게 검증하지 못해 채택하지 않음 — 스크레이프
+주기가 5~15초로 짧아 "최대 1주기 지연"은 실질적 차이가 없다.)
 
 ## 에러 처리
 
