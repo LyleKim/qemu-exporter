@@ -62,6 +62,7 @@ internal/libvirtsrc/
                    + PID 확보(`<LIBVIRT_SOCK 디렉터리>/qemu/<domain-name>.pid` 파일을 읽음 —
                    libvirt 공개 API엔 PID 반환 RPC가 없어 실무 표준인 pidfile 방식을 씀)
   cgrouppath.go  — PID → /proc/<pid>/cgroup 읽어서 실제 cgroup 상대경로 확정
+                   (prometheus/procfs의 Proc.Cgroups() 사용, 커스텀 파서 없음)
   cache.go       — uuid→Domain 캐시. 매 스크레이프마다 가벼운 `ConnectListAllDomains`로
                    현재 활성 uuid 집합을 확인해 신규는 `GetXMLDesc`로 채우고, 더는
                    활성이 아닌 uuid는 evict (아래 "캐시 무효화" 참고)
@@ -73,8 +74,8 @@ internal/cgroupsrc/
   psi.go         — cpu.pressure 파서 (some 행의 total만), 파일 부재 시 sentinel error
   testdata/{cpu.stat,memory.current,cpu.pressure}
 internal/procsrc/
-  schedstat.go   — /proc/<pid>/task/*/schedstat 2번째 필드 합계
-  testdata/schedstat
+  schedstat.go   — /proc/<pid>/task/*/schedstat 2번째 필드(runqueue 대기) 합계
+                   (prometheus/procfs의 FS.AllThreads + Proc.Schedstat() 사용)
 internal/collector/
   collector.go   — prometheus.Collector 구현 (Describe/Collect), DomainSource + 파서 함수들을 조립
   collector_test.go — 로컬 통합 테스트 (아래 참고)
@@ -98,15 +99,36 @@ type DomainSource interface {
     Domains() ([]Domain, error)
 }
 
+func ResolveCgroupPath(hostProc string, pid int) (string, error) // prometheus/procfs의 Proc.Cgroups() 사용
+
 // internal/cgroupsrc
 func ParseCPUStat(r io.Reader) (usageUsec uint64, err error)
 func ParseMemoryCurrent(r io.Reader) (bytes uint64, err error)
 func ParsePSISome(r io.Reader) (totalUsec uint64, err error) // 파일 없으면 ErrPSIUnsupported
 
 // internal/procsrc
-func ParseSchedstatRunqueueWait(r io.Reader) (waitNanos uint64, err error)
-func SumTaskSchedstat(hostProc string, pid int) (waitNanos uint64, err error) // /proc/<pid>/task/*/ 순회
+func SumTaskSchedstat(hostProc string, pid int) (waitNanos uint64, err error) // prometheus/procfs의 FS.AllThreads + Proc.Schedstat() 사용
 ```
+
+**구현 중 검증된 라이브러리 API** (`go run`으로 실제 컴파일·실행까지 확인):
+- `prometheus/procfs`: `NewFS(mountPoint) (FS, error)`, `fs.Proc(pid) (Proc, error)`,
+  `proc.Cgroups() ([]Cgroup, error)` (`Cgroup{HierarchyID, Controllers, Path}`),
+  `fs.AllThreads(pid) (Procs, error)`, `thread.Schedstat() (ProcSchedstat, error)`
+  (`ProcSchedstat{RunningNanoseconds, WaitingNanoseconds, RunTimeslices}`). 이 라이브러리가
+  이미 `/proc/<pid>/cgroup`과 `/proc/<pid>/task/*/schedstat` 파싱을 제공하므로, 애초
+  계획했던 io.Reader 기반 커스텀 파서(`ParseSchedstatRunqueueWait`, cgroup 파일 직접
+  파싱)는 만들지 않고 이 라이브러리를 그대로 쓴다. 가짜 `/proc` 트리(`t.TempDir()`)에도
+  그대로 동작함을 확인함 — 로컬 검증 전략과 호환됨.
+- `digitalocean/go-libvirt`: `libvirt.ConnectToURI(uri *url.URL) (*Libvirt, error)`
+  (URI 예: `qemu+unix:///system?socket=<LIBVIRT_SOCK>`, 소켓 경로는 `net/url`의
+  `url.Values`로 인코딩), `Domain{Name, UUID, ID}`, `(*Libvirt).ConnectListAllDomains(1,
+  ConnectListDomainsActive) ([]Domain, uint32, error)`, `(*Libvirt).DomainGetXMLDesc(dom
+  Domain, flags DomainXMLFlags) (string, error)`, `(*Libvirt).Disconnect() error`.
+  `ConnectListAllDomains`가 이미 `Name`/`UUID`를 주므로, XML에서는 `<nova:instance>`
+  메타데이터(flavor, project uuid)만 뽑는다 — `<name>`/`<uuid>`를 XML에서 다시
+  파싱하지 않는다. Nova 네임스페이스 요소(`<nova:flavor name="...">` 등)는 Go
+  `encoding/xml`이 네임스페이스 없는 태그(`xml:"flavor"`)로도 로컬 이름만 보고
+  정확히 매칭함을 실제 실행으로 확인함.
 
 ## 데이터 흐름 (스크레이프 1회)
 
