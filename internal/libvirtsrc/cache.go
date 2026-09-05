@@ -3,15 +3,29 @@ package libvirtsrc
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/digitalocean/go-libvirt"
 )
+
+// libvirtRPCTimeout bounds a single Domains() call's libvirt RPC round-trips.
+// digitalocean/go-libvirt has no per-call timeout: ConnectListAllDomains /
+// DomainGetXMLDesc block on a channel read from the socket reader goroutine
+// with no deadline, and the dialer timeout only covers the initial dial. So a
+// libvirtd that accepts the connection but stops answering (hung, deadlocked,
+// mid-restart) would otherwise wedge /metrics forever -- this scrape and every
+// one after it, since c.mu stays held. Abandoning the call after a few seconds
+// turns that permanent block into an ordinary per-scrape error, well under a
+// typical 10-15s Prometheus scrape interval. It is a var, not a const, only so
+// tests can shorten it.
+var libvirtRPCTimeout = 3 * time.Second
 
 // rpcClient is the subset of *libvirt.Libvirt this package calls, factored
 // out so Cache's diff/evict logic can be tested without a live libvirtd.
 type rpcClient interface {
 	ConnectListAllDomains(needResults int32, flags libvirt.ConnectListAllDomainsFlags) ([]libvirt.Domain, uint32, error)
 	DomainGetXMLDesc(dom libvirt.Domain, flags libvirt.DomainXMLFlags) (string, error)
+	Disconnect() error
 }
 
 // Cache is a DomainSource backed by libvirt. Domains() re-derives the
@@ -57,21 +71,56 @@ func (c *Cache) Domains() ([]Domain, error) {
 		c.rpc = rpc
 	}
 
-	active, _, err := c.rpc.ConnectListAllDomains(1, libvirt.ConnectListDomainsActive)
+	// Run the RPC-bearing work in a goroutine so a hung libvirtd can't hold
+	// c.mu forever. On timeout we abandon that goroutine: it only touches the
+	// rpc client and the captured prev map, both of which we stop referencing
+	// from c below, so there's no shared-state race with the next scrape.
+	type outcome struct {
+		list []Domain
+		next map[string]Domain
+		err  error
+	}
+	rpc := c.rpc
+	prev := c.domains
+	done := make(chan outcome, 1)
+	go func() {
+		list, next, err := c.collectDomains(rpc, prev)
+		done <- outcome{list, next, err}
+	}()
+
+	select {
+	case r := <-done:
+		if r.err != nil {
+			c.dropRPC(rpc)
+			return nil, r.err
+		}
+		c.domains = r.next
+		return r.list, nil
+	case <-time.After(libvirtRPCTimeout):
+		c.dropRPC(rpc)
+		c.domains = make(map[string]Domain) // abandoned goroutine keeps the old one
+		return nil, fmt.Errorf("libvirtsrc: libvirtd did not respond within %s; abandoning RPC and reconnecting next scrape", libvirtRPCTimeout)
+	}
+}
+
+// collectDomains does the libvirt RPC work for one scrape: list the active
+// domains, reuse cached entries, and build entries for newly-seen UUIDs. It
+// returns the domains to report plus the fresh cache map to install (which
+// naturally drops any UUID no longer active).
+func (c *Cache) collectDomains(rpc rpcClient, prev map[string]Domain) ([]Domain, map[string]Domain, error) {
+	active, _, err := rpc.ConnectListAllDomains(1, libvirt.ConnectListDomainsActive)
 	if err != nil {
-		c.rpc = nil // force reconnect on next call
-		return nil, fmt.Errorf("libvirtsrc: list active domains: %w", err)
+		return nil, nil, fmt.Errorf("libvirtsrc: list active domains: %w", err)
 	}
 
-	seen := make(map[string]bool, len(active))
+	next := make(map[string]Domain, len(active))
 	result := make([]Domain, 0, len(active))
 	for _, ld := range active {
 		uuid := formatUUID(ld.UUID)
-		seen[uuid] = true
 
-		d, cached := c.domains[uuid]
+		d, cached := prev[uuid]
 		if !cached {
-			built, err := c.buildDomain(ld, uuid)
+			built, err := c.buildDomain(rpc, ld, uuid)
 			if err != nil {
 				// Skip this VM for this scrape; a transient failure (e.g.
 				// the pidfile not written yet) shouldn't block every other
@@ -79,22 +128,27 @@ func (c *Cache) Domains() ([]Domain, error) {
 				continue
 			}
 			d = built
-			c.domains[uuid] = d
 		}
+		next[uuid] = d
 		result = append(result, d)
 	}
-
-	for uuid := range c.domains {
-		if !seen[uuid] {
-			delete(c.domains, uuid)
-		}
-	}
-
-	return result, nil
+	return result, next, nil
 }
 
-func (c *Cache) buildDomain(ld libvirt.Domain, uuid string) (Domain, error) {
-	xmlDesc, err := c.rpc.DomainGetXMLDesc(ld, 0)
+// dropRPC discards the current client so the next Domains() call reconnects.
+// Disconnect runs in the background: against a wedged libvirtd it can itself
+// block (it issues a CONNECT_CLOSE RPC), and we must not let that stall the
+// scrape. Closing the client still releases its socket and reader goroutine,
+// which otherwise leak across libvirtd restarts (final-review Minor #7).
+func (c *Cache) dropRPC(old rpcClient) {
+	if old != nil {
+		go func() { _ = old.Disconnect() }()
+	}
+	c.rpc = nil
+}
+
+func (c *Cache) buildDomain(rpc rpcClient, ld libvirt.Domain, uuid string) (Domain, error) {
+	xmlDesc, err := rpc.DomainGetXMLDesc(ld, 0)
 	if err != nil {
 		return Domain{}, fmt.Errorf("get XML for domain %s: %w", ld.Name, err)
 	}

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/digitalocean/go-libvirt"
 )
@@ -16,14 +17,20 @@ type fakeRPC struct {
 	xmlErrByName map[string]error
 	xmlDescCalls map[string]int
 	listErr      error
+	listDelay    time.Duration // if set, ConnectListAllDomains blocks this long
 }
 
 func (f *fakeRPC) ConnectListAllDomains(needResults int32, flags libvirt.ConnectListAllDomainsFlags) ([]libvirt.Domain, uint32, error) {
+	if f.listDelay > 0 {
+		time.Sleep(f.listDelay)
+	}
 	if f.listErr != nil {
 		return nil, 0, f.listErr
 	}
 	return f.active, uint32(len(f.active)), nil
 }
+
+func (f *fakeRPC) Disconnect() error { return nil }
 
 func (f *fakeRPC) DomainGetXMLDesc(dom libvirt.Domain, flags libvirt.DomainXMLFlags) (string, error) {
 	if f.xmlDescCalls == nil {
@@ -147,6 +154,29 @@ func TestCache_Domains_SkipsDomainOnBuildFailure(t *testing.T) {
 	}
 	if len(got) != 1 || got[0].Name != "instance-00000001" {
 		t.Errorf("Domains() = %+v, want only instance-00000001", got)
+	}
+}
+
+func TestCache_Domains_RPCTimeout(t *testing.T) {
+	orig := libvirtRPCTimeout
+	libvirtRPCTimeout = 50 * time.Millisecond
+	defer func() { libvirtRPCTimeout = orig }()
+
+	hung := &fakeRPC{listDelay: 2 * time.Second} // never answers within the timeout
+	c := &Cache{rpc: hung, hostProc: t.TempDir(), libvirtRunDir: t.TempDir(), domains: make(map[string]Domain)}
+
+	start := time.Now()
+	_, err := c.Domains()
+	elapsed := time.Since(start)
+
+	if err == nil {
+		t.Fatal("expected a timeout error from a hung libvirtd, got nil")
+	}
+	if elapsed > time.Second {
+		t.Errorf("Domains() took %s; should have abandoned the RPC near the %s timeout", elapsed, libvirtRPCTimeout)
+	}
+	if c.rpc != nil {
+		t.Error("rpc should be nil after a timeout, to force reconnect on the next scrape")
 	}
 }
 

@@ -43,10 +43,14 @@ func main() {
 	connect := func() (*libvirt.Libvirt, error) { return libvirtsrc.Connect(libvirtSock) }
 	cache := libvirtsrc.NewCache(connect, hostProc, libvirtRunDir)
 	col := collector.New(cache, hostSysFsCgroup, hostProc, node)
-	prometheus.MustRegister(col)
+
+	// Custom registry, not the default: this exporter exposes exactly the 6
+	// metrics in col.Describe -- no go_*, process_* or promhttp_* families.
+	reg := prometheus.NewRegistry()
+	reg.MustRegister(col)
 
 	mux := http.NewServeMux()
-	mux.Handle("/metrics", promhttp.Handler())
+	mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 	srv := &http.Server{Addr: *listenAddr, Handler: mux}
 
 	go func() {

@@ -1,9 +1,11 @@
 package collector
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"path/filepath"
+	"sync"
 	"sync/atomic"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -103,9 +105,17 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(vmsDiscoveredDesc, prometheus.GaugeValue, float64(discovered))
 }
 
+// psiUnsupportedOnce keeps the "this kernel/cgroup has no PSI" notice to a
+// single log line per process -- it's a permanent environmental condition, not
+// a per-scrape event.
+var psiUnsupportedOnce sync.Once
+
 func (c *Collector) collectDomain(ch chan<- prometheus.Metric, d libvirtsrc.Domain) error {
 	cgroupDir := filepath.Join(c.hostSysFsCgroup, d.CgroupPath)
 
+	// The three always-available sources: any failure here skips the whole VM
+	// and counts as a scrape error (CLAUDE.md: one VM's failure must not fail
+	// the scrape, but it is still an error).
 	cpuUsage, err := cgroupsrc.ReadCPUStat(cgroupDir)
 	if err != nil {
 		return fmt.Errorf("cpu.stat: %w", err)
@@ -114,20 +124,30 @@ func (c *Collector) collectDomain(ch chan<- prometheus.Metric, d libvirtsrc.Doma
 	if err != nil {
 		return fmt.Errorf("memory.current: %w", err)
 	}
-	pressure, err := cgroupsrc.ReadCPUPressureSome(cgroupDir)
-	if err != nil {
-		return fmt.Errorf("cpu.pressure: %w", err)
-	}
 	waitNanos, err := procsrc.SumTaskSchedstat(c.hostProc, d.PID)
 	if err != nil {
 		return fmt.Errorf("schedstat: %w", err)
 	}
 
 	labels := []string{c.node, d.UUID, d.Name, d.Flavor, d.ProjectID}
-
 	ch <- prometheus.MustNewConstMetric(cpuUsageDesc, prometheus.CounterValue, float64(cpuUsage)/1e6, labels...)
 	ch <- prometheus.MustNewConstMetric(memoryUsageDesc, prometheus.GaugeValue, float64(memUsage), labels...)
-	ch <- prometheus.MustNewConstMetric(cpuPressureDesc, prometheus.CounterValue, float64(pressure)/1e6, labels...)
 	ch <- prometheus.MustNewConstMetric(runqueueWaitDesc, prometheus.CounterValue, float64(waitNanos)/1e9, labels...)
+
+	// cpu.pressure is the one source a supported-but-PSI-less kernel/cgroup
+	// legitimately lacks. Degrade gracefully: emit the other three metrics,
+	// skip only this one, and do not count it as a scrape error. Any other
+	// pressure read failure is a real error and skips the VM as before.
+	pressure, err := cgroupsrc.ReadCPUPressureSome(cgroupDir)
+	if err != nil {
+		if errors.Is(err, cgroupsrc.ErrPSIUnsupported) {
+			psiUnsupportedOnce.Do(func() {
+				slog.Info("qemu-exporter: cpu.pressure unavailable (kernel/cgroup lacks PSI); omitting pressure metric", "domain", d.Name)
+			})
+			return nil
+		}
+		return fmt.Errorf("cpu.pressure: %w", err)
+	}
+	ch <- prometheus.MustNewConstMetric(cpuPressureDesc, prometheus.CounterValue, float64(pressure)/1e6, labels...)
 	return nil
 }
