@@ -23,7 +23,8 @@ spec:
       # compute node and no selector is required yet).
       containers:
         - name: qemu-exporter
-          image: qemu-exporter:dev
+          image: docker.io/lylekim/qemu-exporter:dev   # <- YOURUSER 를 Docker Hub 계정명으로 바꿀 것
+          imagePullPolicy: Always
           ports:
             - containerPort: 9179
               name: metrics

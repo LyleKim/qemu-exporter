@@ -39,9 +39,15 @@ func main() {
 		slog.Warn("qemu-exporter: NODE_NAME is empty; the node label will be blank")
 	}
 
+	slog.Info("qemu-exporter: config",
+		"host_proc", hostProc,
+		"host_sys_fs_cgroup", hostSysFsCgroup,
+		"libvirt_sock", libvirtSock,
+		"node", node)
+
 	libvirtRunDir := filepath.Dir(libvirtSock)
 	connect := func() (*libvirt.Libvirt, error) { return libvirtsrc.Connect(libvirtSock) }
-	cache := libvirtsrc.NewCache(connect, hostProc, libvirtRunDir)
+	cache := libvirtsrc.NewCache(connect, hostProc, hostSysFsCgroup, libvirtRunDir)
 	col := collector.New(cache, hostSysFsCgroup, hostProc, node)
 
 	// Custom registry, not the default: this exporter exposes exactly the 6

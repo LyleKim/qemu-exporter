@@ -36,9 +36,10 @@ type rpcClient interface {
 // per-scrape diff is the entire invalidation mechanism, and it evicts a
 // stopped VM within one scrape cycle.
 type Cache struct {
-	connect       func() (rpcClient, error)
-	hostProc      string
-	libvirtRunDir string
+	connect         func() (rpcClient, error)
+	hostProc        string
+	hostSysFsCgroup string
+	libvirtRunDir   string
 
 	mu      sync.Mutex
 	rpc     rpcClient
@@ -46,15 +47,18 @@ type Cache struct {
 }
 
 // NewCache returns a Cache that connects to libvirtd lazily (and
-// reconnects on failure) using connect. libvirtRunDir is the directory
-// containing libvirt's per-domain qemu pidfiles (qemu/<name>.pid) --
-// normally the directory holding LIBVIRT_SOCK.
-func NewCache(connect func() (*libvirt.Libvirt, error), hostProc, libvirtRunDir string) *Cache {
+// reconnects on failure) using connect. hostSysFsCgroup is the cgroupfs
+// mount root (read-only) used to climb from libvirt's threaded thread-class
+// cgroups to the domain cgroup. libvirtRunDir is the directory containing
+// libvirt's per-domain qemu pidfiles (qemu/<name>.pid) -- normally the
+// directory holding LIBVIRT_SOCK.
+func NewCache(connect func() (*libvirt.Libvirt, error), hostProc, hostSysFsCgroup, libvirtRunDir string) *Cache {
 	return &Cache{
-		connect:       func() (rpcClient, error) { return connect() },
-		hostProc:      hostProc,
-		libvirtRunDir: libvirtRunDir,
-		domains:       make(map[string]Domain),
+		connect:         func() (rpcClient, error) { return connect() },
+		hostProc:        hostProc,
+		hostSysFsCgroup: hostSysFsCgroup,
+		libvirtRunDir:   libvirtRunDir,
+		domains:         make(map[string]Domain),
 	}
 }
 
@@ -160,7 +164,7 @@ func (c *Cache) buildDomain(rpc rpcClient, ld libvirt.Domain, uuid string) (Doma
 	if err != nil {
 		return Domain{}, fmt.Errorf("resolve PID for domain %s: %w", ld.Name, err)
 	}
-	cgroupPath, err := ResolveCgroupPath(c.hostProc, pid)
+	cgroupPath, err := ResolveCgroupPath(c.hostProc, c.hostSysFsCgroup, pid)
 	if err != nil {
 		return Domain{}, fmt.Errorf("resolve cgroup path for domain %s (pid %d): %w", ld.Name, pid, err)
 	}
