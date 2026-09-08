@@ -1,0 +1,87 @@
+# Prometheus: scrapes qemu-exporter + kubelet cAdvisor + kubelet resource metrics.
+# cAdvisor/kubelet scrape goes through the apiserver proxy (kubernetes.default.svc:443)
+# using the pod's ServiceAccount token -- no direct :10250 access needed.
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: prometheus, namespace: monitoring}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata: {name: prometheus}
+rules:
+  - apiGroups: [""]
+    resources: [nodes, nodes/metrics, nodes/proxy, pods, services, endpoints]
+    verbs: [get, list, watch]
+  - nonResourceURLs: [/metrics, /metrics/cadvisor, /metrics/resource]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata: {name: prometheus}
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: prometheus}
+subjects:
+  - {kind: ServiceAccount, name: prometheus, namespace: monitoring}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: prometheus-config, namespace: monitoring}
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 5s
+    scrape_configs:
+      - job_name: qemu-exporter
+        static_configs:
+          - targets: ['qemu-exporter.openstack.svc.cluster.local:9179']
+      - job_name: kubelet-cadvisor
+        scheme: https
+        tls_config: {insecure_skip_verify: true}
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs: [{role: node}]
+        relabel_configs:
+          - {action: labelmap, regex: __meta_kubernetes_node_label_(.+)}
+          - {target_label: __address__, replacement: kubernetes.default.svc:443}
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+      - job_name: kubelet-resource
+        scheme: https
+        tls_config: {insecure_skip_verify: true}
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs: [{role: node}]
+        relabel_configs:
+          - {action: labelmap, regex: __meta_kubernetes_node_label_(.+)}
+          - {target_label: __address__, replacement: kubernetes.default.svc:443}
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/resource
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: prometheus, namespace: monitoring}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: prometheus}}
+  template:
+    metadata: {labels: {app: prometheus}}
+    spec:
+      serviceAccountName: prometheus
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v3.1.0
+          args: [--config.file=/etc/prometheus/prometheus.yml, --storage.tsdb.path=/prometheus, --storage.tsdb.retention.time=2d, --web.enable-lifecycle]
+          ports: [{containerPort: 9090}]
+          volumeMounts:
+            - {name: config, mountPath: /etc/prometheus}
+            - {name: data, mountPath: /prometheus}
+          resources: {requests: {cpu: 50m, memory: 256Mi}, limits: {cpu: 500m, memory: 800Mi}}
+      volumes:
+        - {name: config, configMap: {name: prometheus-config}}
+        - {name: data, emptyDir: {}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: prometheus, namespace: monitoring}
+spec:
+  selector: {app: prometheus}
+  ports: [{name: web, port: 9090, targetPort: 9090}]

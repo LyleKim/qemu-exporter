@@ -1,0 +1,18 @@
+T0=1788861034
+HOG_ON=1788861064
+HOG_OFF=1788861184
+END=1788861244
+
+window: base / load / hog=4 / node8vcpu
+exporter cpu.pressure rate  0.0035 -> 0.0683 (19x) -> 0.0429
+exporter runqueue_wait rate 0.0120 -> 0.2065 (17x) -> 0.1333
+exporter cpu (cores)        2.04   -> 1.96   (-4%) -> 1.98
+cAdvisor series about VM    0 -> 0 -> 0   (kubelet/cAdvisor blind to the victim)
+cAdvisor hog-pods CPU       0 -> 2.91 -> 1.05   (sees the aggressor)
+kubelet node CPU rate       3.05 -> 6.26 -> 4.44   (node looks busy, no degradation signal)
+
+mem snapshot (kubelet vs qemu-exporter):
+  node_memory_working_set        9405759488  (8.76 GiB)
+  sum(pod_memory_working_set)    6056726528  (5.64 GiB)
+  node - pods (unaccounted)      3349032960  (3.12 GiB)
+  sum(openstack_vm_memory_bytes) 2650984448  (2.47 GiB)  = 79% of unaccounted

@@ -1,0 +1,58 @@
+# Grafana with provisioned Prometheus datasource + a pre-built "qemu-exporter" dashboard.
+# Anonymous Admin (prototype only). Exposed via NodePort 30300.
+# Access: SSM port-forward 30300->3000, or open the node SG for :30300 to your IP.
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: grafana-ds, namespace: monitoring}
+data:
+  ds.yaml: '{"apiVersion":1,"datasources":[{"name":"Prometheus","uid":"prometheus","type":"prometheus","access":"proxy","url":"http://prometheus.monitoring.svc.cluster.local:9090","isDefault":true}]}'
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: grafana-dashprov, namespace: monitoring}
+data:
+  prov.yaml: '{"apiVersion":1,"providers":[{"name":"default","orgId":1,"type":"file","options":{"path":"/var/lib/grafana/dashboards"}}]}'
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: grafana-dash, namespace: monitoring}
+data:
+  qemu.json: '{"title":"qemu-exporter","uid":"qemu-exporter","timezone":"browser","schemaVersion":39,"version":2,"refresh":"5s","time":{"from":"now-15m","to":"now"},"panels":[{"id":1,"type":"timeseries","title":"Fig.3 - contention (pressure/runqueue spike, cpu_time flat)","gridPos":{"h":8,"w":24,"x":0,"y":0},"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[]},"targets":[{"refId":"A","expr":"rate(openstack_vm_cpu_pressure_stall_seconds_total{instance_name=\"instance-00000004\"}[1m])","legendFormat":"cpu.pressure(some)"},{"refId":"B","expr":"rate(openstack_vm_sched_runqueue_wait_seconds_total{instance_name=\"instance-00000004\"}[1m])","legendFormat":"runqueue_wait"},{"refId":"C","expr":"rate(openstack_vm_cpu_usage_seconds_total{instance_name=\"instance-00000004\"}[1m])","legendFormat":"cpu_time (libvirt-equiv)"}]},{"id":5,"type":"timeseries","title":"KEY: cAdvisor/kubelet blind, qemu-exporter sees it","gridPos":{"h":9,"w":24,"x":0,"y":8},"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"short"},"overrides":[{"matcher":{"id":"byName","options":"cAdvisor: series about the VM"},"properties":[{"id":"custom.drawStyle","value":"points"},{"id":"custom.pointSize","value":6}]}]},"targets":[{"refId":"A","expr":"rate(openstack_vm_cpu_pressure_stall_seconds_total{instance_name=\"instance-00000004\"}[1m])","legendFormat":"qemu-exporter: VM cpu.pressure"},{"refId":"B","expr":"sum(rate(container_cpu_usage_seconds_total{job=\"kubelet-cadvisor\",pod=~\"cpu-hog.*\",container!=\"\"}[1m])) or on() vector(0)","legendFormat":"cAdvisor: noisy-neighbor pods CPU"},{"refId":"C","expr":"count(container_cpu_usage_seconds_total{job=\"kubelet-cadvisor\",id=~\"/machine.*\"}) or on() vector(0)","legendFormat":"cAdvisor: series about the VM"},{"refId":"D","expr":"rate(node_cpu_usage_seconds_total[1m]) - sum(rate(pod_cpu_usage_seconds_total[1m]))","legendFormat":"kubelet: node CPU not attributed to pods"}]},{"id":2,"type":"stat","title":"VM memory - invisible to k8s (sum)","gridPos":{"h":7,"w":8,"x":0,"y":17},"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[]},"targets":[{"refId":"A","expr":"sum(openstack_vm_memory_usage_bytes)","legendFormat":"total VM mem"}]},{"id":6,"type":"stat","title":"kubelet: node mem minus pod mem","gridPos":{"h":7,"w":8,"x":8,"y":17},"datasource":{"type":"prometheus","uid":"prometheus"},"fieldConfig":{"defaults":{"unit":"bytes"},"overrides":[]},"targets":[{"refId":"A","expr":"node_memory_working_set_bytes - sum(pod_memory_working_set_bytes)","legendFormat":"unaccounted (VM+system)"}]},{"id":4,"type":"stat","title":"exporter status","gridPos":{"h":7,"w":8,"x":16,"y":17},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"refId":"A","expr":"qemu_exporter_vms_discovered","legendFormat":"VMs discovered"},{"refId":"B","expr":"qemu_exporter_scrape_errors_total","legendFormat":"scrape errors"}]}]}'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: grafana, namespace: monitoring}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: grafana}}
+  template:
+    metadata: {labels: {app: grafana}}
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:11.4.0
+          env:
+            - {name: GF_AUTH_ANONYMOUS_ENABLED, value: "true"}
+            - {name: GF_AUTH_ANONYMOUS_ORG_ROLE, value: "Admin"}
+            - {name: GF_SECURITY_ADMIN_PASSWORD, value: "admin"}
+            - {name: GF_USERS_DEFAULT_THEME, value: "light"}
+          ports: [{containerPort: 3000}]
+          volumeMounts:
+            - {name: ds, mountPath: /etc/grafana/provisioning/datasources}
+            - {name: dashprov, mountPath: /etc/grafana/provisioning/dashboards}
+            - {name: dash, mountPath: /var/lib/grafana/dashboards}
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {cpu: 300m, memory: 256Mi}
+      volumes:
+        - {name: ds, configMap: {name: grafana-ds}}
+        - {name: dashprov, configMap: {name: grafana-dashprov}}
+        - {name: dash, configMap: {name: grafana-dash}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: grafana, namespace: monitoring}
+spec:
+  type: NodePort
+  selector: {app: grafana}
+  ports: [{name: web, port: 3000, targetPort: 3000, nodePort: 30300}]

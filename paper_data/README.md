@@ -1,10 +1,33 @@
 # paper_data/ — qemu-exporter 논문 실측 데이터
 
-> **이 디렉터리는 무엇인가**: OpenStack-Helm QEMU 가시성 논문(3페이지 프로토타입)의 Fig.1 / Fig.3 /
-> Table 1 / 정확도·오버헤드 문장에 쓸 **원시 측정 데이터**. Prometheus/Grafana 없이, 배포된 `qemu-exporter`를
-> `curl podIP:9179/metrics`로 긁고 호스트 cgroup 파일·`virsh domstats`를 스크립트로 샘플링해 모았다.
-> **수집일**: 2026-09-08. **수집 환경은 이후 `make down`으로 파기됨** — 재현하려면 아래 "환경"·"재현 절차" 참조.
-> 상세 계획서: 레포 루트의 `paper_data_tdl.md`. 배포·검증 이력: `aws_verification_tdl.md`.
+> **이 디렉터리는 무엇인가**: OpenStack-Helm QEMU 가시성 논문(3페이지 프로토타입)의 Fig.1 / Fig.3 / Fig.3b /
+> Table 1 / 정확도·오버헤드 문장에 쓸 **원시 측정 데이터** + Grafana 스크린샷 2장.
+> Fig.1/Fig.3/정확도/오버헤드/Table1은 Prometheus 없이 `curl podIP:9179/metrics` + 호스트 cgroup 파일 + `virsh domstats`
+> 스크립트 샘플링으로 모았고, **Fig.3b만** Prometheus + Grafana + kubelet(cAdvisor/resource) 스크레이프를 배포해 수집했다.
+> **수집일**: 2026-09-08. **수집 환경은 이후 `make down`으로 파기됨** — 재현하려면 아래 "환경"·"재현 절차", 그리고 `deploy/monitoring/README.md`.
+>
+> **논문 집필 세션은 레포 루트 `paper_writing_handoff.md`를 먼저 볼 것** (논문 목적·진행·실험별 서술 방향·함정·장별 구조). 이 파일은 그 안의 "실험별 상세"에 대응하는 원시 데이터 문서.
+> 계획서: `paper_data_tdl.md`. 배포·검증 이력: `aws_verification_tdl.md`.
+
+---
+
+## 0. 파일 목록
+
+| 파일 | 실험 | 한 줄 |
+|---|---|---|
+| `fig1_snapshot.txt` | Fig.1 | 메모리 회계 3열(machine 2.54GB / kubepods 7.74GiB / node 8.88GiB) + cAdvisor `/machine` 0줄 |
+| `fig3_run1.csv`, `fig3_run1_guest.log`, `fig3_markers.txt`, `fig3_run1_summary.txt` | Fig.3 본편 | cpu-hog×4, pressure 12.5×·runqueue 10×, guest/libvirt 무반응 |
+| `fig3_run2.csv`, `fig3_run2_guest.log`, `fig3_run2_markers.txt` | Fig.3 dose-response | cpu-hog×8, load 323, pressure 122× (본 그림 아님) |
+| `fig3b_exporter_{pressure,runq,cpu}.json` | Fig.3b | Prometheus 시계열 — 수집기 관점 (pressure 19×) |
+| `fig3b_cadvisor_{vm_series,hogpods}.json` | Fig.3b | cAdvisor — VM 시계열 0, hog 파드 CPU는 봄 |
+| `fig3b_kubelet_{node_cpu,node_minus_pods}.json` | Fig.3b | kubelet-resource — node CPU 2배, 피해자 신호 없음 |
+| `fig3b_markers.txt`, `fig3b_mem_snapshot.txt`, `fig3b_summary.txt` | Fig.3b | 마커 / 메모리 스냅샷(미귀속 3.12GiB의 79%가 VM) / 요약 |
+| `fig3b_grafana.png`, `fig3_grafana.png` | Fig.3b / Fig.3 | Grafana 스크린샷 (KEY 패널 이중축 / contention 패널) |
+| `accuracy.txt` | 정확도 | vs `virsh cpu.time` 상대오차 0.001% |
+| `overhead.txt` | 오버헤드 | 1.1 mCPU (0.11% of 1 core), RSS 8–10 MiB |
+| `coverage.txt` | Table 1 | libvirt/cAdvisor/수집기 × 자원·경합·Nova·조인 근거 |
+| `env_spec.txt` | 4.1절 | 커널·cgroup·PSI·OSH·`-accel` 명세 |
+| `README.txt` | — | 수집 당시 짧은 메모 (이 파일이 확장판) |
 
 ---
 
@@ -134,6 +157,51 @@ fig-vm이 상시 부하(2 vCPU 풀) 도는 상태에서 126초 윈도우:
 
 ### `README.txt` — 수집 당시 노드에서 만든 짧은 메모 (이 `README.md`가 확장판)
 
+### `fig3b_*` — Fig.3b: Prometheus 파이프라인 시계열 (경합 중 kubelet/cAdvisor blind, qemu-exporter만 관측)
+2026-09-08 저녁, 노드 재활용해 Prometheus + Grafana + kubelet(cAdvisor + resource) 스크레이프까지 배포한 뒤 수집.
+매니페스트는 레포 `deploy/monitoring/`. 시나리오는 Fig.3 run1과 동일(`cpu-hog` replicas 4, baseline 30s → 부하 120s → 해제 60s).
+Prometheus `query_range`(step 5s)로 뽑은 원본 JSON.
+
+- `fig3b_markers.txt` — T0 / HOG_ON / HOG_OFF / END epoch
+- `fig3b_summary.txt` — 아래 구간별 수치 + mem snapshot 정리
+- `fig3b_mem_snapshot.txt` — 순간 쿼리 4개 (kubelet node mem vs pod mem vs exporter VM mem)
+- `fig3b_exporter_pressure.json` — `rate(openstack_vm_cpu_pressure_stall_seconds_total{instance_name="instance-00000004"}[1m])`
+- `fig3b_exporter_runq.json` — `rate(openstack_vm_sched_runqueue_wait_seconds_total{...}[1m])`
+- `fig3b_exporter_cpu.json` — `rate(openstack_vm_cpu_usage_seconds_total{...}[1m])`
+- `fig3b_cadvisor_vm_series.json` — `count(container_cpu_usage_seconds_total{job="kubelet-cadvisor",id=~"/machine.*"}) or on() vector(0)`
+- `fig3b_cadvisor_hogpods.json` — `sum(rate(container_cpu_usage_seconds_total{job="kubelet-cadvisor",pod=~"cpu-hog.*",container!=""}[1m])) or on() vector(0)`
+- `fig3b_kubelet_node_cpu.json` — `rate(node_cpu_usage_seconds_total[1m])` (kubelet-resource)
+- `fig3b_kubelet_node_minus_pods.json` — `sum(rate(node_cpu_usage_seconds_total[1m])) - sum(rate(pod_cpu_usage_seconds_total[1m]))`
+
+**핵심 수치 (base / load / after, hog=4, 8 vCPU 노드)**:
+| 시계열 | base | load | after | |
+|---|---|---|---|---|
+| exporter cpu.pressure rate | 0.0035 | 0.0683 (peak ~0.10) | 0.0429 | ≈19× — VM이 경합에 시달림 |
+| exporter runqueue_wait rate | 0.0120 | 0.2065 (peak ~0.31) | 0.1333 | ≈17× |
+| exporter cpu (cores) | 2.041 | 1.96 (min 1.906) | 1.98 | −4~6% — 거의 평평 (libvirt 관점엔 신호 없음) |
+| **cAdvisor: VM에 대한 시계열 수** | **0** | **0** | **0** | 전 구간 0 — kubelet/cAdvisor엔 그 VM이 없음 |
+| cAdvisor: hog 파드 CPU | 0 | ~3.98 | 0 | 가해자는 봄 |
+| kubelet: node CPU rate | 3.05 | 6.26 (peak ~7.3) | 4.44 | 노드가 바빠 보이지만 "누가 힘든지"는 모름 |
+| kubelet: node − pods CPU | ~2.4 | ~2.4–3.0 (noisy) | ~2.7 | 피해자 신호 없음 |
+
+**메모리 사각지대 스냅샷** (`fig3b_mem_snapshot.txt`):
+kubelet `node_memory_working_set` 8.76 GiB, `sum(pod_memory_working_set)` 5.64 GiB → 파드로 설명 안 되는 3.12 GiB 중
+**79%(2.47 GiB)가 VM** (`sum(openstack_vm_memory_usage_bytes)`), 이걸 인스턴스별로 이름 붙이는 건 qemu-exporter뿐.
+
+주: `fig3b_kubelet_node_cpu.json`의 값이 5초 간격인데 두 번씩 반복되는 건 kubelet-resource 엔드포인트가
+~10초 주기로 갱신되기 때문 (스크레이프는 5초). `after` 구간 pressure/runq가 base보다 높은 건 `[1m]` rate 창이
+해제 직후에도 부하 구간 꼬리를 포함하기 때문.
+
+### `fig3b_grafana.png` / `fig3_grafana.png` — Grafana 스크린샷 (라이브 데모)
+Prometheus/Grafana 배포 상태에서 `cpu-hog` replicas 4를 다시 돌리며 라이브로 캡처.
+- **`fig3b_grafana.png`** — 패널 "KEY: cAdvisor/kubelet blind, qemu-exporter sees it", **이중 축**.
+  - 왼쪽 축(0–8, 코어/개수): 🟠 `kubelet: node CPU` 3→7.5, 🟡 `cAdvisor: hog pods CPU` 0→4, 🔵 `cAdvisor: series about the VM` **내내 0**
+  - 오른쪽 축(0–0.15, 초/초): 🟢 `qemu-exporter: VM cpu.pressure` 0.003→0.10~0.15
+  - 경합 구간(약 19:13–19:17)에 🟠🟡🟢 급등, 🔵 0 고정, hog 제거 후 셋 다 복귀. 🟢 가운데 dip은 실제 값(스케줄러 재분배).
+  - **그림 캡션에 "우측 축 = cpu.pressure rate(초/초)" 명시 필요.**
+- **`fig3_grafana.png`** — 패널 "Fig.3 - contention": pressure(some) rate / runqueue_wait rate / cpu_time(libvirt-equiv) rate 3줄. 축이 0~0.35라 단일 축으로 스파이크가 잘 보임.
+- 논문 Fig.3(b)로 `fig3b_grafana.png` 한 장 + Fig.3로 `fig3_grafana.png` 또는 `fig3_run1.csv` 플롯.
+
 ---
 
 ## 3. 분석에 쓴 명령 (CSV → 구간별 평균 재도출용)
@@ -183,3 +251,6 @@ awk '/GUESTSTAT/{t=$2;u=$4;ni=$5;sy=$6;idl=$7;io=$8;st=$11
 - **`runq_wait`(exporter)는 QEMU 전체 스레드(emulator+vcpu+iothread) 합산** → libvirt `vcpu.N.delay`(vcpu 스레드만)의 합보다 큼. 측정 범위가 다른 것이지 오류 아님.
 - **fio 디스크 영향 미측정.**
 - 정확도·오버헤드 측정은 run2 직후, fig-vm이 상시 2코어 부하 도는 상태에서 수행.
+- **Fig.3b에서 "kubelet은 아무것도 못 본다"는 부정확** — 경합 중 `node_cpu_usage_seconds_total`은 오른다(3→6.26). 정확히는 "**피해자를 특정하는 신호가 없다**"(그 VM에 대한 시계열이 0). 서술 시 이 구분 유지.
+- **`fig3b_grafana.png`는 이중 축** (cpu.pressure 초/초 vs CPU 코어, 스케일 4배+ 차이) — 캡션 필수.
+- **libvirt에 `vcpu.N.delay`(스케줄러 run-delay)가 존재** → "경합 은폐"는 원시 데이터 부재가 아니라 관측 파이프라인(표준 exporter·telemetry 미탑재, PSI 아님, K8s 조인 불가)의 문제. Table 1은 △.

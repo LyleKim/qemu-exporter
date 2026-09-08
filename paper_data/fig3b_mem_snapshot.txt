@@ -1,0 +1,8 @@
+--- node_memory_working_set_bytes
+"value":[1788861633.289,"9405759488"]
+--- sum(pod_memory_working_set_bytes)
+"value":[1788861633.298,"6056726528"]
+--- sum(openstack_vm_memory_usage_bytes)
+"value":[1788861633.306,"2650984448"]
+--- node_memory_working_set_bytes - on() group_left sum(pod_memory_working_set_bytes)
+"value":[1788861633.313,"3349032960"]
