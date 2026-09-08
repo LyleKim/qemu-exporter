@@ -1,0 +1,1727 @@
+[    0.000000] Linux version 6.8.0-138-generic (buildd@lcy02-amd64-023) (x86_64-linux-gnu-gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, GNU ld (GNU Binutils for Ubuntu) 2.42) #138-Ubuntu SMP PREEMPT_DYNAMIC Fri Jul 31 22:41:49 UTC 2026 (Ubuntu 6.8.0-138.138-generic 6.8.12)
+[    0.000000] Command line: BOOT_IMAGE=/vmlinuz-6.8.0-138-generic root=LABEL=cloudimg-rootfs ro console=tty1 console=ttyS0
+[    0.000000] KERNEL supported cpus:
+[    0.000000]   Intel GenuineIntel
+[    0.000000]   AMD AuthenticAMD
+[    0.000000]   Hygon HygonGenuine
+[    0.000000]   Centaur CentaurHauls
+[    0.000000]   zhaoxin   Shanghai  
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000000100000-0x00000000bffdafff] usable
+[    0.000000] BIOS-e820: [mem 0x00000000bffdb000-0x00000000bfffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[    0.000000] BIOS-e820: [mem 0x0000000100000000-0x000000013fffffff] usable
+[    0.000000] BIOS-e820: [mem 0x000000fd00000000-0x000000ffffffffff] reserved
+[    0.000000] NX (Execute Disable) protection: active
+[    0.000000] APIC: Static calls initialized
+[    0.000000] SMBIOS 3.0.0 present.
+[    0.000000] DMI: OpenStack Foundation OpenStack Nova, BIOS 1.16.3-debian-1.16.3-2 04/01/2014
+[    0.000000] tsc: Fast TSC calibration using PIT
+[    0.000000] tsc: Detected 2499.940 MHz processor
+[    0.021573] AGP: No AGP bridge found
+[    0.021968] last_pfn = 0x140000 max_arch_pfn = 0x400000000
+[    0.023131] MTRR map: 4 entries (3 fixed + 1 variable; max 19), built from 8 variable MTRRs
+[    0.023500] x86/PAT: Configuration [0-7]: WB  WC  UC- UC  WB  WP  UC- WT  
+[    0.025313] last_pfn = 0xbffdb max_arch_pfn = 0x400000000
+[    0.060065] found SMP MP-table at [mem 0x000f5430-0x000f543f]
+[    0.069834] RAMDISK: [mem 0x3455f000-0x362a6fff]
+[    0.072781] ACPI: Early table checksum verification disabled
+[    0.073567] ACPI: RSDP 0x00000000000F51C0 000014 (v00 BOCHS )
+[    0.074084] ACPI: RSDT 0x00000000BFFE1CB1 000034 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.075331] ACPI: FACP 0x00000000BFFE1B5D 000074 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.076521] ACPI: DSDT 0x00000000BFFE0040 001B1D (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.076701] ACPI: FACS 0x00000000BFFE0000 000040
+[    0.076837] ACPI: APIC 0x00000000BFFE1BD1 000080 (v03 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.076904] ACPI: HPET 0x00000000BFFE1C51 000038 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.076963] ACPI: WAET 0x00000000BFFE1C89 000028 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[    0.077145] ACPI: Reserving FACP table memory at [mem 0xbffe1b5d-0xbffe1bd0]
+[    0.077183] ACPI: Reserving DSDT table memory at [mem 0xbffe0040-0xbffe1b5c]
+[    0.077202] ACPI: Reserving FACS table memory at [mem 0xbffe0000-0xbffe003f]
+[    0.077219] ACPI: Reserving APIC table memory at [mem 0xbffe1bd1-0xbffe1c50]
+[    0.077235] ACPI: Reserving HPET table memory at [mem 0xbffe1c51-0xbffe1c88]
+[    0.077250] ACPI: Reserving WAET table memory at [mem 0xbffe1c89-0xbffe1cb0]
+[    0.081365] No NUMA configuration found
+[    0.081408] Faking a node at [mem 0x0000000000000000-0x000000013fffffff]
+[    0.082465] NODE_DATA(0) allocated [mem 0x13ffd2000-0x13fffcfff]
+[    0.088172] Zone ranges:
+[    0.088223]   DMA      [mem 0x0000000000001000-0x0000000000ffffff]
+[    0.088373]   DMA32    [mem 0x0000000001000000-0x00000000ffffffff]
+[    0.088403]   Normal   [mem 0x0000000100000000-0x000000013fffffff]
+[    0.088429]   Device   empty
+[    0.088474] Movable zone start for each node
+[    0.088529] Early memory node ranges
+[    0.088576]   node   0: [mem 0x0000000000001000-0x000000000009efff]
+[    0.088835]   node   0: [mem 0x0000000000100000-0x00000000bffdafff]
+[    0.088891]   node   0: [mem 0x0000000100000000-0x000000013fffffff]
+[    0.089169] Initmem setup node 0 [mem 0x0000000000001000-0x000000013fffffff]
+[    0.091218] On node 0, zone DMA: 1 pages in unavailable ranges
+[    0.091587] On node 0, zone DMA: 97 pages in unavailable ranges
+[    0.134461] On node 0, zone Normal: 37 pages in unavailable ranges
+[    0.135474] ACPI: PM-Timer IO Port: 0x608
+[    0.136323] ACPI: LAPIC_NMI (acpi_id[0xff] dfl dfl lint[0x1])
+[    0.137168] IOAPIC[0]: apic_id 0, version 32, address 0xfec00000, GSI 0-23
+[    0.137367] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[    0.137935] ACPI: INT_SRC_OVR (bus 0 bus_irq 5 global_irq 5 high level)
+[    0.138041] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[    0.138218] ACPI: INT_SRC_OVR (bus 0 bus_irq 10 global_irq 10 high level)
+[    0.138244] ACPI: INT_SRC_OVR (bus 0 bus_irq 11 global_irq 11 high level)
+[    0.138599] ACPI: Using ACPI (MADT) for SMP configuration information
+[    0.138673] ACPI: HPET id: 0x8086a201 base: 0xfed00000
+[    0.139177] smpboot: Allowing 2 CPUs, 0 hotplug CPUs
+[    0.140433] PM: hibernation: Registered nosave memory: [mem 0x00000000-0x00000fff]
+[    0.140511] PM: hibernation: Registered nosave memory: [mem 0x0009f000-0x000fffff]
+[    0.140536] PM: hibernation: Registered nosave memory: [mem 0xbffdb000-0xffffffff]
+[    0.140743] [mem 0xc0000000-0xfffbffff] available for PCI devices
+[    0.140893] Booting paravirtualized kernel on bare hardware
+[    0.141360] clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 1910969940391419 ns
+[    0.142405] setup_percpu: NR_CPUS:8192 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
+[    0.144956] percpu: Embedded 86 pages/cpu s229376 r8192 d114688 u1048576
+[    0.147427] Kernel command line: BOOT_IMAGE=/vmlinuz-6.8.0-138-generic root=LABEL=cloudimg-rootfs ro console=tty1 console=ttyS0
+[    0.151964] Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes, linear)
+[    0.153139] Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+[    0.158359] Fallback order for Node 0: 0 
+[    0.159101] Built 1 zonelists, mobility grouping on.  Total pages: 1031899
+[    0.159154] Policy zone: Normal
+[    0.160024] mem auto-init: stack:all(zero), heap alloc:on, heap free:off
+[    0.160262] AGP: Checking aperture...
+[    0.162398] AGP: No AGP bridge found
+[    0.163418] software IO TLB: area num 2.
+[    0.290491] Memory: 3970648K/4193764K available (22528K kernel code, 4441K rwdata, 14428K rodata, 4932K init, 4776K bss, 222856K reserved, 0K cma-reserved)
+[    0.582770] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[    0.588092] ftrace: allocating 58334 entries in 228 pages
+[    0.662952] ftrace: allocated 228 pages with 4 groups
+[    0.680736] Dynamic Preempt: voluntary
+[    0.688661] rcu: Preemptible hierarchical RCU implementation.
+[    0.688726] rcu: 	RCU restricting CPUs from NR_CPUS=8192 to nr_cpu_ids=2.
+[    0.688909] 	Trampoline variant of Tasks RCU enabled.
+[    0.688926] 	Rude variant of Tasks RCU enabled.
+[    0.688940] 	Tracing variant of Tasks RCU enabled.
+[    0.689146] rcu: RCU calculated value of scheduler-enlistment delay is 100 jiffies.
+[    0.689196] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=2
+[    0.691319] RCU Tasks: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.691381] RCU Tasks Rude: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.691408] RCU Tasks Trace: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[    0.738275] NR_IRQS: 524544, nr_irqs: 440, preallocated irqs: 16
+[    0.762384] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.773978] Console: colour VGA+ 80x25
+[    0.774467] printk: legacy console [tty1] enabled
+[    0.789049] printk: legacy console [ttyS0] enabled
+[    0.815290] ACPI: Core revision 20230628
+[    0.826292] clocksource: hpet: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604467 ns
+[    0.837262] APIC: Switch to symmetric I/O mode setup
+[    0.845071] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+[    0.851044] tsc: Marking TSC unstable due to TSCs unsynchronized
+[    0.852108] Calibrating delay loop (skipped), value calculated using timer frequency.. 4999.88 BogoMIPS (lpj=2499940)
+[    0.858210] process: using AMD E400 aware idle routine
+[    0.858889] Last level iTLB entries: 4KB 512, 2MB 255, 4MB 127
+[    0.859220] Last level dTLB entries: 4KB 512, 2MB 255, 4MB 127, 1GB 0
+[    0.860019] Spectre V1 : Mitigation: usercopy/swapgs barriers and __user pointer sanitization
+[    0.860846] Spectre V2 : Mitigation: Retpolines
+[    0.861156] Spectre V2 : Spectre v2 / SpectreRSB: Filling RSB on context switch and VMEXIT
+[    0.866353] x86/fpu: x87 FPU will use FXSAVE
+[    0.989225] Freeing SMP alternatives memory: 48K
+[    0.991028] pid_max: default: 32768 minimum: 301
+[    1.008747] LSM: initializing lsm=lockdown,capability,landlock,yama,apparmor,integrity
+[    1.012447] landlock: Up and running.
+[    1.012718] Yama: becoming mindful.
+[    1.020415] AppArmor: AppArmor initialized
+[    1.028853] Mount-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    1.029448] Mountpoint-cache hash table entries: 8192 (order: 4, 65536 bytes, linear)
+[    1.192587] smpboot: CPU0: AMD QEMU Virtual CPU version 2.5+ (family: 0xf, model: 0x6b, stepping: 0x1)
+[    1.209333] Performance Events: PMU not available due to virtualization, using software events only.
+[    1.211736] signal: max sigframe size: 1440
+[    1.214994] rcu: Hierarchical SRCU implementation.
+[    1.215304] rcu: 	Max phase no-delay instances is 400.
+[    1.229083] NMI watchdog: Perf NMI watchdog permanently disabled
+[    1.235883] smp: Bringing up secondary CPUs ...
+[    1.245626] smpboot: x86: Booting SMP configuration:
+[    1.245969] .... node  #0, CPUs:      #1
+[    1.332026] smp: Brought up 1 node, 2 CPUs
+[    1.332750] smpboot: Max logical packages: 2
+[    1.333183] smpboot: Total of 2 processors activated (10000.51 BogoMIPS)
+[    1.366701] devtmpfs: initialized
+[    1.372680] x86/mm: Memory block size: 128MB
+[    1.389680] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 1911260446275000 ns
+[    1.390913] futex hash table entries: 512 (order: 3, 32768 bytes, linear)
+[    1.398831] pinctrl core: initialized pinctrl subsystem
+[    1.410992] PM: RTC time: 05:51:48, date: 2026-09-08
+[    1.431441] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    1.438362] DMA: preallocated 512 KiB GFP_KERNEL pool for atomic allocations
+[    1.439388] DMA: preallocated 512 KiB GFP_KERNEL|GFP_DMA pool for atomic allocations
+[    1.440977] DMA: preallocated 512 KiB GFP_KERNEL|GFP_DMA32 pool for atomic allocations
+[    1.441941] audit: initializing netlink subsys (disabled)
+[    1.445129] audit: type=2000 audit(1788846707.609:1): state=initialized audit_enabled=0 res=1
+[    1.454665] thermal_sys: Registered thermal governor 'fair_share'
+[    1.455642] thermal_sys: Registered thermal governor 'bang_bang'
+[    1.456654] thermal_sys: Registered thermal governor 'step_wise'
+[    1.457003] thermal_sys: Registered thermal governor 'user_space'
+[    1.457367] thermal_sys: Registered thermal governor 'power_allocator'
+[    1.458268] cpuidle: using governor ladder
+[    1.459102] cpuidle: using governor menu
+[    1.462487] acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+[    1.469204] PCI: Using configuration type 1 for base access
+[    1.470323] mtrr: your CPUs had inconsistent fixed MTRR settings
+[    1.470729] mtrr: your CPUs had inconsistent variable MTRR settings
+[    1.471035] mtrr: your CPUs had inconsistent MTRRdefType settings
+[    1.471318] mtrr: probably your BIOS does not setup all CPUs.
+[    1.471705] mtrr: corrected configuration.
+[    1.475338] kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.
+[    1.554109] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+[    1.555655] HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page
+[    1.581515] ACPI: Added _OSI(Module Device)
+[    1.582757] ACPI: Added _OSI(Processor Device)
+[    1.582996] ACPI: Added _OSI(Processor Aggregator Device)
+[    1.613733] ACPI: 1 ACPI AML tables successfully acquired and loaded
+[    1.642136] ACPI: _OSC evaluation for CPUs failed, trying _PDC
+[    1.646223] ACPI: Interpreter enabled
+[    1.648276] ACPI: PM: (supports S0 S3 S4 S5)
+[    1.648611] ACPI: Using IOAPIC for interrupt routing
+[    1.651298] PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+[    1.652830] PCI: Using E820 reservations for host bridge windows
+[    1.654975] ACPI: Enabled 2 GPEs in block 00 to 0F
+[    1.720845] ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])
+[    1.722376] acpi PNP0A03:00: _OSC: OS supports [ASPM ClockPM Segments MSI EDR HPX-Type3]
+[    1.723200] acpi PNP0A03:00: _OSC: not requesting OS control; OS requires [ExtendedConfig ASPM ClockPM MSI]
+[    1.724015] acpi PNP0A03:00: fail to add MMCONFIG information, can't access extended configuration space under this bridge
+[    1.736945] acpiphp: Slot [3] registered
+[    1.737376] acpiphp: Slot [4] registered
+[    1.738779] acpiphp: Slot [5] registered
+[    1.739139] acpiphp: Slot [6] registered
+[    1.739471] acpiphp: Slot [7] registered
+[    1.739845] acpiphp: Slot [8] registered
+[    1.740221] acpiphp: Slot [9] registered
+[    1.740221] acpiphp: Slot [10] registered
+[    1.740221] acpiphp: Slot [11] registered
+[    1.740507] acpiphp: Slot [12] registered
+[    1.741845] acpiphp: Slot [13] registered
+[    1.742213] acpiphp: Slot [14] registered
+[    1.742213] acpiphp: Slot [15] registered
+[    1.742213] acpiphp: Slot [16] registered
+[    1.742499] acpiphp: Slot [17] registered
+[    1.743847] acpiphp: Slot [18] registered
+[    1.744226] acpiphp: Slot [19] registered
+[    1.744226] acpiphp: Slot [20] registered
+[    1.744226] acpiphp: Slot [21] registered
+[    1.744476] acpiphp: Slot [22] registered
+[    1.745848] acpiphp: Slot [23] registered
+[    1.746265] acpiphp: Slot [24] registered
+[    1.746265] acpiphp: Slot [25] registered
+[    1.746265] acpiphp: Slot [26] registered
+[    1.746461] acpiphp: Slot [27] registered
+[    1.747843] acpiphp: Slot [28] registered
+[    1.748189] acpiphp: Slot [29] registered
+[    1.748189] acpiphp: Slot [30] registered
+[    1.748189] acpiphp: Slot [31] registered
+[    1.748732] PCI host bridge to bus 0000:00
+[    1.749201] pci_bus 0000:00: root bus resource [io  0x0000-0x0cf7 window]
+[    1.750638] pci_bus 0000:00: root bus resource [io  0x0d00-0xffff window]
+[    1.750988] pci_bus 0000:00: root bus resource [mem 0x000a0000-0x000bffff window]
+[    1.751410] pci_bus 0000:00: root bus resource [mem 0xc0000000-0xfebfffff window]
+[    1.751741] pci_bus 0000:00: root bus resource [mem 0xc000000000-0xc07fffffff window]
+[    1.751741] pci_bus 0000:00: root bus resource [bus 00-ff]
+[    1.754169] pci 0000:00:00.0: [8086:1237] type 00 class 0x060000 conventional PCI endpoint
+[    1.762274] pci 0000:00:01.0: [8086:7000] type 00 class 0x060100 conventional PCI endpoint
+[    1.762587] pci 0000:00:01.1: [8086:7010] type 00 class 0x010180 conventional PCI endpoint
+[    1.763070] pci 0000:00:01.1: BAR 4 [io  0xc180-0xc18f]
+[    1.763587] pci 0000:00:01.1: BAR 0 [io  0x01f0-0x01f7]: legacy IDE quirk
+[    1.763587] pci 0000:00:01.1: BAR 1 [io  0x03f6]: legacy IDE quirk
+[    1.763631] pci 0000:00:01.1: BAR 2 [io  0x0170-0x0177]: legacy IDE quirk
+[    1.764048] pci 0000:00:01.1: BAR 3 [io  0x0376]: legacy IDE quirk
+[    1.766911] pci 0000:00:01.2: [8086:7020] type 00 class 0x0c0300 conventional PCI endpoint
+[    1.767663] pci 0000:00:01.2: BAR 4 [io  0xc140-0xc15f]
+[    1.780469] pci 0000:00:01.3: [8086:7113] type 00 class 0x068000 conventional PCI endpoint
+[    1.781640] pci 0000:00:01.3: quirk: [io  0x0600-0x063f] claimed by PIIX4 ACPI
+[    1.782105] pci 0000:00:01.3: quirk: [io  0x0700-0x070f] claimed by PIIX4 SMB
+[    1.783688] pci 0000:00:02.0: [1af4:1050] type 00 class 0x030000 conventional PCI endpoint
+[    1.786640] pci 0000:00:02.0: BAR 0 [mem 0xfe000000-0xfe7fffff pref]
+[    1.787183] pci 0000:00:02.0: BAR 2 [mem 0xc000000000-0xc000003fff 64bit pref]
+[    1.788627] pci 0000:00:02.0: BAR 4 [mem 0xfeb90000-0xfeb90fff]
+[    1.788972] pci 0000:00:02.0: ROM [mem 0xfeb80000-0xfeb8ffff pref]
+[    1.790265] pci 0000:00:02.0: Video device with shadowed ROM at [mem 0x000c0000-0x000dffff]
+[    1.792396] pci 0000:00:03.0: [1af4:1000] type 00 class 0x020000 conventional PCI endpoint
+[    1.795634] pci 0000:00:03.0: BAR 0 [io  0xc080-0xc0bf]
+[    1.796194] pci 0000:00:03.0: BAR 1 [mem 0xfeb91000-0xfeb91fff]
+[    1.797640] pci 0000:00:03.0: BAR 4 [mem 0xc000004000-0xc000007fff 64bit pref]
+[    1.798287] pci 0000:00:03.0: ROM [mem 0xfeb00000-0xfeb7ffff pref]
+[    1.809278] pci 0000:00:04.0: [1af4:1003] type 00 class 0x078000 conventional PCI endpoint
+[    1.812684] pci 0000:00:04.0: BAR 0 [io  0xc0c0-0xc0ff]
+[    1.813078] pci 0000:00:04.0: BAR 1 [mem 0xfeb92000-0xfeb92fff]
+[    1.813371] pci 0000:00:04.0: BAR 4 [mem 0xc000008000-0xc00000bfff 64bit pref]
+[    1.824349] pci 0000:00:05.0: [1af4:1001] type 00 class 0x010000 conventional PCI endpoint
+[    1.827432] pci 0000:00:05.0: BAR 0 [io  0xc000-0xc07f]
+[    1.827432] pci 0000:00:05.0: BAR 1 [mem 0xfeb93000-0xfeb93fff]
+[    1.827432] pci 0000:00:05.0: BAR 4 [mem 0xc00000c000-0xc00000ffff 64bit pref]
+[    1.838890] pci 0000:00:06.0: [1af4:1002] type 00 class 0x00ff00 conventional PCI endpoint
+[    1.841209] pci 0000:00:06.0: BAR 0 [io  0xc100-0xc13f]
+[    1.841209] pci 0000:00:06.0: BAR 4 [mem 0xc000010000-0xc000013fff 64bit pref]
+[    1.852192] pci 0000:00:07.0: [1af4:1005] type 00 class 0x00ff00 conventional PCI endpoint
+[    1.854659] pci 0000:00:07.0: BAR 0 [io  0xc160-0xc17f]
+[    1.854999] pci 0000:00:07.0: BAR 1 [mem 0xfeb94000-0xfeb94fff]
+[    1.855714] pci 0000:00:07.0: BAR 4 [mem 0xc000014000-0xc000017fff 64bit pref]
+[    1.873447] ACPI: PCI: Interrupt link LNKA configured for IRQ 10
+[    1.875313] ACPI: PCI: Interrupt link LNKB configured for IRQ 10
+[    1.876759] ACPI: PCI: Interrupt link LNKC configured for IRQ 11
+[    1.878244] ACPI: PCI: Interrupt link LNKD configured for IRQ 11
+[    1.879098] ACPI: PCI: Interrupt link LNKS configured for IRQ 9
+[    1.887787] iommu: Default domain type: Translated
+[    1.888108] iommu: DMA domain TLB invalidation policy: lazy mode
+[    1.893480] SCSI subsystem initialized
+[    1.896657] ACPI: bus type USB registered
+[    1.897469] usbcore: registered new interface driver usbfs
+[    1.899152] usbcore: registered new interface driver hub
+[    1.899876] usbcore: registered new device driver usb
+[    1.899876] pps_core: LinuxPPS API ver. 1 registered
+[    1.900083] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    1.900624] PTP clock support registered
+[    1.902973] EDAC MC: Ver: 3.0.0
+[    1.921399] NetLabel: Initializing
+[    1.922623] NetLabel:  domain hash size = 128
+[    1.922892] NetLabel:  protocols = UNLABELED CIPSOv4 CALIPSO
+[    1.923528] NetLabel:  unlabeled traffic allowed by default
+[    1.930072] mctp: management component transport protocol core
+[    1.930392] NET: Registered PF_MCTP protocol family
+[    1.932329] PCI: Using ACPI for IRQ routing
+[    1.935921] pci 0000:00:02.0: vgaarb: setting as boot VGA device
+[    1.936299] pci 0000:00:02.0: vgaarb: bridge control possible
+[    1.936587] pci 0000:00:02.0: vgaarb: VGA device added: decodes=io+mem,owns=io+mem,locks=none
+[    1.936654] vgaarb: loaded
+[    1.938737] hpet: 3 channels of 0 reserved for per-cpu timers
+[    1.939452] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+[    1.939919] hpet0: 3 comparators, 64-bit 100.000000 MHz counter
+[    1.947590] clocksource: Switched to clocksource hpet
+[    1.967134] VFS: Disk quotas dquot_6.6.0
+[    1.967919] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[    1.975094] AppArmor: AppArmor Filesystem Enabled
+[    1.976003] pnp: PnP ACPI init
+[    1.984115] pnp: PnP ACPI: found 5 devices
+[    2.027052] clocksource: acpi_pm: mask: 0xffffff max_cycles: 0xffffff, max_idle_ns: 2085701024 ns
+[    2.030356] NET: Registered PF_INET protocol family
+[    2.033129] IP idents hash table entries: 65536 (order: 7, 524288 bytes, linear)
+[    2.148459] tcp_listen_portaddr_hash hash table entries: 2048 (order: 3, 32768 bytes, linear)
+[    2.149253] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    2.150609] TCP established hash table entries: 32768 (order: 6, 262144 bytes, linear)
+[    2.151952] TCP bind hash table entries: 32768 (order: 8, 1048576 bytes, linear)
+[    2.153092] TCP: Hash tables configured (established 32768 bind 32768)
+[    2.156134] MPTCP token hash table entries: 4096 (order: 5, 98304 bytes, linear)
+[    2.157330] UDP hash table entries: 2048 (order: 4, 65536 bytes, linear)
+[    2.158114] UDP-Lite hash table entries: 2048 (order: 4, 65536 bytes, linear)
+[    2.160981] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    2.162020] NET: Registered PF_XDP protocol family
+[    2.163826] pci_bus 0000:00: resource 4 [io  0x0000-0x0cf7 window]
+[    2.164162] pci_bus 0000:00: resource 5 [io  0x0d00-0xffff window]
+[    2.164592] pci_bus 0000:00: resource 6 [mem 0x000a0000-0x000bffff window]
+[    2.164914] pci_bus 0000:00: resource 7 [mem 0xc0000000-0xfebfffff window]
+[    2.165288] pci_bus 0000:00: resource 8 [mem 0xc000000000-0xc07fffffff window]
+[    2.166622] pci 0000:00:01.0: PIIX3: Enabling Passive Release
+[    2.167115] pci 0000:00:00.0: Limiting direct PCI/PCI transfers
+[    2.488428] ACPI: \_SB_.LNKD: Enabled at IRQ 11
+[    2.795577] pci 0000:00:01.2: quirk_usb_early_handoff+0x0/0x190 took 613206 usecs
+[    2.796636] PCI: CLS 0 bytes, default 64
+[    2.797892] PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+[    2.798386] software IO TLB: mapped [mem 0x00000000bbfdb000-0x00000000bffdb000] (64MB)
+[    2.806991] Trying to unpack rootfs image as initramfs...
+[    2.809614] Initialise system trusted keyrings
+[    2.812933] Key type blacklist registered
+[    2.814855] workingset: timestamp_bits=36 max_order=20 bucket_order=0
+[    2.815746] zbud: loaded
+[    2.832482] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[    2.840587] fuse: init (API version 7.39)
+[    2.847772] integrity: Platform Keyring initialized
+[    2.848667] integrity: Machine keyring initialized
+[    2.970062] Key type asymmetric registered
+[    2.970747] Asymmetric key parser 'x509' registered
+[    2.971661] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 243)
+[    2.973645] io scheduler mq-deadline registered
+[    2.980820] shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+[    2.987982] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input0
+[    2.995141] ACPI: button: Power Button [PWRF]
+[    3.317728] ACPI: \_SB_.LNKB: Enabled at IRQ 10
+[    3.681099] ACPI: \_SB_.LNKC: Enabled at IRQ 11
+[    3.947809] Freeing initrd memory: 29984K
+[    4.344271] ACPI: \_SB_.LNKA: Enabled at IRQ 10
+[    4.974464] Free page reporting enabled
+[    4.977129] Serial: 8250/16550 driver, 32 ports, IRQ sharing enabled
+[    5.006011] 00:00: ttyS0 at I/O 0x3f8 (irq = 4, base_baud = 115200) is a 16550A
+[    5.075466] Linux agpgart interface v0.103
+[    5.114119] loop: module loaded
+[    5.115458] virtio_blk virtio3: 2/0/0 default/read/poll queues
+[    5.123315] virtio_blk virtio3: [vda] 83886080 512-byte logical blocks (42.9 GB/40.0 GiB)
+[    5.144112] GPT:Primary header thinks Alt. header is not at the end of the disk.
+[    5.144722] GPT:7340031 != 83886079
+[    5.144949] GPT:Alternate GPT header not at the end of the disk.
+[    5.145358] GPT:7340031 != 83886079
+[    5.145582] GPT: Use GNU Parted to correct GPT errors.
+[    5.146743]  vda: vda1 vda14 vda15 vda16
+[    5.171429] scsi host0: ata_piix
+[    5.175416] scsi host1: ata_piix
+[    5.176363] ata1: PATA max MWDMA2 cmd 0x1f0 ctl 0x3f6 bmdma 0xc180 irq 14 lpm-pol 0
+[    5.176806] ata2: PATA max MWDMA2 cmd 0x170 ctl 0x376 bmdma 0xc188 irq 15 lpm-pol 0
+[    5.181358] ACPI: bus type drm_connector registered
+[    5.188263] tun: Universal TUN/TAP device driver, 1.6
+[    5.200780] PPP generic driver version 2.4.2
+[    5.524869] uhci_hcd 0000:00:01.2: UHCI Host Controller
+[    5.525981] uhci_hcd 0000:00:01.2: new USB bus registered, assigned bus number 1
+[    5.527151] uhci_hcd 0000:00:01.2: detected 2 ports
+[    5.528136] uhci_hcd 0000:00:01.2: irq 11, io port 0x0000c140
+[    5.536513] usb usb1: New USB device found, idVendor=1d6b, idProduct=0001, bcdDevice= 6.08
+[    5.537396] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+[    5.537984] usb usb1: Product: UHCI Host Controller
+[    5.538391] usb usb1: Manufacturer: Linux 6.8.0-138-generic uhci_hcd
+[    5.538721] usb usb1: SerialNumber: 0000:00:01.2
+[    5.544119] hub 1-0:1.0: USB hub found
+[    5.545465] hub 1-0:1.0: 2 ports detected
+[    5.554006] i8042: PNP: PS/2 Controller [PNP0303:KBD,PNP0f13:MOU] at 0x60,0x64 irq 1,12
+[    5.560251] serio: i8042 KBD port at 0x60,0x64 irq 1
+[    5.560859] serio: i8042 AUX port at 0x60,0x64 irq 12
+[    5.564344] mousedev: PS/2 mouse device common for all mice
+[    5.568460] rtc_cmos 00:04: RTC can wake from S4
+[    5.569819] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input1
+[    5.574042] rtc_cmos 00:04: registered as rtc0
+[    5.575354] rtc_cmos 00:04: setting system clock to 2026-09-08T05:51:52 UTC (1788846712)
+[    5.577898] rtc_cmos 00:04: alarms up to one day, y3k, 242 bytes nvram, hpet irqs
+[    5.578664] i2c_dev: i2c /dev entries driver
+[    5.579708] device-mapper: core: CONFIG_IMA_DISABLE_HTABLE is disabled. Duplicate IMA measurements will not be recorded in the IMA log.
+[    5.580727] device-mapper: uevent: version 1.0.3
+[    5.582277] device-mapper: ioctl: 4.48.0-ioctl (2023-03-01) initialised: dm-devel@redhat.com
+[    5.583311] amd_pstate: the _CPC object is not present in SBIOS or ACPI disabled
+[    5.584359] ledtrig-cpu: registered to indicate activity on CPUs
+[    5.587253] drop_monitor: Initializing network drop monitor service
+[    5.590612] NET: Registered PF_INET6 protocol family
+[    5.779557] usb 1-1: new full-speed USB device number 2 using uhci_hcd
+[    5.953909] usb 1-1: New USB device found, idVendor=0627, idProduct=0001, bcdDevice= 0.00
+[    5.954706] usb 1-1: New USB device strings: Mfr=1, Product=3, SerialNumber=10
+[    5.955194] usb 1-1: Product: QEMU USB Tablet
+[    5.955513] usb 1-1: Manufacturer: QEMU
+[    5.955751] usb 1-1: SerialNumber: 28754-0000:00:01.2-1
+[    5.990303] Segment Routing with IPv6
+[    5.991021] In-situ OAM (IOAM) with IPv6
+[    5.992366] NET: Registered PF_PACKET protocol family
+[    5.993633] Key type dns_resolver registered
+[    5.999131] IPI shorthand broadcast: enabled
+[    6.028988] registered taskstats version 1
+[    6.034101] Loading compiled-in X.509 certificates
+[    6.050903] Loaded X.509 cert 'Build time autogenerated kernel key: fee4cdd6bab323197aba707e784856bb231f6106'
+[    6.054375] Loaded X.509 cert 'Canonical Ltd. Live Patch Signing 2025 Kmod: d541cef61dc7e793b7eb7e899970a2eef0b5dc8c'
+[    6.057108] Loaded X.509 cert 'Canonical Ltd. Live Patch Signing: 14df34d1a87cf37625abec039ef2bf521249b969'
+[    6.059955] Loaded X.509 cert 'Canonical Ltd. Kernel Module Signing 2025 Kmod: 4627603d2357a2a3f81006370894c221175893e9'
+[    6.062915] Loaded X.509 cert 'Canonical Ltd. Kernel Module Signing: 88f752e560a1e0737e31163a466ad7b70a850c19'
+[    6.063558] blacklist: Loading compiled-in revocation X.509 certificates
+[    6.065879] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing: 61482aa2830d0ab2ad5af10b7250da9033ddcef0'
+[    6.066691] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (2017): 242ade75ac4a15e50d50c84b0d45ff3eae707a03'
+[    6.067423] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (ESM 2018): 365188c1d374d6b07c3c8f240f8ef722433d6a8b'
+[    6.068133] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (2019): c0746fd6c5da3ae827864651ad66ae47fe24b3e8'
+[    6.069007] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (2021 v1): a8d54bbb3825cfb94fa13c9f8a594a195c107b8d'
+[    6.069904] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (2021 v2): 4cf046892d6fd3c9a5b03f98d845f90851dc6a8c'
+[    6.070769] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (2021 v3): 100437bb6de6e469b581e61cd66bce3ef4ed53af'
+[    6.071569] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (Ubuntu Core 2019): c1d57b8f6b743f23ee41f4f7ee292f06eecadfb9'
+[    6.122427] Key type .fscrypt registered
+[    6.122721] Key type fscrypt-provisioning registered
+[    6.356056] cryptd: max_cpu_qlen set to 1000
+[    6.915622] Key type encrypted registered
+[    6.916054] AppArmor: AppArmor sha256 policy hashing enabled
+[    6.917348] ima: No TPM chip found, activating TPM-bypass!
+[    6.917847] Loading compiled-in module X.509 certificates
+[    6.920993] Loaded X.509 cert 'Build time autogenerated kernel key: fee4cdd6bab323197aba707e784856bb231f6106'
+[    6.921782] ima: Allocated hash algorithm: sha256
+[    6.926271] ima: No architecture policies found
+[    6.927461] evm: Initialising EVM extended attributes:
+[    6.927792] evm: security.selinux
+[    6.928024] evm: security.SMACK64
+[    6.928285] evm: security.SMACK64EXEC
+[    6.928535] evm: security.SMACK64TRANSMUTE
+[    6.928740] evm: security.SMACK64MMAP
+[    6.928925] evm: security.apparmor
+[    6.929125] evm: security.ima
+[    6.929375] evm: security.capability
+[    6.929594] evm: HMAC attrs: 0x1
+[    6.934774] PM:   Magic number: 10:486:870
+[    6.937344] powernow_k8: Power state transitions not supported
+[    6.938134] powernow_k8: Power state transitions not supported
+[    7.035425] RAS: Correctable Errors collector initialized.
+[    7.039618] Unstable clock detected, switching default tracing clock to "global"
+[    7.039618] If you want to keep using the local clock, then add:
+[    7.039618]   "trace_clock=local"
+[    7.039618] on the kernel command line
+[    7.044100] clk: Disabling unused clocks
+[    7.070031] Freeing unused decrypted memory: 2028K
+[    7.216863] Freeing unused kernel image (initmem) memory: 4932K
+[    7.217535] Write protecting the kernel read-only data: 38912k
+[    7.222581] Freeing unused kernel image (rodata/data gap) memory: 1956K
+[    7.479593] x86/mm: Checked W+X mappings: passed, no W+X pages found.
+[    7.480422] Run /init as init process
+Loading, please wait...
+Starting systemd-udevd version 255.4-1ubuntu8.17
+[   10.237615] random: crng init done
+[   10.333822] FDC 0 is a S82078B
+[   10.396116] virtio_net virtio1 ens3: renamed from eth0
+[   10.421736] [drm] pci: virtio-vga detected at 0000:00:02.0
+[   10.432160] virtio-pci 0000:00:02.0: vgaarb: deactivate vga console
+[   10.439738] hid: raw HID events driver (C) Jiri Kosina
+[   10.441657] Console: switching to colour dummy device 80x25
+[   10.457467] [drm] features: -virgl +edid -resource_blob -host_visible
+[   10.457588] [drm] features: -context_init
+[   10.467039] [drm] number of scanouts: 1
+[   10.469402] [drm] number of cap sets: 0
+[   10.519125] [drm] Initialized virtio_gpu 0.1.0 0 for 0000:00:02.0 on minor 0
+[   10.522770] usbcore: registered new interface driver usbhid
+[   10.523100] usbhid: USB HID core driver
+[   10.580431] fbcon: virtio_gpudrmfb (fb0) is primary device
+[   10.676342] Console: switching to colour frame buffer device 160x50
+[   10.817433] virtio-pci 0000:00:02.0: [drm] fb0: virtio_gpudrmfb frame buffer device
+[   11.489634] input: ImExPS/2 Generic Explorer Mouse as /devices/platform/i8042/serio1/input/input3
+[   11.781672] input: QEMU QEMU USB Tablet as /devices/pci0000:00/0000:00:01.2/usb1/1-1/1-1:1.0/0003:0627:0001.0001/input/input4
+[   11.793045] hid-generic 0003:0627:0001.0001: input,hidraw0: USB HID v0.01 Mouse [QEMU QEMU USB Tablet] on usb-0000:00:01.2-1/input0
+Begin: Loading essential drivers ... [   13.570321] raid6: sse2x4   gen()  1240 MB/s
+[   13.587267] raid6: sse2x2   gen()  1337 MB/s
+[   13.604270] raid6: sse2x1   gen()  1179 MB/s
+[   13.604619] raid6: using algorithm sse2x2 gen() 1337 MB/s
+[   13.621264] raid6: .... xor() 770 MB/s, rmw enabled
+[   13.621786] raid6: using intx1 recovery algorithm
+[   13.632078] xor: measuring software checksum speed
+[   13.636648]    prefetch64-sse  :   852 MB/sec
+[   13.640621]    generic_sse     :   888 MB/sec
+[   13.640926] xor: using function: generic_sse (888 MB/sec)
+[   13.651682] async_tx: api initialized (async)
+done.
+Begin: Running /scripts/init-premount ... done.
+Begin: Mounting root file system ... Begin: Running /scripts/local-top ... done.
+Begin: Running /scripts/local-premount ... [   15.466145] Btrfs loaded, zoned=yes, fsverity=yes
+Scanning for Btrfs filesystems
+done.
+Warning: fsck not present, so skipping root file system
+[   16.275049] EXT4-fs (vda1): mounted filesystem 9d238549-a2c4-41a5-97de-f89c4c45ec32 ro with ordered data mode. Quota mode: none.
+done.
+Begin: Running /scripts/local-bottom ... done.
+Begin: Running /scripts/init-bottom ... done.
+[   18.446536] systemd[1]: Inserted module 'autofs4'
+[   18.665558] systemd[1]: systemd 255.4-1ubuntu8.17 running in system mode (+PAM +AUDIT +SELINUX +APPARMOR +IMA +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK -XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified)
+[   18.669442] systemd[1]: Detected virtualization qemu.
+[   18.671726] systemd[1]: Detected architecture x86-64.
+
+Welcome to [1mUbuntu 24.04.4 LTS[0m!
+
+[   18.688454] systemd[1]: Hostname set to <ubuntu>.
+[   18.711766] systemd[1]: Initializing machine ID from VM UUID.
+[   18.719862] systemd[1]: Installed transient /etc/machine-id file.
+[   23.628813] systemd[1]: Queued start job for default target graphical.target.
+[   23.792087] systemd[1]: Created slice system-modprobe.slice - Slice /system/modprobe.
+[[0;32m  OK  [0m] Created slice [0;1;39msystem-modprobe.slice[0m - Slice /system/modprobe.
+[   23.810805] systemd[1]: Created slice system-serial\x2dgetty.slice - Slice /system/serial-getty.
+[[0;32m  OK  [0m] Created slice [0;1;39msystem-serial\x2dget…slice[0m - Slice /system/serial-getty.
+[   23.824571] systemd[1]: Created slice system-systemd\x2dfsck.slice - Slice /system/systemd-fsck.
+[[0;32m  OK  [0m] Created slice [0;1;39msystem-systemd\x2dfs…slice[0m - Slice /system/systemd-fsck.
+[   23.836369] systemd[1]: Created slice user.slice - User and Session Slice.
+[[0;32m  OK  [0m] Created slice [0;1;39muser.slice[0m - User and Session Slice.
+[   23.846589] systemd[1]: Started systemd-ask-password-wall.path - Forward Password Requests to Wall Directory Watch.
+[[0;32m  OK  [0m] Started [0;1;39msystemd-ask-password-wall.…[0md Requests to Wall Directory Watch.
+[   23.862562] systemd[1]: Set up automount proc-sys-fs-binfmt_misc.automount - Arbitrary Executable File Formats File System Automount Point.
+[[0;32m  OK  [0m] Set up automount [0;1;39mproc-sys-fs-binfm…[0mormats File System Automount Point.
+[   23.871769] systemd[1]: Expecting device dev-disk-by\x2dlabel-BOOT.device - /dev/disk/by-label/BOOT...
+         Expecting device [0;1;39mdev-disk-by\x2dla…device[0m - /dev/disk/by-label/BOOT...
+[   23.879971] systemd[1]: Expecting device dev-disk-by\x2dlabel-UEFI.device - /dev/disk/by-label/UEFI...
+         Expecting device [0;1;39mdev-disk-by\x2dla…device[0m - /dev/disk/by-label/UEFI...
+[   23.887743] systemd[1]: Expecting device dev-ttyS0.device - /dev/ttyS0...
+         Expecting device [0;1;39mdev-ttyS0.device[0m - /dev/ttyS0...
+[   23.895783] systemd[1]: Reached target integritysetup.target - Local Integrity Protected Volumes.
+[[0;32m  OK  [0m] Reached target [0;1;39mintegritysetup.targ…[0m Local Integrity Protected Volumes.
+[   23.903863] systemd[1]: Reached target slices.target - Slice Units.
+[[0;32m  OK  [0m] Reached target [0;1;39mslices.target[0m - Slice Units.
+[   23.911650] systemd[1]: Reached target snapd.mounts-pre.target - Mounting snaps.
+[[0;32m  OK  [0m] Reached target [0;1;39msnapd.mounts-pre.target[0m - Mounting snaps.
+[   23.919141] systemd[1]: Reached target snapd.mounts.target - Mounted snaps.
+[[0;32m  OK  [0m] Reached target [0;1;39msnapd.mounts.target[0m - Mounted snaps.
+[   23.926062] systemd[1]: Reached target swap.target - Swaps.
+[[0;32m  OK  [0m] Reached target [0;1;39mswap.target[0m - Swaps.
+[   23.934178] systemd[1]: Reached target veritysetup.target - Local Verity Protected Volumes.
+[[0;32m  OK  [0m] Reached target [0;1;39mveritysetup.target[0m - Local Verity Protected Volumes.
+[   23.947918] systemd[1]: Listening on dm-event.socket - Device-mapper event daemon FIFOs.
+[[0;32m  OK  [0m] Listening on [0;1;39mdm-event.socket[0m - Device-mapper event daemon FIFOs.
+[   23.960886] systemd[1]: Listening on lvm2-lvmpolld.socket - LVM2 poll daemon socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mlvm2-lvmpolld.socket[0m - LVM2 poll daemon socket.
+[   23.972004] systemd[1]: Listening on multipathd.socket - multipathd control socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mmultipathd.socket[0m - multipathd control socket.
+[   23.982447] systemd[1]: Listening on syslog.socket - Syslog Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39msyslog.socket[0m - Syslog Socket.
+[   23.992727] systemd[1]: Listening on systemd-fsckd.socket - fsck to fsckd communication Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39msystemd-fsckd.socket[0m …fsck to fsckd communication Socket.
+[   24.001851] systemd[1]: Listening on systemd-initctl.socket - initctl Compatibility Named Pipe.
+[[0;32m  OK  [0m] Listening on [0;1;39msystemd-initctl.socke…[0m- initctl Compatibility Named Pipe.
+[   24.011996] systemd[1]: Listening on systemd-journald-dev-log.socket - Journal Socket (/dev/log).
+[[0;32m  OK  [0m] Listening on [0;1;39msystemd-journald-dev-…socket[0m - Journal Socket (/dev/log).
+[   24.021418] systemd[1]: Listening on systemd-journald.socket - Journal Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39msystemd-journald.socket[0m - Journal Socket.
+[   24.031175] systemd[1]: Listening on systemd-networkd.socket - Network Service Netlink Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39msystemd-networkd.socket[0m - Network Service Netlink Socket.
+[   24.039549] systemd[1]: systemd-pcrextend.socket - TPM2 PCR Extension (Varlink) was skipped because of an unmet condition check (ConditionSecurity=measured-uki).
+[   24.052056] systemd[1]: Listening on systemd-udevd-control.socket - udev Control Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39msystemd-udevd-control.socket[0m - udev Control Socket.
+[   24.061097] systemd[1]: Listening on systemd-udevd-kernel.socket - udev Kernel Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39msystemd-udevd-kernel.socket[0m - udev Kernel Socket.
+[   24.104816] systemd[1]: Mounting dev-hugepages.mount - Huge Pages File System...
+         Mounting [0;1;39mdev-hugepages.mount[0m - Huge Pages File System...
+[   24.137108] systemd[1]: Mounting dev-mqueue.mount - POSIX Message Queue File System...
+         Mounting [0;1;39mdev-mqueue.mount[0m - POSIX Message Queue File System...
+[   24.194619] systemd[1]: Mounting sys-kernel-debug.mount - Kernel Debug File System...
+         Mounting [0;1;39msys-kernel-debug.mount[0m - Kernel Debug File System...
+[   24.256360] systemd[1]: Mounting sys-kernel-tracing.mount - Kernel Trace File System...
+         Mounting [0;1;39msys-kernel-tracing.mount[0m - Kernel Trace File System...
+[   24.400954] systemd[1]: Starting systemd-journald.service - Journal Service...
+         Starting [0;1;39msystemd-journald.service[0m - Journal Service...
+[   24.494484] systemd[1]: Starting keyboard-setup.service - Set the console keyboard layout...
+         Starting [0;1;39mkeyboard-setup.service[0m - Set the console keyboard layout...
+[   24.589169] systemd[1]: Starting kmod-static-nodes.service - Create List of Static Device Nodes...
+         Starting [0;1;39mkmod-static-nodes.service[0m…eate List of Static Device Nodes...
+[   24.683746] systemd[1]: Starting lvm2-monitor.service - Monitoring of LVM2 mirrors, snapshots etc. using dmeventd or progress polling...
+         Starting [0;1;39mlvm2-monitor.service[0m - Mo…ing dmeventd or progress polling...
+[   24.842681] systemd[1]: Starting modprobe@configfs.service - Load Kernel Module configfs...
+         Starting [0;1;39mmodprobe@configfs.service[0m - Load Kernel Module configfs...
+[   24.965574] systemd[1]: Starting modprobe@dm_mod.service - Load Kernel Module dm_mod...
+         Starting [0;1;39mmodprobe@dm_mod.service[0m - Load Kernel Module dm_mod...
+[   25.113817] systemd[1]: Starting modprobe@drm.service - Load Kernel Module drm...
+         Starting [0;1;39mmodprobe@drm.service[0m - Load Kernel Module drm...
+[   25.377175] systemd[1]: Starting modprobe@efi_pstore.service - Load Kernel Module efi_pstore...
+         Starting [0;1;39mmodprobe@efi_pstore.servi…[0m - Load Kernel Module efi_pstore...
+[   25.581344] systemd-journald[298]: Collecting audit messages is disabled.
+[   25.746723] systemd[1]: Starting modprobe@fuse.service - Load Kernel Module fuse...
+         Starting [0;1;39mmodprobe@fuse.service[0m - Load Kernel Module fuse...
+[   27.375572] systemd[1]: Starting modprobe@loop.service - Load Kernel Module loop...
+         Starting [0;1;39mmodprobe@loop.service[0m - Load Kernel Module loop...
+[   27.461747] systemd[1]: netplan-ovs-cleanup.service - OpenVSwitch configuration for cleanup was skipped because of an unmet condition check (ConditionFileIsExecutable=/usr/bin/ovs-vsctl).
+[   27.713153] systemd[1]: Starting systemd-fsck-root.service - File System Check on Root Device...
+         Starting [0;1;39msystemd-fsck-root.service[0m…File System Check on Root Device...
+[   27.891943] systemd[1]: Starting systemd-modules-load.service - Load Kernel Modules...
+         Starting [0;1;39msystemd-modules-load.service[0m - Load Kernel Modules...
+[   27.930904] systemd[1]: systemd-pcrmachine.service - TPM2 PCR Machine ID Measurement was skipped because of an unmet condition check (ConditionSecurity=measured-uki).
+[   27.985751] systemd[1]: systemd-tpm2-setup-early.service - TPM2 SRK Setup (Early) was skipped because of an unmet condition check (ConditionSecurity=measured-uki).
+[   28.059491] systemd[1]: Starting systemd-udev-trigger.service - Coldplug All udev Devices...
+         Starting [0;1;39msystemd-udev-trigger.service[0m - Coldplug All udev Devices...
+[   28.278378] systemd[1]: Started systemd-journald.service - Journal Service.
+[[0;32m  OK  [0m] Started [0;1;39msystemd-journald.service[0m - Journal Service.
+[[0;32m  OK  [0m] Mounted [0;1;39mdev-hugepages.mount[0m - Huge Pages File System.
+[[0;32m  OK  [0m] Mounted [0;1;39mdev-mqueue.mount[0m - POSIX Message Queue File System.
+[[0;32m  OK  [0m] Mounted [0;1;39msys-kernel-debug.mount[0m - Kernel Debug File System.
+[[0;32m  OK  [0m] Mounted [0;1;39msys-kernel-tracing.mount[0m - Kernel Trace File System.
+[[0;32m  OK  [0m] Finished [0;1;39mkeyboard-setup.service[0m - Set the console keyboard layout.
+[[0;32m  OK  [0m] Finished [0;1;39mkmod-static-nodes.service[0m…Create List of Static Device Nodes.
+[[0;32m  OK  [0m] Finished [0;1;39mlvm2-monitor.service[0m - Mo…using dmeventd or progress polling.
+[[0;32m  OK  [0m] Finished [0;1;39mmodprobe@configfs.service[0m - Load Kernel Module configfs.
+[[0;32m  OK  [0m] Finished [0;1;39mmodprobe@dm_mod.service[0m - Load Kernel Module dm_mod.
+[[0;32m  OK  [0m] Finished [0;1;39mmodprobe@drm.service[0m - Load Kernel Module drm.
+[[0;32m  OK  [0m] Finished [0;1;39mmodprobe@efi_pstore.service[0m - Load Kernel Module efi_pstore.
+[[0;32m  OK  [0m] Finished [0;1;39mmodprobe@fuse.service[0m - Load Kernel Module fuse.
+[[0;32m  OK  [0m] Finished [0;1;39mmodprobe@loop.service[0m - Load Kernel Module loop.
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-modules-load.service[0m - Load Kernel Modules.
+         Mounting [0;1;39msys-fs-fuse-connections.mount[0m - FUSE Control File System...
+         Mounting [0;1;39msys-kernel-config.mount[0m - Kernel Configuration File System...
+[[0;32m  OK  [0m] Started [0;1;39msystemd-fsckd.service[0m - Fi…stem Check Daemon to report status.
+         Starting [0;1;39msystemd-sysctl.service[0m - Apply Kernel Variables...
+         Starting [0;1;39msystemd-tmpfiles-setup-de…[0m Device Nodes in /dev gracefully...
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-fsck-root.service[0m - File System Check on Root Device.
+         Starting [0;1;39msystemd-remount-fs.servic…[0munt Root and Kernel File Systems...
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-udev-trigger.service[0m - Coldplug All udev Devices.
+[[0;32m  OK  [0m] Mounted [0;1;39msys-kernel-config.mount[0m - Kernel Configuration File System.
+[[0;32m  OK  [0m] Mounted [0;1;39msys-fs-fuse-connections.mount[0m - FUSE Control File System.
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-tmpfiles-setup-de…[0mic Device Nodes in /dev gracefully.
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-sysctl.service[0m - Apply Kernel Variables.
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-remount-fs.servic…[0mmount Root and Kernel File Systems.
+         Starting [0;1;39mmultipathd.service[0m - Devi…pper Multipath Device Controller...
+         Starting [0;1;39msystemd-journal-flush.ser…[0msh Journal to Persistent Storage...
+         Starting [0;1;39msystemd-random-seed.service[0m - Load/Save OS Random Seed...
+         Starting [0;1;39msystemd-sysusers.service[0m - Create System Users...
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-random-seed.service[0m - Load/Save OS Random Seed.
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-sysusers.service[0m - Create System Users.
+         Starting [0;1;39msystemd-tmpfiles-setup-de…[0meate Static Device Nodes in /dev...
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-journal-flush.ser…[0mlush Journal to Persistent Storage.
+[[0;32m  OK  [0m] Started [0;1;39mmultipathd.service[0m - Devic…Mapper Multipath Device Controller.
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-tmpfiles-setup-de…[0mCreate Static Device Nodes in /dev.
+[[0;32m  OK  [0m] Reached target [0;1;39mlocal-fs-pre.target[0m…Preparation for Local File Systems.
+         Starting [0;1;39msystemd-udevd.service[0m - R…ager for Device Events and Files...
+[[0;32m  OK  [0m] Started [0;1;39msystemd-udevd.service[0m - Ru…anager for Device Events and Files.
+[[0;32m  OK  [0m] Started [0;1;39msystemd-ask-password-conso…[0mequests to Console Directory Watch.
+[[0;32m  OK  [0m] Reached target [0;1;39mcryptsetup.target[0m - Local Encrypted Volumes.
+[[0;32m  OK  [0m] Found device [0;1;39mdev-ttyS0.device[0m - /dev/ttyS0.
+[[0;32m  OK  [0m] Found device [0;1;39mdev-disk-by\x2dlabel-…I.device[0m - /dev/disk/by-label/UEFI.
+         Starting [0;1;39msystemd-fsck@dev-disk-by\…[0mCheck on /dev/disk/by-label/UEFI...
+[[0;32m  OK  [0m] Found device [0;1;39mdev-disk-by\x2dlabel-…T.device[0m - /dev/disk/by-label/BOOT.
+         Starting [0;1;39msystemd-fsck@dev-disk-by\…[0mCheck on /dev/disk/by-label/BOOT...
+Checking in progress on 1 disk (0.0% complete)[[0;32m  OK  [0m] Finished [0;1;39msystemd-fsck@dev-disk-by\…[0mm Check on /dev/disk/by-label/UEFI.
+Checking in progress on 0 disks (100.0% complete)[[0;32m  OK  [0m] Finished [0;1;39msystemd-fsck@dev-disk-by\…[0mm Check on /dev/disk/by-label/BOOT.
+         Mounting [0;1;39mboot.mount[0m - /boot...
+[[0;32m  OK  [0m] Mounted [0;1;39mboot.mount[0m - /boot.
+         Mounting [0;1;39mboot-efi.mount[0m - /boot/efi...
+[[0;32m  OK  [0m] Mounted [0;1;39mboot-efi.mount[0m - /boot/efi.
+[[0;32m  OK  [0m] Reached target [0;1;39mlocal-fs.target[0m - Local File Systems.
+[[0;32m  OK  [0m] Listening on [0;1;39msystemd-sysext.socket[0m…tension Image Management (Varlink).
+         Starting [0;1;39mapparmor.service[0m - Load AppArmor profiles...
+         Starting [0;1;39mconsole-setup.service[0m - Set console font and keymap...
+         Starting [0;1;39mfinalrd.service[0m - Create …time dir for shutdown pivot root...
+         Starting [0;1;39mldconfig.service[0m - Rebuild Dynamic Linker Cache...
+         Starting [0;1;39mplymouth-read-write.servi…[0mymouth To Write Out Runtime Data...
+         Starting [0;1;39msystemd-binfmt.service[0m - Set Up Additional Binary Formats...
+         Starting [0;1;39msystemd-tmpfiles-setup.se…[0me Volatile Files and Directories...
+         Starting [0;1;39mufw.service[0m - Uncomplicated firewall...
+[[0;32m  OK  [0m] Finished [0;1;39mfinalrd.service[0m - Create …untime dir for shutdown pivot root.
+[[0;32m  OK  [0m] Finished [0;1;39mconsole-setup.service[0m - Set console font and keymap.
+[[0;32m  OK  [0m] Finished [0;1;39mplymouth-read-write.servi…[0mPlymouth To Write Out Runtime Data.
+         Mounting [0;1;39mproc-sys-fs-binfmt_misc.m…[0mcutable File Formats File System...
+[[0;32m  OK  [0m] Finished [0;1;39mufw.service[0m - Uncomplicated firewall.
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-tmpfiles-setup.se…[0mate Volatile Files and Directories.
+         Starting [0;1;39msystemd-journal-catalog-u…ervice[0m - Rebuild Journal Catalog...
+         Starting [0;1;39msystemd-machine-id-commit…[0mt a transient machine-id on disk...
+         Starting [0;1;39msystemd-resolved.service[0m - Network Name Resolution...
+         Starting [0;1;39msystemd-timesyncd.service[0m - Network Time Synchronization...
+         Starting [0;1;39msystemd-update-utmp.servi…[0mord System Boot/Shutdown in UTMP...
+[[0;32m  OK  [0m] Finished [0;1;39mldconfig.service[0m - Rebuild Dynamic Linker Cache.
+[[0;32m  OK  [0m] Mounted [0;1;39mproc-sys-fs-binfmt_misc.mo…[0mxecutable File Formats File System.
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-binfmt.service[0m - Set Up Additional Binary Formats.
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-journal-catalog-u….service[0m - Rebuild Journal Catalog.
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-machine-id-commit…[0mmit a transient machine-id on disk.
+[[0;32m  OK  [0m] Listening on [0;1;39msystemd-rfkill.socket[0m…ll Switch Status /dev/rfkill Watch.
+         Starting [0;1;39msystemd-update-done.service[0m - Update is Completed...
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-update-utmp.servi…[0mecord System Boot/Shutdown in UTMP.
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-update-done.service[0m - Update is Completed.
+[[0;32m  OK  [0m] Started [0;1;39msystemd-timesyncd.service[0m - Network Time Synchronization.
+[[0;32m  OK  [0m] Reached target [0;1;39mtime-set.target[0m - System Time Set.
+[[0;32m  OK  [0m] Started [0;1;39msystemd-resolved.service[0m - Network Name Resolution.
+[[0;32m  OK  [0m] Reached target [0;1;39mnss-lookup.target[0m - Host and Network Name Lookups.
+[[0;32m  OK  [0m] Finished [0;1;39mapparmor.service[0m - Load AppArmor profiles.
+         Starting [0;1;39msnapd.apparmor.service[0m - …iles managed internally by snapd...
+         Starting [0;1;39mcloud-init-local.service[0m …-init: Local Stage (pre-network)...
+[[0;32m  OK  [0m] Finished [0;1;39msnapd.apparmor.service[0m - …ofiles managed internally by snapd.
+[   68.602372] cloud-init[617]: Cloud-init v. 26.1-0ubuntu1~24.04.1 running 'init-local' at Tue, 08 Sep 2026 05:52:55 +0000. Up 68.26 seconds.
+                                                   [[0;32m  OK  [0m] Finished [0;1;39mcloud-init-local.service[0m …ud-init: Local Stage (pre-network).
+[[0;32m  OK  [0m] Reached target [0;1;39mnetwork-pre.target[0m - Preparation for Network.
+         Starting [0;1;39msystemd-networkd.service[0m - Network Configuration...
+[[0;32m  OK  [0m] Started [0;1;39msystemd-networkd.service[0m - Network Configuration.
+[[0;32m  OK  [0m] Reached target [0;1;39mnetwork.target[0m - Network.
+         Starting [0;1;39msystemd-networkd-wait-onl…[0mait for Network to be Configured...
+[[0;32m  OK  [0m] Finished [0;1;39msystemd-networkd-wait-onl…[0m Wait for Network to be Configured.
+         Starting [0;1;39mcloud-init.service[0m - Cloud-init: Network Stage...
+[  104.708792] cloud-init[707]: Cloud-init v. 26.1-0ubuntu1~24.04.1 running 'init' at Tue, 08 Sep 2026 05:53:31 +0000. Up 104.37 seconds.
+[  104.899781] cloud-init[707]: ci-info: +++++++++++++++++++++++++++++++++++++++Net device info+++++++++++++++++++++++++++++++++++++++
+[  104.902007] cloud-init[707]: ci-info: +--------+------+------------------------------+---------------+--------+-------------------+
+[  104.903914] cloud-init[707]: ci-info: | Device |  Up  |           Address            |      Mask     | Scope  |     Hw-Address    |
+[  104.905643] cloud-init[707]: ci-info: +--------+------+------------------------------+---------------+--------+-------------------+
+[  104.907358] cloud-init[707]: ci-info: |  ens3  | True |         10.10.10.180         | 255.255.255.0 | global | fa:16:3e:f5:e5:ff |
+[  104.908896] cloud-init[707]: ci-info: |  ens3  | True | fe80::f816:3eff:fef5:e5ff/64 |       .       |  link  | fa:16:3e:f5:e5:ff |
+[  104.910532] cloud-init[707]: ci-info: |   lo   | True |          127.0.0.1           |   255.0.0.0   |  host  |         .         |
+[  104.912255] cloud-init[707]: ci-info: |   lo   | True |           ::1/128            |       .       |  host  |         .         |
+[  104.913866] cloud-init[707]: ci-info: +--------+------+------------------------------+---------------+--------+-------------------+
+[  104.915389] cloud-init[707]: ci-info: +++++++++++++++++++++++++++++++Route IPv4 info++++++++++++++++++++++++++++++++
+[  104.916846] cloud-init[707]: ci-info: +-------+-----------------+------------+-----------------+-----------+-------+
+[  104.918415] cloud-init[707]: ci-info: | Route |   Destination   |  Gateway   |     Genmask     | Interface | Flags |
+[  104.919799] cloud-init[707]: ci-info: +-------+-----------------+------------+-----------------+-----------+-------+
+[  104.921345] cloud-init[707]: ci-info: |   0   |     0.0.0.0     | 10.10.10.1 |     0.0.0.0     |    ens3   |   UG  |
+[  104.922807] cloud-init[707]: ci-info: |   1   |    10.10.10.0   |  0.0.0.0   |  255.255.255.0  |    ens3   |   U   |
+[  104.924541] cloud-init[707]: ci-info: |   2   |    10.10.10.1   |  0.0.0.0   | 255.255.255.255 |    ens3   |   UH  |
+[  104.926108] cloud-init[707]: ci-info: |   3   |    10.10.10.2   |  0.0.0.0   | 255.255.255.255 |    ens3   |   UH  |
+[  104.927668] cloud-init[707]: ci-info: |   4   | 169.254.169.254 | 10.10.10.2 | 255.255.255.255 |    ens3   |  UGH  |
+[  104.929207] cloud-init[707]: ci-info: +-------+-----------------+------------+-----------------+-----------+-------+
+[  104.930606] cloud-init[707]: ci-info: +++++++++++++++++++Route IPv6 info+++++++++++++++++++
+[  104.931924] cloud-init[707]: ci-info: +-------+-------------+---------+-----------+-------+
+[  104.933387] cloud-init[707]: ci-info: | Route | Destination | Gateway | Interface | Flags |
+[  104.934965] cloud-init[707]: ci-info: +-------+-------------+---------+-----------+-------+
+[  104.936366] cloud-init[707]: ci-info: |   0   |  fe80::/64  |    ::   |    ens3   |   U   |
+[  104.937730] cloud-init[707]: ci-info: |   2   |    local    |    ::   |    ens3   |   U   |
+[  104.939206] cloud-init[707]: ci-info: |   3   |  multicast  |    ::   |    ens3   |   U   |
+[  104.940572] cloud-init[707]: ci-info: +-------+-------------+---------+-----------+-------+
+[  120.164688] cloud-init[707]: Generating public/private rsa key pair.
+[  120.166969] cloud-init[707]: Your identification has been saved in /etc/ssh/ssh_host_rsa_key
+[  120.168765] cloud-init[707]: Your public key has been saved in /etc/ssh/ssh_host_rsa_key.pub
+[  120.170379] cloud-init[707]: The key fingerprint is:
+[  120.171702] cloud-init[707]: SHA256:SykfpAz7s3yz5/QgxW8aN9GhHykHJPcIsrpKxTy/kYU root@fig-vm
+[  120.173176] cloud-init[707]: The key's randomart image is:
+[  120.174456] cloud-init[707]: +---[RSA 3072]----+
+[  120.175783] cloud-init[707]: |        . o o    |
+[  120.176948] cloud-init[707]: |         o = o   |
+[  120.178300] cloud-init[707]: |    .   o   o o  |
+[  120.179516] cloud-init[707]: |     * + +   + o |
+[  120.180723] cloud-init[707]: |    . X E + + =  |
+[  120.181998] cloud-init[707]: |     o B * . = . |
+[  120.183397] cloud-init[707]: |    . + B + = .  |
+[  120.184609] cloud-init[707]: |   . o oo=.B .   |
+[  120.185870] cloud-init[707]: |    . o.o=o .    |
+[  120.187192] cloud-init[707]: +----[SHA256]-----+
+[  120.188441] cloud-init[707]: Generating public/private ecdsa key pair.
+[  120.190403] cloud-init[707]: Your identification has been saved in /etc/ssh/ssh_host_ecdsa_key
+[  120.191791] cloud-init[707]: Your public key has been saved in /etc/ssh/ssh_host_ecdsa_key.pub
+[  120.193104] cloud-init[707]: The key fingerprint is:
+[  120.194249] cloud-init[707]: SHA256:F96NKve26V0z+lFmFjgVlJkxSsrHM87oJ62lUwgfKyE root@fig-vm
+[  120.195666] cloud-init[707]: The key's randomart image is:
+[  120.196819] cloud-init[707]: +---[ECDSA 256]---+
+[  120.197892] cloud-init[707]: |             ..**|
+[  120.199199] cloud-init[707]: |          . + ++.|
+[  120.200275] cloud-init[707]: |          .o O . |
+[  120.201403] cloud-init[707]: |       E + +=o+ .|
+[  120.202726] cloud-init[707]: |        S *.*o. =|
+[  120.204299] cloud-init[707]: |         o.=.. +.|
+[  120.205426] cloud-init[707]: |        . +o.+ +.|
+[  120.206642] cloud-init[707]: |         o oBo..+|
+[  120.207943] cloud-init[707]: |           =*oo. |
+[  120.209276] cloud-init[707]: +----[SHA256]-----+
+[  120.210368] cloud-init[707]: Generating public/private ed25519 key pair.
+[  120.211684] cloud-init[707]: Your identification has been saved in /etc/ssh/ssh_host_ed25519_key
+[  120.213233] cloud-init[707]: Your public key has been saved in /etc/ssh/ssh_host_ed25519_key.pub
+[  120.214503] cloud-init[707]: The key fingerprint is:
+[  120.215611] cloud-init[707]: SHA256:Dbo029Q4ylGdMmcH80iasCKmMZxr9s75DNFIXuYeycM root@fig-vm
+[  120.216940] cloud-init[707]: The key's randomart image is:
+[  120.218181] cloud-init[707]: +--[ED25519 256]--+
+[  120.219430] cloud-init[707]: |      .   +      |
+[  120.220741] cloud-init[707]: |. .    o = *     |
+[  120.222071] cloud-init[707]: |ooo..o. B * o    |
+[  120.224009] cloud-init[707]: | =+.O..o X .     |
+[  120.225239] cloud-init[707]: |.+ + E= S o      |
+[  120.226333] cloud-init[707]: |o . oooO .       |
+[  120.227522] cloud-init[707]: |   o .= .        |
+[  120.228930] cloud-init[707]: |  o +            |
+[  120.229958] cloud-init[707]: |   +.o           |
+[  120.231191] cloud-init[707]: +----[SHA256]-----+
+[[0;32m  OK  [0m] Finished [0;1;39mcloud-init.service[0m - Cloud-init: Network Stage.
+[[0;32m  OK  [0m] Reached target [0;1;39mcloud-config.target[0m - Cloud-config availability.
+[[0;32m  OK  [0m] Reached target [0;1;39mnetwork-online.target[0m - Network is Online.
+[[0;32m  OK  [0m] Reached target [0;1;39msysinit.target[0m - System Initialization.
+[[0;32m  OK  [0m] Started [0;1;39mapt-daily.timer[0m - Daily apt download activities.
+[[0;32m  OK  [0m] Started [0;1;39mapt-daily-upgrade.timer[0m - …y apt upgrade and clean activities.
+[[0;32m  OK  [0m] Started [0;1;39mdpkg-db-backup.timer[0m - Daily dpkg database backup timer.
+[[0;32m  OK  [0m] Started [0;1;39me2scrub_all.timer[0m - Period…Metadata Check for All Filesystems.
+[[0;32m  OK  [0m] Started [0;1;39mfstrim.timer[0m - Discard unused filesystem blocks once a week.
+[[0;32m  OK  [0m] Started [0;1;39mfwupd-refresh.timer[0m - Refresh fwupd metadata regularly.
+[[0;32m  OK  [0m] Started [0;1;39mlogrotate.timer[0m - Daily rotation of log files.
+[[0;32m  OK  [0m] Started [0;1;39mman-db.timer[0m - Daily man-db regeneration.
+[[0;32m  OK  [0m] Started [0;1;39mmotd-news.timer[0m - Message of the Day.
+[[0;32m  OK  [0m] Started [0;1;39msysstat-collect.timer[0m - Ru…y accounting tool every 10 minutes.
+[[0;32m  OK  [0m] Started [0;1;39msysstat-summary.timer[0m - Ge… of yesterday's process accounting.
+[[0;32m  OK  [0m] Started [0;1;39msystemd-tmpfiles-clean.tim…[0my Cleanup of Temporary Directories.
+[[0;32m  OK  [0m] Started [0;1;39mupdate-notifier-download.t…[0mhat failed at package install time.
+[[0;32m  OK  [0m] Started [0;1;39mupdate-notifier-motd.timer[0m… a new version of Ubuntu available.
+[[0;32m  OK  [0m] Reached target [0;1;39mpaths.target[0m - Path Units.
+[[0;32m  OK  [0m] Reached target [0;1;39mtimers.target[0m - Timer Units.
+[[0;32m  OK  [0m] Listening on [0;1;39mcloud-init-hotplugd.s…t[0m - cloud-init hotplug hook socket.
+[[0;32m  OK  [0m] Listening on [0;1;39mdbus.socket[0m - D-Bus System Message Bus Socket.
+[[0;32m  OK  [0m] Listening on [0;1;39miscsid.socket[0m - Open-iSCSI iscsid Socket.
+         Starting [0;1;39mlxd-installer.socket[0m - He…er to install lxd snap on demand...
+         Starting [0;1;39msnapd.socket[0m - Socket activation for snappy daemon...
+[[0;32m  OK  [0m] Listening on [0;1;39mssh.socket[0m - OpenBSD Secure Shell server socket.
+[[0;32m  OK  [0m] Listening on [0;1;39muuidd.socket[0m - UUID daemon activation socket.
+[[0;32m  OK  [0m] Reached target [0;1;39mremote-fs-pre.targe…[0mreparation for Remote File Systems.
+[[0;32m  OK  [0m] Reached target [0;1;39mremote-fs.target[0m - Remote File Systems.
+[[0;32m  OK  [0m] Finished [0;1;39mblk-availability.service[0m - Availability of block devices.
+[[0;32m  OK  [0m] Listening on [0;1;39mlxd-installer.socket[0m …lper to install lxd snap on demand.
+[[0;32m  OK  [0m] Listening on [0;1;39msnapd.socket[0m - Socket activation for snappy daemon.
+[[0;32m  OK  [0m] Reached target [0;1;39msockets.target[0m - Socket Units.
+[[0;32m  OK  [0m] Reached target [0;1;39mbasic.target[0m - Basic System.
+         Starting [0;1;39mapport.service[0m - automatic crash report generation...
+         Starting [0;1;39mcloud-config.service[0m - Cloud-init: Config Stage...
+[[0;32m  OK  [0m] Started [0;1;39mcron.service[0m - Regular background program processing daemon.
+         Starting [0;1;39mdbus.service[0m - D-Bus System Message Bus...
+[[0;32m  OK  [0m] Started [0;1;39mdmesg.service[0m - Save initial kernel messages after boot.
+         Starting [0;1;39me2scrub_reap.service[0m - Re…ne ext4 Metadata Check Snapshots...
+         Starting [0;1;39mgrub-common.service[0m - Record successful boot for GRUB...
+         Starting [0;1;39mpolkit.service[0m - Authorization Manager...
+         Starting [0;1;39mpollinate.service[0m - Polli…e pseudo random number generator...
+         Starting [0;1;39mrsyslog.service[0m - System Logging Service...
+[[0;32m  OK  [0m] Reached target [0;1;39mgetty-pre.target[0m - Preparation for Logins.
+         Starting [0;1;39msnapd.seeded.service[0m - Wait until snapd is fully seeded...
+         Starting [0;1;39msnapd.service[0m - Snap Daemon...
+         Starting [0;1;39msysstat.service[0m - Resets System Activity Logs...
+         Starting [0;1;39msystemd-logind.service[0m - User Login Management...
+         Starting [0;1;39msystemd-user-sessions.service[0m - Permit User Sessions...
+         Starting [0;1;39mudisks2.service[0m - Disk Manager...
+[[0;32m  OK  [0m] Started [0;1;39mdbus.service[0m - D-Bus System Message Bus.
+[[0;32m  OK  [0m] Finished [0;1;39me2scrub_reap.service[0m - Re…line ext4 Metadata Check Snapshots.
+[[0;32m  OK  [0m] Finished [0;1;39msysstat.service[0m - Resets System Activity Logs.
+
+Ubuntu 24.04.4 LTS fig-vm ttyS0
+
+fig-vm login: [  145.312500] cloud-init[1004]: Cloud-init v. 26.1-0ubuntu1~24.04.1 running 'modules:config' at Tue, 08 Sep 2026 05:54:10 +0000. Up 143.64 seconds.
+[  156.564741] cloud-init[1046]: Cloud-init v. 26.1-0ubuntu1~24.04.1 running 'modules:final' at Tue, 08 Sep 2026 05:54:22 +0000. Up 155.86 seconds.
+ci-info: no authorized SSH keys fingerprints found for user ubuntu.
+GUESTSTAT 1788846864 cpu  13609 0 7183 9336 224 0 35 0 0 0
+<14>Sep  8 05:54:24 cloud-init: #############################################################
+<14>Sep  8 05:54:24 cloud-init: -----BEGIN SSH HOST KEY FINGERPRINTS-----
+<14>Sep  8 05:54:24 cloud-init: 256 SHA256:F96NKve26V0z+lFmFjgVlJkxSsrHM87oJ62lUwgfKyE root@fig-vm (ECDSA)
+<14>Sep  8 05:54:24 cloud-init: 256 SHA256:Dbo029Q4ylGdMmcH80iasCKmMZxr9s75DNFIXuYeycM root@fig-vm (ED25519)
+<14>Sep  8 05:54:25 cloud-init: 3072 SHA256:SykfpAz7s3yz5/QgxW8aN9GhHykHJPcIsrpKxTy/kYU root@fig-vm (RSA)
+<14>Sep  8 05:54:25 cloud-init: -----END SSH HOST KEY FINGERPRINTS-----
+<14>Sep  8 05:54:25 cloud-init: #############################################################
+-----BEGIN SSH HOST KEY KEYS-----
+ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBBnJTBMErRZzoCmZNxeJJ1OJqddjs9OnLHukWLDdv3o8NPxnrZ/JdnwIlmNupp61YG66OM2wqZfPWSUmyF2w+z4= root@fig-vm
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG0lwj9SLM+GEDeJ5gLLWN7bMgbJ2HgNzy/hw25qEIob root@fig-vm
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC7w8SbfdwbaWFvQO2+e6OWVfI7TRFYyerEOJoEKatnnyeHCZsXFtOzRbcTLjcOsKTttXB5lOGg7e4xtlMaYxJVcvZyoEvVtbRvA97X+/V9RHuDtroQURMumpO6UkwY3NKY/YGB5OLztqeQWFaKyfZkJku/evaNXU7m2GaQbSxPO4hMVfptuZoX/RSxtzRgroT/PZh4KemE/JgJHQ4kEts0hRJy5UJFDcwIzE2l5yRdhW1P6nScoSs/has14qHta/Y/ZA/dxAVM9HaSZLj2q6Sqw9UtgGpLdNHTenTQqJENvPzd3w4xoO0e5ICts+zlXEVqHS7raxaBEkfNtLwdbRG6dlHJmJ2kCcPtUG1VywPLSh9TF944grpz7Wya330AeAbWSbbDEacFj6st0BnF3KnjChtQdfwghdX0Qwjlyt6TAQDrYdi+tm/m6CIfxTlzW3pWjnbTq2qY0dXjy+ddxCEe0X04OrGUizvxK0rpI283t1kQSuE1dIj8fUV6eq3ZdSM= root@fig-vm
+-----END SSH HOST KEY KEYS-----
+[  158.964681] cloud-init[1046]: Cloud-init v. 26.1-0ubuntu1~24.04.1 finished at Tue, 08 Sep 2026 05:54:25 +0000. Datasource DataSourceOpenStackLocal [net,ver=2].  Up 158.83 seconds
+GUESTSTAT 1788846866 cpu  13844 0 7445 9336 224 0 35 0 0 0
+GUESTSTAT 1788846869 cpu  13995 0 7779 9338 224 0 40 0 0 0
+GUESTSTAT 1788846871 cpu  14142 0 8121 9338 224 0 40 0 0 0
+GUESTSTAT 1788846874 cpu  14290 0 8468 9338 224 0 41 0 0 0
+GUESTSTAT 1788846876 cpu  14434 0 8819 9338 224 0 41 0 0 0
+GUESTSTAT 1788846879 cpu  14573 0 9152 9338 224 0 41 0 0 0
+GUESTSTAT 1788846881 cpu  14717 0 9500 9339 224 0 41 0 0 0
+GUESTSTAT 1788846884 cpu  14852 0 9838 9339 224 0 41 0 0 0
+GUESTSTAT 1788846886 cpu  14993 0 10168 9339 224 0 41 0 0 0
+GUESTSTAT 1788846888 cpu  15134 0 10526 9339 224 0 41 0 0 0
+GUESTSTAT 1788846891 cpu  15265 0 10854 9340 224 0 41 0 0 0
+GUESTSTAT 1788846893 cpu  15391 0 11200 9340 224 0 41 0 0 0
+GUESTSTAT 1788846896 cpu  15531 0 11565 9340 224 0 41 0 0 0
+GUESTSTAT 1788846898 cpu  15669 0 11902 9340 224 0 41 0 0 0
+GUESTSTAT 1788846900 cpu  15809 0 12233 9341 224 0 44 0 0 0
+GUESTSTAT 1788846903 cpu  15955 0 12567 9341 224 0 44 0 0 0
+GUESTSTAT 1788846905 cpu  16093 0 12921 9341 224 0 44 0 0 0
+GUESTSTAT 1788846908 cpu  16238 0 13266 9341 224 0 44 0 0 0
+GUESTSTAT 1788846910 cpu  16365 0 13609 9341 224 0 44 0 0 0
+GUESTSTAT 1788846912 cpu  16499 0 13946 9341 224 0 44 0 0 0
+GUESTSTAT 1788846915 cpu  16631 0 14293 9341 224 0 44 0 0 0
+GUESTSTAT 1788846917 cpu  16755 0 14633 9341 224 0 44 0 0 0
+GUESTSTAT 1788846920 cpu  16888 0 14984 9341 224 0 44 0 0 0
+GUESTSTAT 1788846922 cpu  17016 0 15326 9341 224 0 44 0 0 0
+GUESTSTAT 1788846924 cpu  17148 0 15656 9341 224 0 44 0 0 0
+GUESTSTAT 1788846927 cpu  17284 0 16001 9341 224 0 44 0 0 0
+GUESTSTAT 1788846929 cpu  17429 0 16360 9342 224 0 47 0 0 0
+GUESTSTAT 1788846932 cpu  17558 0 16690 9342 224 0 47 0 0 0
+GUESTSTAT 1788846934 cpu  17688 0 17045 9343 224 0 47 0 0 0
+GUESTSTAT 1788846936 cpu  17819 0 17395 9343 224 0 47 0 0 0
+GUESTSTAT 1788846939 cpu  17943 0 17737 9343 224 0 47 0 0 0
+GUESTSTAT 1788846941 cpu  18083 0 18083 9343 224 0 47 0 0 0
+GUESTSTAT 1788846943 cpu  18213 0 18432 9344 224 0 47 0 0 0
+GUESTSTAT 1788846946 cpu  18348 0 18776 9344 224 0 47 0 0 0
+GUESTSTAT 1788846948 cpu  18486 0 19106 9344 224 0 47 0 0 0
+GUESTSTAT 1788846951 cpu  18637 0 19456 9344 224 0 47 0 0 0
+GUESTSTAT 1788846953 cpu  18783 0 19801 9344 224 0 47 0 0 0
+GUESTSTAT 1788846956 cpu  18929 0 20139 9344 224 0 47 0 0 0
+GUESTSTAT 1788846958 cpu  19069 0 20483 9344 224 0 47 0 0 0
+GUESTSTAT 1788846961 cpu  19232 0 20822 9345 224 0 51 0 0 0
+GUESTSTAT 1788846963 cpu  19380 0 21174 9345 224 0 51 0 0 0
+GUESTSTAT 1788846966 cpu  19519 0 21523 9345 224 0 51 0 0 0
+GUESTSTAT 1788846968 cpu  19655 0 21852 9345 224 0 51 0 0 0
+GUESTSTAT 1788846970 cpu  19796 0 22212 9345 224 0 51 0 0 0
+GUESTSTAT 1788846973 cpu  19920 0 22545 9345 224 0 51 0 0 0
+GUESTSTAT 1788846975 cpu  20052 0 22891 9345 224 0 51 0 0 0
+GUESTSTAT 1788846978 cpu  20194 0 23248 9345 224 0 51 0 0 0
+GUESTSTAT 1788846980 cpu  20326 0 23596 9346 224 0 51 0 0 0
+GUESTSTAT 1788846983 cpu  20459 0 23947 9346 224 0 51 0 0 0
+GUESTSTAT 1788846985 cpu  20590 0 24283 9346 224 0 51 0 0 0
+GUESTSTAT 1788846987 cpu  20726 0 24632 9346 224 0 51 0 0 0
+GUESTSTAT 1788846990 cpu  20870 0 24991 9346 224 0 52 0 0 0
+GUESTSTAT 1788846992 cpu  21010 0 25342 9347 224 0 54 0 0 0
+GUESTSTAT 1788846995 cpu  21140 0 25694 9347 224 0 54 0 0 0
+GUESTSTAT 1788846997 cpu  21278 0 26033 9347 224 0 54 0 0 0
+GUESTSTAT 1788847000 cpu  21410 0 26376 9347 224 0 54 0 0 0
+GUESTSTAT 1788847002 cpu  21539 0 26716 9347 224 0 54 0 0 0
+GUESTSTAT 1788847004 cpu  21668 0 27054 9347 224 0 54 0 0 0
+GUESTSTAT 1788847007 cpu  21801 0 27391 9347 224 0 54 0 0 0
+GUESTSTAT 1788847009 cpu  21938 0 27723 9347 224 0 54 0 0 0
+GUESTSTAT 1788847011 cpu  22069 0 28073 9347 224 0 54 0 0 0
+GUESTSTAT 1788847014 cpu  22201 0 28414 9347 224 0 54 0 0 0
+GUESTSTAT 1788847016 cpu  22331 0 28737 9347 224 0 54 0 0 0
+GUESTSTAT 1788847018 cpu  22460 0 29077 9347 224 0 54 0 0 0
+GUESTSTAT 1788847021 cpu  22604 0 29416 9348 224 0 57 0 0 0
+GUESTSTAT 1788847023 cpu  22735 0 29744 9348 224 0 57 0 0 0
+GUESTSTAT 1788847026 cpu  22872 0 30097 9348 224 0 57 0 0 0
+GUESTSTAT 1788847028 cpu  23008 0 30424 9348 224 0 57 0 0 0
+GUESTSTAT 1788847030 cpu  23147 0 30792 9348 224 0 57 0 0 0
+GUESTSTAT 1788847033 cpu  23283 0 31137 9348 224 0 57 0 0 0
+GUESTSTAT 1788847036 cpu  23430 0 31551 9348 224 0 60 0 0 0
+GUESTSTAT 1788847038 cpu  23582 0 31896 9348 224 0 60 0 0 0
+GUESTSTAT 1788847041 cpu  23728 0 32244 9349 224 0 61 0 0 0
+GUESTSTAT 1788847043 cpu  23871 0 32589 9349 224 0 61 0 0 0
+GUESTSTAT 1788847046 cpu  24011 0 32922 9349 224 0 61 0 0 0
+GUESTSTAT 1788847048 cpu  24143 0 33260 9349 224 0 61 0 0 0
+GUESTSTAT 1788847050 cpu  24292 0 33600 9349 224 0 61 0 0 0
+GUESTSTAT 1788847053 cpu  24568 0 33844 9350 224 0 69 0 0 0
+GUESTSTAT 1788847056 cpu  24748 0 34164 9350 225 0 69 0 0 0
+GUESTSTAT 1788847058 cpu  24885 0 34504 9350 225 0 69 0 0 0
+GUESTSTAT 1788847061 cpu  25015 0 34851 9351 225 0 69 0 0 0
+GUESTSTAT 1788847063 cpu  25151 0 35207 9351 225 0 69 0 0 0
+GUESTSTAT 1788847065 cpu  25279 0 35536 9351 225 0 69 0 0 0
+GUESTSTAT 1788847068 cpu  25427 0 35883 9351 225 0 69 0 0 0
+GUESTSTAT 1788847070 cpu  25565 0 36229 9351 225 0 69 0 0 0
+GUESTSTAT 1788847073 cpu  25705 0 36568 9351 225 0 69 0 0 0
+GUESTSTAT 1788847075 cpu  25840 0 36904 9351 225 0 69 0 0 0
+GUESTSTAT 1788847077 cpu  25981 0 37247 9351 225 0 69 0 0 0
+GUESTSTAT 1788847080 cpu  26117 0 37601 9351 225 0 69 0 0 0
+GUESTSTAT 1788847082 cpu  26265 0 37947 9352 225 0 72 0 0 0
+GUESTSTAT 1788847085 cpu  26401 0 38293 9352 225 0 72 0 0 0
+GUESTSTAT 1788847087 cpu  26535 0 38624 9352 225 0 73 0 0 0
+GUESTSTAT 1788847089 cpu  26668 0 38954 9352 225 0 73 0 0 0
+GUESTSTAT 1788847092 cpu  26801 0 39294 9352 225 0 73 0 0 0
+GUESTSTAT 1788847094 cpu  26942 0 39646 9352 225 0 73 0 0 0
+GUESTSTAT 1788847097 cpu  27071 0 39981 9352 225 0 73 0 0 0
+GUESTSTAT 1788847099 cpu  27213 0 40330 9352 225 0 73 0 0 0
+GUESTSTAT 1788847101 cpu  27342 0 40662 9352 225 0 73 0 0 0
+GUESTSTAT 1788847104 cpu  27469 0 41003 9352 225 0 73 0 0 0
+GUESTSTAT 1788847106 cpu  27602 0 41333 9352 225 0 73 0 0 0
+GUESTSTAT 1788847108 cpu  27738 0 41677 9352 225 0 73 0 0 0
+GUESTSTAT 1788847111 cpu  27873 0 42026 9352 225 0 73 0 0 0
+GUESTSTAT 1788847113 cpu  28007 0 42356 9354 225 0 76 0 0 0
+GUESTSTAT 1788847116 cpu  28139 0 42703 9354 225 0 76 0 0 0
+GUESTSTAT 1788847118 cpu  28270 0 43041 9354 225 0 76 0 0 0
+GUESTSTAT 1788847120 cpu  28403 0 43380 9354 225 0 76 0 0 0
+GUESTSTAT 1788847123 cpu  28541 0 43720 9354 225 0 76 0 0 0
+GUESTSTAT 1788847125 cpu  28674 0 44063 9354 225 0 76 0 0 0
+GUESTSTAT 1788847127 cpu  28821 0 44408 9355 225 0 76 0 0 0
+GUESTSTAT 1788847130 cpu  28972 0 44750 9355 225 0 76 0 0 0
+GUESTSTAT 1788847132 cpu  29107 0 45089 9355 225 0 76 0 0 0
+GUESTSTAT 1788847135 cpu  29239 0 45421 9355 225 0 76 0 0 0
+GUESTSTAT 1788847137 cpu  29368 0 45754 9355 225 0 76 0 0 0
+GUESTSTAT 1788847139 cpu  29508 0 46098 9355 225 0 76 0 0 0
+GUESTSTAT 1788847142 cpu  29651 0 46430 9355 225 0 76 0 0 0
+GUESTSTAT 1788847144 cpu  29793 0 46748 9356 225 0 78 0 0 0
+GUESTSTAT 1788847147 cpu  29925 0 47080 9356 225 0 79 0 0 0
+GUESTSTAT 1788847149 cpu  30061 0 47432 9356 225 0 79 0 0 0
+GUESTSTAT 1788847151 cpu  30188 0 47760 9356 225 0 79 0 0 0
+GUESTSTAT 1788847154 cpu  30318 0 48105 9356 225 0 79 0 0 0
+GUESTSTAT 1788847156 cpu  30448 0 48445 9356 225 0 79 0 0 0
+GUESTSTAT 1788847158 cpu  30578 0 48778 9356 225 0 79 0 0 0
+GUESTSTAT 1788847161 cpu  30713 0 49117 9357 225 0 79 0 0 0
+GUESTSTAT 1788847163 cpu  30852 0 49455 9357 225 0 79 0 0 0
+GUESTSTAT 1788847165 cpu  30989 0 49782 9357 225 0 79 0 0 0
+GUESTSTAT 1788847168 cpu  31129 0 50122 9357 225 0 79 0 0 0
+GUESTSTAT 1788847170 cpu  31262 0 50469 9357 225 0 79 0 0 0
+GUESTSTAT 1788847173 cpu  31394 0 50800 9357 225 0 79 0 0 0
+GUESTSTAT 1788847175 cpu  31535 0 51137 9358 225 0 81 0 0 0
+GUESTSTAT 1788847177 cpu  31673 0 51464 9358 225 0 81 0 0 0
+GUESTSTAT 1788847180 cpu  31806 0 51805 9358 225 0 81 0 0 0
+GUESTSTAT 1788847182 cpu  31937 0 52139 9358 225 0 81 0 0 0
+GUESTSTAT 1788847184 cpu  32066 0 52483 9358 225 0 81 0 0 0
+GUESTSTAT 1788847187 cpu  32202 0 52809 9359 225 0 81 0 0 0
+GUESTSTAT 1788847189 cpu  32337 0 53150 9359 225 0 81 0 0 0
+GUESTSTAT 1788847191 cpu  32467 0 53481 9359 225 0 81 0 0 0
+GUESTSTAT 1788847194 cpu  32603 0 53828 9359 225 0 81 0 0 0
+GUESTSTAT 1788847196 cpu  32739 0 54154 9359 225 0 81 0 0 0
+GUESTSTAT 1788847199 cpu  32874 0 54491 9359 225 0 81 0 0 0
+GUESTSTAT 1788847201 cpu  33013 0 54836 9359 225 0 81 0 0 0
+GUESTSTAT 1788847203 cpu  33152 0 55169 9359 225 0 81 0 0 0
+GUESTSTAT 1788847206 cpu  33322 0 55482 9360 225 0 86 0 0 0
+GUESTSTAT 1788847208 cpu  33469 0 55826 9360 225 0 86 0 0 0
+GUESTSTAT 1788847211 cpu  33612 0 56164 9360 225 0 86 0 0 0
+GUESTSTAT 1788847213 cpu  33756 0 56507 9360 225 0 86 0 0 0
+GUESTSTAT 1788847216 cpu  33903 0 56823 9360 225 0 86 0 0 0
+GUESTSTAT 1788847218 cpu  34045 0 57162 9360 225 0 86 0 0 0
+GUESTSTAT 1788847220 cpu  34184 0 57475 9360 225 0 86 0 0 0
+GUESTSTAT 1788847223 cpu  34327 0 57819 9360 225 0 86 0 0 0
+GUESTSTAT 1788847225 cpu  34462 0 58155 9360 225 0 86 0 0 0
+GUESTSTAT 1788847227 cpu  34602 0 58507 9360 225 0 86 0 0 0
+GUESTSTAT 1788847230 cpu  34747 0 58851 9360 225 0 86 0 0 0
+GUESTSTAT 1788847232 cpu  34896 0 59192 9360 225 0 86 0 0 0
+GUESTSTAT 1788847235 cpu  35042 0 59552 9361 225 0 89 0 0 0
+GUESTSTAT 1788847237 cpu  35166 0 59887 9361 225 0 89 0 0 0
+GUESTSTAT 1788847240 cpu  35299 0 60224 9361 225 0 89 0 0 0
+GUESTSTAT 1788847242 cpu  35439 0 60566 9361 225 0 89 0 0 0
+GUESTSTAT 1788847245 cpu  35573 0 60900 9361 225 0 89 0 0 0
+GUESTSTAT 1788847247 cpu  35710 0 61234 9361 225 0 89 0 0 0
+GUESTSTAT 1788847249 cpu  35850 0 61574 9361 225 0 89 0 0 0
+GUESTSTAT 1788847252 cpu  35982 0 61933 9361 225 0 89 0 0 0
+GUESTSTAT 1788847254 cpu  36114 0 62297 9361 225 0 89 0 0 0
+GUESTSTAT 1788847257 cpu  36262 0 62673 9361 225 0 89 0 0 0
+GUESTSTAT 1788847259 cpu  36401 0 63030 9361 225 0 89 0 0 0
+GUESTSTAT 1788847262 cpu  36530 0 63369 9362 225 0 89 0 0 0
+GUESTSTAT 1788847264 cpu  36676 0 63733 9362 225 0 89 0 0 0
+GUESTSTAT 1788847267 cpu  36825 0 64083 9364 225 0 92 0 0 0
+GUESTSTAT 1788847270 cpu  36962 0 64431 9364 225 0 92 0 0 0
+GUESTSTAT 1788847272 cpu  37103 0 64791 9365 225 0 92 0 0 0
+GUESTSTAT 1788847275 cpu  37240 0 65148 9365 225 0 92 0 0 0
+GUESTSTAT 1788847278 cpu  37380 0 65504 9365 225 0 93 0 0 0
+GUESTSTAT 1788847280 cpu  37527 0 65875 9365 225 0 93 0 0 0
+GUESTSTAT 1788847283 cpu  37663 0 66217 9365 225 0 93 0 0 0
+GUESTSTAT 1788847285 cpu  37811 0 66574 9365 225 0 93 0 0 0
+GUESTSTAT 1788847288 cpu  37965 0 66945 9365 225 0 95 0 0 0
+GUESTSTAT 1788847291 cpu  38122 0 67317 9366 225 0 95 0 0 0
+GUESTSTAT 1788847294 cpu  38263 0 67655 9366 225 0 95 0 0 0
+GUESTSTAT 1788847296 cpu  38415 0 67999 9367 225 0 99 0 0 0
+GUESTSTAT 1788847299 cpu  38550 0 68343 9367 225 0 99 0 0 0
+GUESTSTAT 1788847302 cpu  38697 0 68710 9367 225 0 99 0 0 0
+GUESTSTAT 1788847304 cpu  38850 0 69066 9367 225 0 99 0 0 0
+GUESTSTAT 1788847307 cpu  38992 0 69438 9367 225 0 99 0 0 0
+GUESTSTAT 1788847309 cpu  39133 0 69763 9367 225 0 100 0 0 0
+GUESTSTAT 1788847312 cpu  39275 0 70100 9367 225 0 100 0 0 0
+GUESTSTAT 1788847315 cpu  39408 0 70458 9368 225 0 100 0 0 0
+GUESTSTAT 1788847317 cpu  39552 0 70823 9368 225 0 100 0 0 0
+GUESTSTAT 1788847320 cpu  39690 0 71174 9368 225 0 101 0 0 0
+GUESTSTAT 1788847322 cpu  39819 0 71498 9368 225 0 101 0 0 0
+GUESTSTAT 1788847325 cpu  39957 0 71856 9368 225 0 101 0 0 0
+GUESTSTAT 1788847328 cpu  40110 0 72222 9369 225 0 105 0 0 0
+GUESTSTAT 1788847330 cpu  40249 0 72621 9369 225 0 105 0 0 0
+GUESTSTAT 1788847333 cpu  40387 0 73001 9369 225 0 105 0 0 0
+GUESTSTAT 1788847336 cpu  40535 0 73391 9369 225 0 108 0 0 0
+GUESTSTAT 1788847339 cpu  40672 0 73756 9369 225 0 108 0 0 0
+GUESTSTAT 1788847341 cpu  40800 0 74113 9369 225 0 108 0 0 0
+GUESTSTAT 1788847344 cpu  40935 0 74470 9369 225 0 108 0 0 0
+GUESTSTAT 1788847346 cpu  41075 0 74836 9369 225 0 108 0 0 0
+GUESTSTAT 1788847349 cpu  41206 0 75172 9370 225 0 108 0 0 0
+GUESTSTAT 1788847351 cpu  41345 0 75532 9370 225 0 109 0 0 0
+GUESTSTAT 1788847354 cpu  41483 0 75892 9370 225 0 109 0 0 0
+GUESTSTAT 1788847356 cpu  41613 0 76252 9370 225 0 109 0 0 0
+GUESTSTAT 1788847359 cpu  41757 0 76590 9371 225 0 116 0 0 0
+GUESTSTAT 1788847361 cpu  41887 0 76943 9372 225 0 116 0 0 0
+GUESTSTAT 1788847364 cpu  42024 0 77310 9372 225 0 116 0 0 0
+GUESTSTAT 1788847367 cpu  42163 0 77658 9372 225 0 116 0 0 0
+GUESTSTAT 1788847369 cpu  42299 0 78030 9372 225 0 117 0 0 0
+GUESTSTAT 1788847372 cpu  42434 0 78400 9373 225 0 117 0 0 0
+GUESTSTAT 1788847374 cpu  42565 0 78777 9373 225 0 117 0 0 0
+GUESTSTAT 1788847377 cpu  42702 0 79145 9373 225 0 117 0 0 0
+GUESTSTAT 1788847380 cpu  42844 0 79526 9373 225 0 117 0 0 0
+GUESTSTAT 1788847382 cpu  42977 0 79882 9373 225 0 117 0 0 0
+GUESTSTAT 1788847385 cpu  43115 0 80233 9373 225 0 117 0 0 0
+GUESTSTAT 1788847387 cpu  43251 0 80573 9373 225 0 117 0 0 0
+GUESTSTAT 1788847389 cpu  43388 0 80899 9374 225 0 120 0 0 0
+GUESTSTAT 1788847392 cpu  43518 0 81231 9374 225 0 120 0 0 0
+GUESTSTAT 1788847394 cpu  43648 0 81565 9374 225 0 120 0 0 0
+GUESTSTAT 1788847397 cpu  43789 0 81891 9375 225 0 120 0 0 0
+GUESTSTAT 1788847399 cpu  43941 0 82220 9375 225 0 120 0 0 0
+GUESTSTAT 1788847401 cpu  44070 0 82559 9375 225 0 120 0 0 0
+GUESTSTAT 1788847404 cpu  44196 0 82903 9375 225 0 120 0 0 0
+GUESTSTAT 1788847406 cpu  44323 0 83256 9375 225 0 120 0 0 0
+GUESTSTAT 1788847408 cpu  44457 0 83607 9376 225 0 120 0 0 0
+GUESTSTAT 1788847411 cpu  44594 0 83932 9376 225 0 120 0 0 0
+GUESTSTAT 1788847413 cpu  44730 0 84272 9376 225 0 120 0 0 0
+GUESTSTAT 1788847416 cpu  44856 0 84611 9376 225 0 120 0 0 0
+GUESTSTAT 1788847418 cpu  44992 0 84946 9376 225 0 120 0 0 0
+GUESTSTAT 1788847420 cpu  45126 0 85277 9377 225 0 121 0 0 0
+GUESTSTAT 1788847423 cpu  45264 0 85628 9377 225 0 121 0 0 0
+GUESTSTAT 1788847425 cpu  45389 0 85962 9378 225 0 121 0 0 0
+GUESTSTAT 1788847427 cpu  45519 0 86292 9378 225 0 121 0 0 0
+GUESTSTAT 1788847430 cpu  45654 0 86629 9378 225 0 121 0 0 0
+GUESTSTAT 1788847432 cpu  45789 0 86973 9378 225 0 121 0 0 0
+GUESTSTAT 1788847434 cpu  45915 0 87307 9378 225 0 121 0 0 0
+GUESTSTAT 1788847437 cpu  46052 0 87656 9378 225 0 121 0 0 0
+GUESTSTAT 1788847439 cpu  46184 0 88004 9378 225 0 121 0 0 0
+GUESTSTAT 1788847442 cpu  46318 0 88333 9378 225 0 121 0 0 0
+GUESTSTAT 1788847444 cpu  46446 0 88660 9378 225 0 121 0 0 0
+GUESTSTAT 1788847446 cpu  46583 0 89012 9379 225 0 121 0 0 0
+GUESTSTAT 1788847449 cpu  46716 0 89344 9379 225 0 122 0 0 0
+GUESTSTAT 1788847451 cpu  46862 0 89685 9379 225 0 124 0 0 0
+GUESTSTAT 1788847453 cpu  46999 0 90023 9379 225 0 124 0 0 0
+GUESTSTAT 1788847456 cpu  47141 0 90376 9379 225 0 124 0 0 0
+GUESTSTAT 1788847458 cpu  47280 0 90729 9379 225 0 124 0 0 0
+GUESTSTAT 1788847461 cpu  47414 0 91066 9379 225 0 124 0 0 0
+GUESTSTAT 1788847463 cpu  47554 0 91403 9379 225 0 124 0 0 0
+GUESTSTAT 1788847466 cpu  47691 0 91727 9379 225 0 124 0 0 0
+GUESTSTAT 1788847468 cpu  47826 0 92075 9380 225 0 124 0 0 0
+GUESTSTAT 1788847470 cpu  47960 0 92423 9380 225 0 124 0 0 0
+GUESTSTAT 1788847473 cpu  48099 0 92774 9380 225 0 124 0 0 0
+GUESTSTAT 1788847475 cpu  48226 0 93102 9380 225 0 124 0 0 0
+GUESTSTAT 1788847477 cpu  48370 0 93441 9380 225 0 124 0 0 0
+GUESTSTAT 1788847480 cpu  48509 0 93781 9382 225 0 126 0 0 0
+GUESTSTAT 1788847482 cpu  48650 0 94135 9382 225 0 126 0 0 0
+GUESTSTAT 1788847485 cpu  48790 0 94489 9382 225 0 126 0 0 0
+GUESTSTAT 1788847487 cpu  48932 0 94833 9382 225 0 126 0 0 0
+GUESTSTAT 1788847490 cpu  49081 0 95172 9382 225 0 126 0 0 0
+GUESTSTAT 1788847492 cpu  49218 0 95509 9382 225 0 126 0 0 0
+GUESTSTAT 1788847495 cpu  49351 0 95854 9382 225 0 126 0 0 0
+GUESTSTAT 1788847497 cpu  49479 0 96180 9383 225 0 126 0 0 0
+GUESTSTAT 1788847499 cpu  49618 0 96529 9383 225 0 126 0 0 0
+GUESTSTAT 1788847502 cpu  49779 0 96846 9383 225 0 126 0 0 0
+GUESTSTAT 1788847504 cpu  49913 0 97190 9383 225 0 127 0 0 0
+GUESTSTAT 1788847506 cpu  50048 0 97526 9384 225 0 127 0 0 0
+GUESTSTAT 1788847509 cpu  50178 0 97858 9384 225 0 127 0 0 0
+GUESTSTAT 1788847511 cpu  50321 0 98196 9385 225 0 130 0 0 0
+GUESTSTAT 1788847514 cpu  50457 0 98537 9385 225 0 130 0 0 0
+GUESTSTAT 1788847516 cpu  50592 0 98876 9386 225 0 130 0 0 0
+GUESTSTAT 1788847518 cpu  50729 0 99223 9386 225 0 130 0 0 0
+GUESTSTAT 1788847521 cpu  50867 0 99560 9386 225 0 130 0 0 0
+GUESTSTAT 1788847523 cpu  51012 0 99918 9386 225 0 130 0 0 0
+GUESTSTAT 1788847526 cpu  51147 0 100268 9386 225 0 130 0 0 0
+GUESTSTAT 1788847528 cpu  51283 0 100612 9386 225 0 130 0 0 0
+GUESTSTAT 1788847531 cpu  51424 0 100961 9386 225 0 130 0 0 0
+GUESTSTAT 1788847533 cpu  51562 0 101308 9386 225 0 130 0 0 0
+GUESTSTAT 1788847535 cpu  51696 0 101642 9387 225 0 130 0 0 0
+GUESTSTAT 1788847538 cpu  51833 0 101988 9387 225 0 130 0 0 0
+GUESTSTAT 1788847540 cpu  51983 0 102342 9387 225 0 132 0 0 0
+GUESTSTAT 1788847543 cpu  52124 0 102697 9387 225 0 132 0 0 0
+GUESTSTAT 1788847545 cpu  52255 0 103030 9387 225 0 132 0 0 0
+GUESTSTAT 1788847548 cpu  52401 0 103381 9388 225 0 132 0 0 0
+GUESTSTAT 1788847550 cpu  52533 0 103729 9388 225 0 132 0 0 0
+GUESTSTAT 1788847552 cpu  52662 0 104070 9388 225 0 132 0 0 0
+GUESTSTAT 1788847555 cpu  52797 0 104416 9388 225 0 132 0 0 0
+GUESTSTAT 1788847557 cpu  52930 0 104766 9388 225 0 132 0 0 0
+GUESTSTAT 1788847560 cpu  53066 0 105101 9388 225 0 132 0 0 0
+GUESTSTAT 1788847562 cpu  53198 0 105441 9389 225 0 132 0 0 0
+GUESTSTAT 1788847564 cpu  53331 0 105794 9389 225 0 132 0 0 0
+GUESTSTAT 1788847567 cpu  53468 0 106125 9389 225 0 132 0 0 0
+GUESTSTAT 1788847569 cpu  53608 0 106450 9389 225 0 132 0 0 0
+GUESTSTAT 1788847572 cpu  53745 0 106792 9390 225 0 136 0 0 0
+GUESTSTAT 1788847574 cpu  53877 0 107132 9390 225 0 136 0 0 0
+GUESTSTAT 1788847576 cpu  54012 0 107478 9390 225 0 136 0 0 0
+GUESTSTAT 1788847579 cpu  54167 0 107823 9390 225 0 136 0 0 0
+GUESTSTAT 1788847581 cpu  54299 0 108167 9390 225 0 136 0 0 0
+GUESTSTAT 1788847584 cpu  54433 0 108504 9391 225 0 136 0 0 0
+GUESTSTAT 1788847586 cpu  54565 0 108857 9391 225 0 136 0 0 0
+GUESTSTAT 1788847588 cpu  54696 0 109185 9391 225 0 136 0 0 0
+GUESTSTAT 1788847591 cpu  54849 0 109534 9391 225 0 136 0 0 0
+GUESTSTAT 1788847593 cpu  54992 0 109863 9391 225 0 136 0 0 0
+GUESTSTAT 1788847596 cpu  55133 0 110223 9391 225 0 136 0 0 0
+GUESTSTAT 1788847598 cpu  55271 0 110564 9391 225 0 136 0 0 0
+GUESTSTAT 1788847601 cpu  55412 0 110909 9391 225 0 136 0 0 0
+GUESTSTAT 1788847603 cpu  55566 0 111245 9392 225 0 139 0 0 0
+GUESTSTAT 1788847605 cpu  55709 0 111589 9392 225 0 139 0 0 0
+GUESTSTAT 1788847608 cpu  55856 0 111940 9392 225 0 139 0 0 0
+GUESTSTAT 1788847610 cpu  56000 0 112289 9392 225 0 139 0 0 0
+GUESTSTAT 1788847613 cpu  56145 0 112616 9392 225 0 139 0 0 0
+GUESTSTAT 1788847615 cpu  56284 0 112963 9392 225 0 139 0 0 0
+GUESTSTAT 1788847618 cpu  56422 0 113305 9393 225 0 139 0 0 0
+GUESTSTAT 1788847620 cpu  56551 0 113645 9393 225 0 139 0 0 0
+GUESTSTAT 1788847622 cpu  56683 0 113980 9393 225 0 139 0 0 0
+GUESTSTAT 1788847625 cpu  56847 0 114336 9393 225 0 139 0 0 0
+GUESTSTAT 1788847627 cpu  56992 0 114690 9393 225 0 139 0 0 0
+GUESTSTAT 1788847630 cpu  57124 0 115050 9394 225 0 139 0 0 0
+GUESTSTAT 1788847632 cpu  57260 0 115376 9394 225 0 141 0 0 0
+GUESTSTAT 1788847635 cpu  57409 0 115792 9394 225 0 143 0 0 0
+GUESTSTAT 1788847638 cpu  57551 0 116137 9395 225 0 145 0 0 0
+GUESTSTAT 1788847640 cpu  57681 0 116478 9395 225 0 145 0 0 0
+GUESTSTAT 1788847643 cpu  57812 0 116821 9395 225 0 145 0 0 0
+GUESTSTAT 1788847645 cpu  57945 0 117173 9395 225 0 145 0 0 0
+GUESTSTAT 1788847647 cpu  58072 0 117507 9395 225 0 145 0 0 0
+GUESTSTAT 1788847650 cpu  58200 0 117843 9396 225 0 145 0 0 0
+GUESTSTAT 1788847652 cpu  58340 0 118201 9396 225 0 145 0 0 0
+GUESTSTAT 1788847655 cpu  58469 0 118539 9396 225 0 145 0 0 0
+GUESTSTAT 1788847657 cpu  58598 0 118879 9396 225 0 145 0 0 0
+GUESTSTAT 1788847659 cpu  58728 0 119211 9396 225 0 145 0 0 0
+GUESTSTAT 1788847662 cpu  58850 0 119552 9397 225 0 145 0 0 0
+GUESTSTAT 1788847664 cpu  58987 0 119893 9397 225 0 150 0 0 0
+GUESTSTAT 1788847666 cpu  59115 0 120220 9397 225 0 150 0 0 0
+GUESTSTAT 1788847669 cpu  59258 0 120568 9397 225 0 150 0 0 0
+GUESTSTAT 1788847671 cpu  59396 0 120905 9398 225 0 150 0 0 0
+GUESTSTAT 1788847674 cpu  59527 0 121248 9398 225 0 150 0 0 0
+GUESTSTAT 1788847676 cpu  59659 0 121576 9398 225 0 150 0 0 0
+GUESTSTAT 1788847678 cpu  59800 0 121921 9398 225 0 151 0 0 0
+GUESTSTAT 1788847681 cpu  59936 0 122254 9398 225 0 151 0 0 0
+GUESTSTAT 1788847683 cpu  60080 0 122598 9398 225 0 151 0 0 0
+GUESTSTAT 1788847686 cpu  60221 0 122942 9398 225 0 151 0 0 0
+GUESTSTAT 1788847688 cpu  60356 0 123281 9398 225 0 151 0 0 0
+GUESTSTAT 1788847690 cpu  60491 0 123624 9398 225 0 151 0 0 0
+GUESTSTAT 1788847693 cpu  60633 0 123994 9399 225 0 155 0 0 0
+GUESTSTAT 1788847695 cpu  60769 0 124327 9399 225 0 155 0 0 0
+GUESTSTAT 1788847698 cpu  60903 0 124670 9399 225 0 155 0 0 0
+GUESTSTAT 1788847700 cpu  61033 0 125015 9399 225 0 155 0 0 0
+GUESTSTAT 1788847702 cpu  61156 0 125362 9399 225 0 155 0 0 0
+GUESTSTAT 1788847705 cpu  61286 0 125695 9400 225 0 155 0 0 0
+GUESTSTAT 1788847707 cpu  61416 0 126025 9400 225 0 155 0 0 0
+GUESTSTAT 1788847709 cpu  61548 0 126358 9400 225 0 155 0 0 0
+GUESTSTAT 1788847712 cpu  61678 0 126688 9400 225 0 155 0 0 0
+GUESTSTAT 1788847714 cpu  61808 0 127044 9401 225 0 155 0 0 0
+GUESTSTAT 1788847716 cpu  61946 0 127378 9401 225 0 155 0 0 0
+GUESTSTAT 1788847719 cpu  62077 0 127712 9401 225 0 155 0 0 0
+GUESTSTAT 1788847721 cpu  62211 0 128059 9401 225 0 155 0 0 0
+GUESTSTAT 1788847723 cpu  62338 0 128392 9402 225 0 157 0 0 0
+GUESTSTAT 1788847726 cpu  62473 0 128745 9402 225 0 157 0 0 0
+GUESTSTAT 1788847728 cpu  62607 0 129083 9402 225 0 157 0 0 0
+GUESTSTAT 1788847731 cpu  62739 0 129420 9402 225 0 157 0 0 0
+GUESTSTAT 1788847733 cpu  62869 0 129764 9402 225 0 157 0 0 0
+GUESTSTAT 1788847735 cpu  63001 0 130114 9402 225 0 157 0 0 0
+GUESTSTAT 1788847738 cpu  63132 0 130461 9403 225 0 158 0 0 0
+GUESTSTAT 1788847740 cpu  63258 0 130799 9403 225 0 158 0 0 0
+GUESTSTAT 1788847743 cpu  63395 0 131146 9403 225 0 158 0 0 0
+GUESTSTAT 1788847745 cpu  63525 0 131505 9403 225 0 158 0 0 0
+GUESTSTAT 1788847747 cpu  63666 0 131856 9403 225 0 158 0 0 0
+GUESTSTAT 1788847750 cpu  63794 0 132195 9403 225 0 158 0 0 0
+GUESTSTAT 1788847752 cpu  63930 0 132540 9404 225 0 158 0 0 0
+GUESTSTAT 1788847755 cpu  64067 0 132870 9404 225 0 160 0 0 0
+GUESTSTAT 1788847757 cpu  64213 0 133231 9404 225 0 160 0 0 0
+GUESTSTAT 1788847760 cpu  64352 0 133561 9404 225 0 160 0 0 0
+GUESTSTAT 1788847762 cpu  64481 0 133908 9404 225 0 160 0 0 0
+GUESTSTAT 1788847764 cpu  64611 0 134247 9404 225 0 160 0 0 0
+GUESTSTAT 1788847767 cpu  64745 0 134580 9405 225 0 160 0 0 0
+GUESTSTAT 1788847769 cpu  64881 0 134912 9405 225 0 160 0 0 0
+GUESTSTAT 1788847771 cpu  65026 0 135255 9405 225 0 160 0 0 0
+GUESTSTAT 1788847774 cpu  65153 0 135583 9405 225 0 160 0 0 0
+GUESTSTAT 1788847776 cpu  65289 0 135936 9405 225 0 160 0 0 0
+GUESTSTAT 1788847779 cpu  65433 0 136283 9405 225 0 160 0 0 0
+GUESTSTAT 1788847781 cpu  65565 0 136621 9405 225 0 160 0 0 0
+GUESTSTAT 1788847783 cpu  65699 0 136974 9405 225 0 160 0 0 0
+GUESTSTAT 1788847786 cpu  65836 0 137317 9405 225 0 162 0 0 0
+GUESTSTAT 1788847788 cpu  65979 0 137666 9405 225 0 162 0 0 0
+GUESTSTAT 1788847791 cpu  66124 0 138030 9405 225 0 162 0 0 0
+GUESTSTAT 1788847793 cpu  66256 0 138379 9406 225 0 162 0 0 0
+GUESTSTAT 1788847796 cpu  66392 0 138726 9406 225 0 162 0 0 0
+GUESTSTAT 1788847798 cpu  66524 0 139056 9406 225 0 162 0 0 0
+GUESTSTAT 1788847800 cpu  66663 0 139410 9406 225 0 162 0 0 0
+GUESTSTAT 1788847803 cpu  66796 0 139756 9406 225 0 162 0 0 0
+GUESTSTAT 1788847805 cpu  66960 0 140083 9406 225 0 162 0 0 0
+GUESTSTAT 1788847808 cpu  67096 0 140440 9406 225 0 162 0 0 0
+GUESTSTAT 1788847810 cpu  67230 0 140802 9406 225 0 162 0 0 0
+GUESTSTAT 1788847813 cpu  67362 0 141153 9407 225 0 162 0 0 0
+GUESTSTAT 1788847815 cpu  67501 0 141501 9407 225 0 165 0 0 0
+GUESTSTAT 1788847818 cpu  67644 0 141853 9407 225 0 165 0 0 0
+GUESTSTAT 1788847820 cpu  67776 0 142195 9407 225 0 165 0 0 0
+GUESTSTAT 1788847822 cpu  67904 0 142536 9407 225 0 165 0 0 0
+GUESTSTAT 1788847825 cpu  68036 0 142871 9407 225 0 165 0 0 0
+GUESTSTAT 1788847827 cpu  68165 0 143215 9407 225 0 165 0 0 0
+GUESTSTAT 1788847829 cpu  68292 0 143551 9407 225 0 165 0 0 0
+GUESTSTAT 1788847832 cpu  68424 0 143889 9407 225 0 165 0 0 0
+GUESTSTAT 1788847834 cpu  68549 0 144234 9407 225 0 165 0 0 0
+GUESTSTAT 1788847837 cpu  68691 0 144589 9407 225 0 165 0 0 0
+GUESTSTAT 1788847839 cpu  68826 0 144922 9408 225 0 165 0 0 0
+GUESTSTAT 1788847841 cpu  68962 0 145249 9408 225 0 165 0 0 0
+GUESTSTAT 1788847844 cpu  69085 0 145599 9408 225 0 165 0 0 0
+GUESTSTAT 1788847846 cpu  69222 0 145933 9408 225 0 168 0 0 0
+GUESTSTAT 1788847848 cpu  69365 0 146280 9408 225 0 168 0 0 0
+GUESTSTAT 1788847851 cpu  69507 0 146612 9408 225 0 168 0 0 0
+GUESTSTAT 1788847853 cpu  69638 0 146956 9408 225 0 168 0 0 0
+GUESTSTAT 1788847856 cpu  69777 0 147303 9408 225 0 168 0 0 0
+GUESTSTAT 1788847858 cpu  69904 0 147646 9408 225 0 168 0 0 0
+GUESTSTAT 1788847860 cpu  70050 0 147995 9408 225 0 168 0 0 0
+GUESTSTAT 1788847863 cpu  70200 0 148348 9408 225 0 168 0 0 0
+GUESTSTAT 1788847866 cpu  70335 0 148708 9408 225 0 168 0 0 0
+GUESTSTAT 1788847868 cpu  70459 0 149051 9409 225 0 168 0 0 0
+GUESTSTAT 1788847870 cpu  70603 0 149400 9409 225 0 168 0 0 0
+GUESTSTAT 1788847873 cpu  70741 0 149748 9409 225 0 168 0 0 0
+GUESTSTAT 1788847875 cpu  70880 0 150093 9409 225 0 168 0 0 0
+GUESTSTAT 1788847878 cpu  71018 0 150425 9410 225 0 171 0 0 0
+GUESTSTAT 1788847880 cpu  71148 0 150762 9410 225 0 171 0 0 0
+GUESTSTAT 1788847882 cpu  71284 0 151114 9410 225 0 171 0 0 0
+GUESTSTAT 1788847885 cpu  71424 0 151469 9410 225 0 171 0 0 0
+GUESTSTAT 1788847887 cpu  71559 0 151814 9410 225 0 171 0 0 0
+GUESTSTAT 1788847890 cpu  71685 0 152160 9410 225 0 171 0 0 0
+GUESTSTAT 1788847892 cpu  71824 0 152504 9410 225 0 171 0 0 0
+GUESTSTAT 1788847894 cpu  71949 0 152842 9410 225 0 171 0 0 0
+GUESTSTAT 1788847897 cpu  72091 0 153180 9411 225 0 171 0 0 0
+GUESTSTAT 1788847899 cpu  72220 0 153515 9411 225 0 171 0 0 0
+GUESTSTAT 1788847901 cpu  72352 0 153852 9411 225 0 171 0 0 0
+GUESTSTAT 1788847904 cpu  72481 0 154196 9412 225 0 171 0 0 0
+GUESTSTAT 1788847906 cpu  72627 0 154570 9412 225 0 174 0 0 0
+GUESTSTAT 1788847909 cpu  72757 0 154910 9412 225 0 174 0 0 0
+GUESTSTAT 1788847911 cpu  72892 0 155252 9412 225 0 174 0 0 0
+GUESTSTAT 1788847914 cpu  73027 0 155583 9412 225 0 174 0 0 0
+GUESTSTAT 1788847916 cpu  73159 0 155922 9412 225 0 174 0 0 0
+GUESTSTAT 1788847918 cpu  73300 0 156280 9412 225 0 174 0 0 0
+GUESTSTAT 1788847921 cpu  73438 0 156631 9412 225 0 175 0 0 0
+GUESTSTAT 1788847923 cpu  73570 0 156957 9412 225 0 175 0 0 0
+GUESTSTAT 1788847926 cpu  73713 0 157322 9412 225 0 175 0 0 0
+GUESTSTAT 1788847928 cpu  73852 0 157655 9412 225 0 175 0 0 0
+GUESTSTAT 1788847930 cpu  73988 0 158019 9412 225 0 177 0 0 0
+GUESTSTAT 1788847933 cpu  74125 0 158360 9413 225 0 177 0 0 0
+GUESTSTAT 1788847936 cpu  74263 0 158703 9413 225 0 178 0 0 0
+GUESTSTAT 1788847938 cpu  74423 0 159032 9414 225 0 185 0 0 0
+GUESTSTAT 1788847941 cpu  74575 0 159372 9414 225 0 185 0 0 0
+GUESTSTAT 1788847943 cpu  74708 0 159699 9414 225 0 186 0 0 0
+GUESTSTAT 1788847945 cpu  74848 0 160041 9414 225 0 186 0 0 0
+GUESTSTAT 1788847948 cpu  74979 0 160378 9414 225 0 186 0 0 0
+GUESTSTAT 1788847950 cpu  75116 0 160718 9414 225 0 186 0 0 0
+GUESTSTAT 1788847952 cpu  75256 0 161052 9414 225 0 186 0 0 0
+GUESTSTAT 1788847955 cpu  75384 0 161391 9415 225 0 186 0 0 0
+GUESTSTAT 1788847957 cpu  75515 0 161724 9415 225 0 186 0 0 0
+GUESTSTAT 1788847960 cpu  75655 0 162069 9415 225 0 186 0 0 0
+GUESTSTAT 1788847962 cpu  75787 0 162412 9415 225 0 186 0 0 0
+GUESTSTAT 1788847964 cpu  75924 0 162753 9415 225 0 186 0 0 0
+GUESTSTAT 1788847967 cpu  76056 0 163088 9415 225 0 186 0 0 0
+GUESTSTAT 1788847969 cpu  76198 0 163411 9416 225 0 190 0 0 0
+GUESTSTAT 1788847971 cpu  76333 0 163753 9416 225 0 190 0 0 0
+GUESTSTAT 1788847974 cpu  76459 0 164091 9416 225 0 190 0 0 0
+GUESTSTAT 1788847976 cpu  76588 0 164431 9416 225 0 190 0 0 0
+GUESTSTAT 1788847979 cpu  76721 0 164771 9416 225 0 190 0 0 0
+GUESTSTAT 1788847981 cpu  76861 0 165115 9416 225 0 190 0 0 0
+GUESTSTAT 1788847983 cpu  76992 0 165450 9416 225 0 190 0 0 0
+GUESTSTAT 1788847986 cpu  77116 0 165789 9416 225 0 190 0 0 0
+GUESTSTAT 1788847988 cpu  77253 0 166130 9416 225 0 190 0 0 0
+GUESTSTAT 1788847990 cpu  77388 0 166473 9416 225 0 190 0 0 0
+GUESTSTAT 1788847993 cpu  77517 0 166806 9416 225 0 190 0 0 0
+GUESTSTAT 1788847995 cpu  77652 0 167153 9417 225 0 190 0 0 0
+GUESTSTAT 1788847997 cpu  77789 0 167499 9417 225 0 190 0 0 0
+GUESTSTAT 1788848000 cpu  77928 0 167826 9418 225 0 192 0 0 0
+GUESTSTAT 1788848002 cpu  78060 0 168163 9418 225 0 192 0 0 0
+GUESTSTAT 1788848005 cpu  78190 0 168496 9418 225 0 192 0 0 0
+GUESTSTAT 1788848007 cpu  78325 0 168836 9419 225 0 192 0 0 0
+GUESTSTAT 1788848009 cpu  78461 0 169172 9419 225 0 192 0 0 0
+GUESTSTAT 1788848012 cpu  78615 0 169509 9419 225 0 192 0 0 0
+GUESTSTAT 1788848015 cpu  78733 0 169825 9419 225 0 193 0 0 0
+GUESTSTAT 1788848018 cpu  78875 0 170188 9419 225 0 194 0 0 0
+GUESTSTAT 1788848020 cpu  79010 0 170524 9419 225 0 195 0 0 0
+GUESTSTAT 1788848023 cpu  79153 0 170903 9419 225 0 195 0 0 0
+GUESTSTAT 1788848026 cpu  79297 0 171252 9419 225 0 196 0 0 0
+GUESTSTAT 1788848029 cpu  79436 0 171593 9419 225 0 199 0 0 0
+GUESTSTAT 1788848032 cpu  79573 0 171950 9419 225 0 200 0 0 0
+GUESTSTAT 1788848035 cpu  79698 0 172255 9419 225 0 201 0 0 0
+GUESTSTAT 1788848037 cpu  79826 0 172573 9420 225 0 202 0 0 0
+GUESTSTAT 1788848040 cpu  79955 0 172877 9420 225 0 202 0 0 0
+GUESTSTAT 1788848043 cpu  80077 0 173183 9420 225 0 203 0 0 0
+GUESTSTAT 1788848046 cpu  80193 0 173466 9421 225 0 204 0 0 0
+GUESTSTAT 1788848049 cpu  80317 0 173772 9421 225 0 208 0 0 0
+GUESTSTAT 1788848052 cpu  80425 0 174051 9421 225 0 216 0 0 0
+GUESTSTAT 1788848055 cpu  80565 0 174411 9422 225 0 216 0 0 0
+GUESTSTAT 1788848058 cpu  80676 0 174717 9422 225 0 217 0 0 0
+GUESTSTAT 1788848061 cpu  80819 0 175051 9423 225 0 224 0 0 0
+GUESTSTAT 1788848064 cpu  80928 0 175331 9423 225 0 227 0 0 0
+GUESTSTAT 1788848067 cpu  81055 0 175647 9424 225 0 228 0 0 0
+GUESTSTAT 1788848070 cpu  81171 0 175937 9424 225 0 228 0 0 0
+GUESTSTAT 1788848072 cpu  81291 0 176228 9424 225 0 229 0 0 0
+GUESTSTAT 1788848075 cpu  81417 0 176545 9424 225 0 229 0 0 0
+GUESTSTAT 1788848078 cpu  81541 0 176856 9424 225 0 230 0 0 0
+GUESTSTAT 1788848081 cpu  81655 0 177123 9424 225 0 230 0 0 0
+GUESTSTAT 1788848084 cpu  81777 0 177432 9424 225 0 231 0 0 0
+GUESTSTAT 1788848086 cpu  81913 0 177769 9424 225 0 232 0 0 0
+GUESTSTAT 1788848090 cpu  82058 0 178130 9424 225 0 233 0 0 0
+GUESTSTAT 1788848092 cpu  82197 0 178461 9426 225 0 237 0 0 0
+GUESTSTAT 1788848096 cpu  82320 0 178807 9426 225 0 239 0 0 0
+GUESTSTAT 1788848098 cpu  82432 0 179101 9427 225 0 241 0 0 0
+GUESTSTAT 1788848101 cpu  82596 0 179453 9427 225 0 242 0 0 0
+GUESTSTAT 1788848104 cpu  82726 0 179778 9427 225 0 243 0 0 0
+GUESTSTAT 1788848107 cpu  82847 0 180092 9428 225 0 243 0 0 0
+GUESTSTAT 1788848110 cpu  82970 0 180424 9428 225 0 244 0 0 0
+GUESTSTAT 1788848113 cpu  83081 0 180714 9428 225 0 245 0 0 0
+GUESTSTAT 1788848116 cpu  83206 0 181025 9428 225 0 246 0 0 0
+GUESTSTAT 1788848119 cpu  83336 0 181363 9428 225 0 247 0 0 0
+GUESTSTAT 1788848122 cpu  83418 0 181585 9428 225 0 247 0 0 0
+GUESTSTAT 1788848125 cpu  83545 0 181882 9431 225 0 258 0 0 0
+GUESTSTAT 1788848128 cpu  83671 0 182207 9432 225 0 259 0 0 0
+GUESTSTAT 1788848131 cpu  83819 0 182569 9432 225 0 260 0 0 0
+GUESTSTAT 1788848134 cpu  83937 0 182894 9432 225 0 261 0 0 0
+GUESTSTAT 1788848136 cpu  84046 0 183167 9433 225 0 262 0 0 0
+GUESTSTAT 1788848139 cpu  84186 0 183500 9433 225 0 262 0 0 0
+GUESTSTAT 1788848142 cpu  84332 0 183863 9433 225 0 263 0 0 0
+GUESTSTAT 1788848145 cpu  84460 0 184176 9433 225 0 264 0 0 0
+GUESTSTAT 1788848148 cpu  84585 0 184489 9433 225 0 264 0 0 0
+GUESTSTAT 1788848151 cpu  84693 0 184734 9433 225 0 266 0 0 0
+GUESTSTAT 1788848154 cpu  84839 0 185083 9433 225 0 266 0 0 0
+GUESTSTAT 1788848156 cpu  84983 0 185415 9434 225 0 269 0 0 0
+GUESTSTAT 1788848158 cpu  85115 0 185748 9434 225 0 269 0 0 0
+GUESTSTAT 1788848161 cpu  85248 0 186090 9434 225 0 269 0 0 0
+GUESTSTAT 1788848163 cpu  85387 0 186433 9434 225 0 270 0 0 0
+GUESTSTAT 1788848165 cpu  85522 0 186775 9434 225 0 270 0 0 0
+GUESTSTAT 1788848168 cpu  85654 0 187104 9434 225 0 270 0 0 0
+GUESTSTAT 1788848170 cpu  85794 0 187443 9434 225 0 270 0 0 0
+GUESTSTAT 1788848173 cpu  85936 0 187763 9434 225 0 270 0 0 0
+GUESTSTAT 1788848175 cpu  86070 0 188103 9434 225 0 270 0 0 0
+GUESTSTAT 1788848177 cpu  86202 0 188445 9434 225 0 270 0 0 0
+GUESTSTAT 1788848180 cpu  86340 0 188800 9434 225 0 270 0 0 0
+GUESTSTAT 1788848182 cpu  86482 0 189129 9435 225 0 270 0 0 0
+GUESTSTAT 1788848185 cpu  86622 0 189464 9435 225 0 270 0 0 0
+GUESTSTAT 1788848187 cpu  86762 0 189798 9436 225 0 272 0 0 0
+GUESTSTAT 1788848189 cpu  86907 0 190146 9436 225 0 272 0 0 0
+GUESTSTAT 1788848192 cpu  87043 0 190490 9436 225 0 272 0 0 0
+GUESTSTAT 1788848194 cpu  87184 0 190825 9436 225 0 272 0 0 0
+GUESTSTAT 1788848197 cpu  87331 0 191158 9437 225 0 272 0 0 0
+GUESTSTAT 1788848199 cpu  87479 0 191500 9437 225 0 272 0 0 0
+GUESTSTAT 1788848201 cpu  87613 0 191840 9437 225 0 272 0 0 0
+GUESTSTAT 1788848204 cpu  87748 0 192187 9437 225 0 272 0 0 0
+GUESTSTAT 1788848206 cpu  87885 0 192520 9437 225 0 272 0 0 0
+GUESTSTAT 1788848209 cpu  88046 0 192851 9437 225 0 272 0 0 0
+GUESTSTAT 1788848211 cpu  88190 0 193211 9437 225 0 272 0 0 0
+GUESTSTAT 1788848214 cpu  88324 0 193540 9437 225 0 272 0 0 0
+GUESTSTAT 1788848216 cpu  88468 0 193885 9437 225 0 272 0 0 0
+GUESTSTAT 1788848218 cpu  88610 0 194211 9438 225 0 276 0 0 0
+GUESTSTAT 1788848221 cpu  88756 0 194532 9438 225 0 276 0 0 0
+GUESTSTAT 1788848223 cpu  88906 0 194858 9438 225 0 276 0 0 0
+GUESTSTAT 1788848225 cpu  89034 0 195185 9438 225 0 276 0 0 0
+GUESTSTAT 1788848228 cpu  89174 0 195528 9438 225 0 276 0 0 0
+GUESTSTAT 1788848230 cpu  89300 0 195869 9438 225 0 276 0 0 0
+GUESTSTAT 1788848233 cpu  89441 0 196202 9438 225 0 276 0 0 0
+GUESTSTAT 1788848235 cpu  89589 0 196554 9439 225 0 276 0 0 0
+GUESTSTAT 1788848237 cpu  89724 0 196876 9439 225 0 276 0 0 0
+GUESTSTAT 1788848240 cpu  89864 0 197209 9439 225 0 276 0 0 0
+GUESTSTAT 1788848242 cpu  90013 0 197551 9439 225 0 276 0 0 0
+GUESTSTAT 1788848245 cpu  90154 0 197891 9439 225 0 276 0 0 0
+GUESTSTAT 1788848247 cpu  90294 0 198231 9439 225 0 276 0 0 0
+GUESTSTAT 1788848249 cpu  90430 0 198560 9439 225 0 279 0 0 0
+GUESTSTAT 1788848252 cpu  90570 0 198909 9439 225 0 279 0 0 0
+GUESTSTAT 1788848254 cpu  90702 0 199249 9440 225 0 279 0 0 0
+GUESTSTAT 1788848257 cpu  90843 0 199594 9440 225 0 279 0 0 0
+GUESTSTAT 1788848259 cpu  90990 0 199979 9441 225 0 282 0 0 0
+GUESTSTAT 1788848262 cpu  91132 0 200351 9441 225 0 282 0 0 0
+GUESTSTAT 1788848264 cpu  91273 0 200707 9441 225 0 282 0 0 0
+GUESTSTAT 1788848267 cpu  91410 0 201057 9441 225 0 282 0 0 0
+GUESTSTAT 1788848269 cpu  91544 0 201408 9441 225 0 282 0 0 0
+GUESTSTAT 1788848272 cpu  91672 0 201736 9441 225 0 282 0 0 0
+GUESTSTAT 1788848274 cpu  91811 0 202078 9441 225 0 282 0 0 0
+GUESTSTAT 1788848276 cpu  91934 0 202407 9441 225 0 282 0 0 0
+GUESTSTAT 1788848279 cpu  92076 0 202724 9441 225 0 289 0 0 0
+GUESTSTAT 1788848281 cpu  92214 0 203042 9442 225 0 289 0 0 0
+GUESTSTAT 1788848283 cpu  92352 0 203389 9442 225 0 289 0 0 0
+GUESTSTAT 1788848286 cpu  92489 0 203724 9442 225 0 289 0 0 0
+GUESTSTAT 1788848288 cpu  92625 0 204062 9442 225 0 289 0 0 0
+GUESTSTAT 1788848291 cpu  92758 0 204388 9442 225 0 289 0 0 0
+GUESTSTAT 1788848293 cpu  92902 0 204744 9442 225 0 289 0 0 0
+GUESTSTAT 1788848295 cpu  93035 0 205084 9442 225 0 289 0 0 0
+GUESTSTAT 1788848298 cpu  93183 0 205432 9442 225 0 289 0 0 0
+GUESTSTAT 1788848300 cpu  93332 0 205772 9442 225 0 289 0 0 0
+GUESTSTAT 1788848303 cpu  93471 0 206105 9442 225 0 289 0 0 0
+GUESTSTAT 1788848305 cpu  93600 0 206438 9442 225 0 289 0 0 0
+GUESTSTAT 1788848307 cpu  93738 0 206775 9442 225 0 289 0 0 0
+GUESTSTAT 1788848310 cpu  93886 0 207130 9442 225 0 293 0 0 0
+GUESTSTAT 1788848312 cpu  94034 0 207467 9442 225 0 293 0 0 0
+GUESTSTAT 1788848315 cpu  94171 0 207801 9442 225 0 293 0 0 0
+GUESTSTAT 1788848317 cpu  94304 0 208136 9442 225 0 293 0 0 0
+GUESTSTAT 1788848319 cpu  94432 0 208479 9442 225 0 293 0 0 0
+GUESTSTAT 1788848322 cpu  94559 0 208820 9443 225 0 293 0 0 0
+GUESTSTAT 1788848324 cpu  94694 0 209156 9443 225 0 293 0 0 0
+GUESTSTAT 1788848327 cpu  94826 0 209499 9443 225 0 293 0 0 0
+GUESTSTAT 1788848329 cpu  94966 0 209834 9443 225 0 293 0 0 0
+GUESTSTAT 1788848331 cpu  95101 0 210171 9443 225 0 293 0 0 0
+GUESTSTAT 1788848334 cpu  95239 0 210499 9443 225 0 293 0 0 0
+GUESTSTAT 1788848336 cpu  95370 0 210842 9443 225 0 293 0 0 0
+GUESTSTAT 1788848338 cpu  95508 0 211183 9443 225 0 293 0 0 0
+GUESTSTAT 1788848341 cpu  95652 0 211516 9444 225 0 295 0 0 0
+GUESTSTAT 1788848343 cpu  95781 0 211854 9444 225 0 295 0 0 0
+GUESTSTAT 1788848346 cpu  95922 0 212206 9444 225 0 295 0 0 0
+GUESTSTAT 1788848348 cpu  96058 0 212560 9444 225 0 295 0 0 0
+GUESTSTAT 1788848350 cpu  96202 0 212909 9444 225 0 295 0 0 0
+GUESTSTAT 1788848353 cpu  96332 0 213238 9444 225 0 296 0 0 0
+GUESTSTAT 1788848355 cpu  96457 0 213580 9444 225 0 296 0 0 0
+GUESTSTAT 1788848358 cpu  96597 0 213918 9444 225 0 296 0 0 0
+GUESTSTAT 1788848360 cpu  96732 0 214250 9444 225 0 296 0 0 0
+GUESTSTAT 1788848362 cpu  96878 0 214595 9444 225 0 296 0 0 0
+GUESTSTAT 1788848365 cpu  97016 0 214947 9444 225 0 296 0 0 0
+GUESTSTAT 1788848367 cpu  97147 0 215295 9444 225 0 296 0 0 0
+GUESTSTAT 1788848370 cpu  97284 0 215635 9446 225 0 298 0 0 0
+GUESTSTAT 1788848372 cpu  97426 0 215988 9446 225 0 298 0 0 0
+GUESTSTAT 1788848375 cpu  97557 0 216333 9446 225 0 298 0 0 0
+GUESTSTAT 1788848377 cpu  97691 0 216672 9446 225 0 298 0 0 0
+GUESTSTAT 1788848379 cpu  97836 0 217019 9446 225 0 298 0 0 0
+GUESTSTAT 1788848382 cpu  97981 0 217369 9446 225 0 298 0 0 0
+GUESTSTAT 1788848384 cpu  98109 0 217699 9446 225 0 298 0 0 0
+GUESTSTAT 1788848387 cpu  98245 0 218051 9446 225 0 298 0 0 0
+GUESTSTAT 1788848389 cpu  98385 0 218382 9447 225 0 298 0 0 0
+GUESTSTAT 1788848391 cpu  98526 0 218725 9447 225 0 298 0 0 0
+GUESTSTAT 1788848394 cpu  98658 0 219055 9447 225 0 298 0 0 0
+GUESTSTAT 1788848396 cpu  98794 0 219389 9447 225 0 298 0 0 0
+GUESTSTAT 1788848398 cpu  98931 0 219728 9447 225 0 298 0 0 0
+GUESTSTAT 1788848401 cpu  99129 0 220037 9448 225 0 302 0 0 0
+GUESTSTAT 1788848403 cpu  99263 0 220368 9448 225 0 302 0 0 0
+GUESTSTAT 1788848406 cpu  99397 0 220704 9448 225 0 302 0 0 0
+GUESTSTAT 1788848408 cpu  99539 0 221033 9448 225 0 302 0 0 0
+GUESTSTAT 1788848410 cpu  99667 0 221377 9448 225 0 302 0 0 0
+GUESTSTAT 1788848413 cpu  99793 0 221708 9449 225 0 302 0 0 0
+GUESTSTAT 1788848415 cpu  99933 0 222057 9449 225 0 302 0 0 0
+GUESTSTAT 1788848418 cpu  100078 0 222389 9449 225 0 302 0 0 0
+GUESTSTAT 1788848420 cpu  100215 0 222719 9449 225 0 302 0 0 0
+GUESTSTAT 1788848422 cpu  100357 0 223067 9449 225 0 302 0 0 0
+GUESTSTAT 1788848425 cpu  100493 0 223399 9449 225 0 302 0 0 0
+GUESTSTAT 1788848427 cpu  100629 0 223735 9449 225 0 302 0 0 0
+GUESTSTAT 1788848429 cpu  100767 0 224078 9449 225 0 302 0 0 0
+GUESTSTAT 1788848432 cpu  100910 0 224426 9450 225 0 304 0 0 0
+GUESTSTAT 1788848434 cpu  101052 0 224773 9450 225 0 304 0 0 0
+GUESTSTAT 1788848437 cpu  101179 0 225103 9450 225 0 304 0 0 0
+GUESTSTAT 1788848439 cpu  101317 0 225447 9450 225 0 304 0 0 0
+GUESTSTAT 1788848441 cpu  101453 0 225790 9450 225 0 304 0 0 0
+GUESTSTAT 1788848444 cpu  101591 0 226123 9450 225 0 304 0 0 0
+GUESTSTAT 1788848446 cpu  101725 0 226463 9450 225 0 304 0 0 0
+GUESTSTAT 1788848449 cpu  101864 0 226789 9450 225 0 304 0 0 0
+GUESTSTAT 1788848451 cpu  102000 0 227125 9451 225 0 304 0 0 0
+GUESTSTAT 1788848453 cpu  102132 0 227454 9451 225 0 304 0 0 0
+GUESTSTAT 1788848456 cpu  102277 0 227786 9451 225 0 304 0 0 0
+GUESTSTAT 1788848458 cpu  102413 0 228146 9451 225 0 304 0 0 0
+GUESTSTAT 1788848461 cpu  102544 0 228485 9452 225 0 304 0 0 0
+GUESTSTAT 1788848463 cpu  102683 0 228813 9453 225 0 306 0 0 0
+GUESTSTAT 1788848465 cpu  102824 0 229167 9453 225 0 306 0 0 0
+GUESTSTAT 1788848468 cpu  102967 0 229520 9453 225 0 307 0 0 0
+GUESTSTAT 1788848470 cpu  103096 0 229856 9453 225 0 307 0 0 0
+GUESTSTAT 1788848473 cpu  103231 0 230200 9453 225 0 307 0 0 0
+GUESTSTAT 1788848475 cpu  103364 0 230553 9453 225 0 307 0 0 0
+GUESTSTAT 1788848477 cpu  103505 0 230895 9453 225 0 307 0 0 0
+GUESTSTAT 1788848480 cpu  103652 0 231232 9453 225 0 307 0 0 0
+GUESTSTAT 1788848482 cpu  103795 0 231561 9453 225 0 307 0 0 0
+GUESTSTAT 1788848485 cpu  103937 0 231902 9454 225 0 307 0 0 0
+GUESTSTAT 1788848487 cpu  104086 0 232251 9454 225 0 307 0 0 0
+GUESTSTAT 1788848490 cpu  104225 0 232581 9454 225 0 307 0 0 0
+GUESTSTAT 1788848492 cpu  104375 0 232908 9455 225 0 310 0 0 0
+GUESTSTAT 1788848494 cpu  104511 0 233251 9455 225 0 310 0 0 0
+GUESTSTAT 1788848497 cpu  104642 0 233583 9455 225 0 310 0 0 0
+GUESTSTAT 1788848499 cpu  104772 0 233927 9455 225 0 310 0 0 0
+GUESTSTAT 1788848501 cpu  104904 0 234271 9455 225 0 310 0 0 0
+GUESTSTAT 1788848504 cpu  105038 0 234606 9455 225 0 310 0 0 0
+GUESTSTAT 1788848506 cpu  105169 0 234944 9455 225 0 310 0 0 0
+GUESTSTAT 1788848509 cpu  105309 0 235293 9455 225 0 310 0 0 0
+GUESTSTAT 1788848511 cpu  105440 0 235649 9455 225 0 310 0 0 0
+GUESTSTAT 1788848513 cpu  105572 0 235983 9456 225 0 310 0 0 0
+GUESTSTAT 1788848516 cpu  105703 0 236326 9456 225 0 310 0 0 0
+GUESTSTAT 1788848518 cpu  105841 0 236650 9456 225 0 310 0 0 0
+GUESTSTAT 1788848520 cpu  105978 0 236989 9456 225 0 310 0 0 0
+GUESTSTAT 1788848523 cpu  106116 0 237313 9457 225 0 314 0 0 0
+GUESTSTAT 1788848525 cpu  106249 0 237648 9457 225 0 314 0 0 0
+GUESTSTAT 1788848528 cpu  106389 0 237985 9457 225 0 314 0 0 0
+GUESTSTAT 1788848530 cpu  106512 0 238318 9457 225 0 314 0 0 0
+GUESTSTAT 1788848532 cpu  106650 0 238667 9457 225 0 314 0 0 0
+GUESTSTAT 1788848535 cpu  106789 0 239008 9457 225 0 314 0 0 0
+GUESTSTAT 1788848537 cpu  106930 0 239354 9457 225 0 314 0 0 0
+GUESTSTAT 1788848539 cpu  107064 0 239686 9457 225 0 314 0 0 0
+GUESTSTAT 1788848542 cpu  107196 0 240025 9457 225 0 314 0 0 0
+GUESTSTAT 1788848544 cpu  107336 0 240369 9457 225 0 314 0 0 0
+GUESTSTAT 1788848547 cpu  107474 0 240704 9457 225 0 314 0 0 0
+GUESTSTAT 1788848549 cpu  107613 0 241039 9457 225 0 314 0 0 0
+GUESTSTAT 1788848551 cpu  107762 0 241379 9457 225 0 314 0 0 0
+GUESTSTAT 1788848554 cpu  107910 0 241703 9458 225 0 317 0 0 0
+GUESTSTAT 1788848556 cpu  108052 0 242042 9458 225 0 317 0 0 0
+GUESTSTAT 1788848559 cpu  108204 0 242375 9458 225 0 317 0 0 0
+GUESTSTAT 1788848561 cpu  108350 0 242693 9458 225 0 317 0 0 0
+GUESTSTAT 1788848564 cpu  108517 0 243124 9459 225 0 320 0 0 0
+GUESTSTAT 1788848567 cpu  108662 0 243477 9459 225 0 320 0 0 0
+GUESTSTAT 1788848569 cpu  108807 0 243817 9459 225 0 320 0 0 0
+GUESTSTAT 1788848572 cpu  108946 0 244162 9459 225 0 320 0 0 0
+GUESTSTAT 1788848574 cpu  109086 0 244510 9459 225 0 320 0 0 0
+GUESTSTAT 1788848576 cpu  109214 0 244845 9459 225 0 320 0 0 0
+GUESTSTAT 1788848579 cpu  109343 0 245185 9459 225 0 320 0 0 0
+GUESTSTAT 1788848581 cpu  109485 0 245518 9459 225 0 320 0 0 0
+GUESTSTAT 1788848584 cpu  109628 0 245846 9460 225 0 326 0 0 0
+GUESTSTAT 1788848586 cpu  109760 0 246186 9460 225 0 326 0 0 0
+GUESTSTAT 1788848588 cpu  109891 0 246529 9460 225 0 326 0 0 0
+GUESTSTAT 1788848591 cpu  110020 0 246861 9460 225 0 326 0 0 0
+GUESTSTAT 1788848593 cpu  110156 0 247209 9460 225 0 326 0 0 0
+GUESTSTAT 1788848595 cpu  110283 0 247556 9460 225 0 326 0 0 0
+GUESTSTAT 1788848598 cpu  110413 0 247900 9460 225 0 326 0 0 0
+GUESTSTAT 1788848600 cpu  110547 0 248242 9460 225 0 326 0 0 0
+GUESTSTAT 1788848602 cpu  110672 0 248586 9461 225 0 326 0 0 0
+GUESTSTAT 1788848605 cpu  110806 0 248926 9461 225 0 326 0 0 0
+GUESTSTAT 1788848607 cpu  110940 0 249265 9461 225 0 326 0 0 0
+GUESTSTAT 1788848610 cpu  111075 0 249592 9461 225 0 326 0 0 0
+GUESTSTAT 1788848612 cpu  111208 0 249934 9461 225 0 326 0 0 0
+GUESTSTAT 1788848614 cpu  111343 0 250259 9462 225 0 329 0 0 0
+GUESTSTAT 1788848617 cpu  111479 0 250607 9462 225 0 329 0 0 0
+GUESTSTAT 1788848619 cpu  111610 0 250947 9462 225 0 329 0 0 0
+GUESTSTAT 1788848621 cpu  111739 0 251282 9462 225 0 329 0 0 0
+GUESTSTAT 1788848624 cpu  111873 0 251632 9463 225 0 329 0 0 0
+GUESTSTAT 1788848626 cpu  112009 0 251966 9463 225 0 329 0 0 0
+GUESTSTAT 1788848629 cpu  112133 0 252302 9463 225 0 329 0 0 0
+GUESTSTAT 1788848631 cpu  112261 0 252645 9463 225 0 329 0 0 0
+GUESTSTAT 1788848633 cpu  112395 0 252983 9463 225 0 329 0 0 0
+GUESTSTAT 1788848636 cpu  112539 0 253329 9463 225 0 329 0 0 0
+GUESTSTAT 1788848638 cpu  112677 0 253669 9464 225 0 329 0 0 0
+GUESTSTAT 1788848640 cpu  112809 0 254021 9464 225 0 329 0 0 0
+GUESTSTAT 1788848643 cpu  112939 0 254361 9464 225 0 329 0 0 0
+GUESTSTAT 1788848645 cpu  113080 0 254710 9465 225 0 333 0 0 0
+GUESTSTAT 1788848648 cpu  113222 0 255060 9465 225 0 333 0 0 0
+GUESTSTAT 1788848650 cpu  113352 0 255395 9465 225 0 333 0 0 0
+GUESTSTAT 1788848653 cpu  113490 0 255738 9465 225 0 333 0 0 0
+GUESTSTAT 1788848655 cpu  113622 0 256078 9465 225 0 333 0 0 0
+GUESTSTAT 1788848657 cpu  113770 0 256425 9466 225 0 333 0 0 0
+GUESTSTAT 1788848660 cpu  113910 0 256771 9466 225 0 333 0 0 0
+GUESTSTAT 1788848662 cpu  114055 0 257114 9466 225 0 333 0 0 0
+GUESTSTAT 1788848665 cpu  114193 0 257461 9466 225 0 333 0 0 0
+GUESTSTAT 1788848667 cpu  114337 0 257791 9467 225 0 333 0 0 0
+GUESTSTAT 1788848670 cpu  114475 0 258129 9467 225 0 333 0 0 0
+GUESTSTAT 1788848672 cpu  114632 0 258474 9467 225 0 333 0 0 0
+GUESTSTAT 1788848674 cpu  114769 0 258808 9467 225 0 333 0 0 0
+GUESTSTAT 1788848677 cpu  115017 0 259104 9468 226 0 336 0 0 0
+GUESTSTAT 1788848680 cpu  115305 0 259374 9468 227 0 337 0 0 0
+GUESTSTAT 1788848683 cpu  115610 0 259603 9469 227 0 337 0 0 0
+GUESTSTAT 1788848685 cpu  115930 0 259834 9469 227 0 337 0 0 0
+GUESTSTAT 1788848688 cpu  116217 0 260114 9469 227 0 337 0 0 0
+GUESTSTAT 1788848691 cpu  116471 0 260382 9469 228 0 337 0 0 0
+GUESTSTAT 1788848693 cpu  116714 0 260662 9470 228 0 337 0 0 0
+GUESTSTAT 1788848696 cpu  116980 0 260907 9470 228 0 337 0 0 0
+GUESTSTAT 1788848699 cpu  117131 0 261260 9470 228 0 337 0 0 0
+GUESTSTAT 1788848701 cpu  117321 0 261605 9470 228 0 337 0 0 0
+GUESTSTAT 1788848704 cpu  117470 0 261948 9470 228 0 337 0 0 0
+GUESTSTAT 1788848706 cpu  117607 0 262283 9471 228 0 340 0 0 0
+GUESTSTAT 1788848709 cpu  117741 0 262625 9471 228 0 340 0 0 0
+GUESTSTAT 1788848711 cpu  117877 0 262958 9472 228 0 340 0 0 0
+GUESTSTAT 1788848713 cpu  118009 0 263298 9472 228 0 340 0 0 0
+GUESTSTAT 1788848716 cpu  118144 0 263645 9472 228 0 340 0 0 0
+GUESTSTAT 1788848718 cpu  118285 0 263985 9472 228 0 340 0 0 0
+GUESTSTAT 1788848720 cpu  118425 0 264322 9472 228 0 340 0 0 0
+GUESTSTAT 1788848723 cpu  118554 0 264664 9472 228 0 340 0 0 0
+GUESTSTAT 1788848725 cpu  118689 0 265008 9472 228 0 340 0 0 0
+GUESTSTAT 1788848728 cpu  118833 0 265362 9472 228 0 340 0 0 0
+GUESTSTAT 1788848730 cpu  118976 0 265703 9473 228 0 340 0 0 0
+GUESTSTAT 1788848733 cpu  119112 0 266023 9473 228 0 340 0 0 0
+GUESTSTAT 1788848735 cpu  119248 0 266349 9473 228 0 340 0 0 0
+GUESTSTAT 1788848737 cpu  119387 0 266681 9474 228 0 343 0 0 0
+GUESTSTAT 1788848740 cpu  119526 0 267021 9474 228 0 343 0 0 0
+GUESTSTAT 1788848742 cpu  119666 0 267386 9474 228 0 343 0 0 0
+GUESTSTAT 1788848745 cpu  119804 0 267749 9474 228 0 343 0 0 0
+GUESTSTAT 1788848747 cpu  119943 0 268093 9474 228 0 343 0 0 0
+GUESTSTAT 1788848750 cpu  120091 0 268437 9474 228 0 343 0 0 0
+GUESTSTAT 1788848752 cpu  120231 0 268774 9474 228 0 343 0 0 0
+GUESTSTAT 1788848754 cpu  120368 0 269113 9474 228 0 343 0 0 0
+GUESTSTAT 1788848757 cpu  120502 0 269450 9474 228 0 343 0 0 0
+GUESTSTAT 1788848759 cpu  120634 0 269791 9474 228 0 343 0 0 0
+GUESTSTAT 1788848761 cpu  120777 0 270124 9474 228 0 343 0 0 0
+GUESTSTAT 1788848764 cpu  120903 0 270452 9474 228 0 343 0 0 0
+GUESTSTAT 1788848766 cpu  121036 0 270789 9474 228 0 343 0 0 0
+GUESTSTAT 1788848768 cpu  121180 0 271133 9475 228 0 345 0 0 0
+GUESTSTAT 1788848771 cpu  121305 0 271468 9475 228 0 345 0 0 0
+GUESTSTAT 1788848773 cpu  121430 0 271800 9475 228 0 345 0 0 0
+GUESTSTAT 1788848776 cpu  121563 0 272145 9475 228 0 345 0 0 0
+GUESTSTAT 1788848778 cpu  121692 0 272477 9476 228 0 345 0 0 0
+GUESTSTAT 1788848780 cpu  121824 0 272812 9476 228 0 345 0 0 0
+GUESTSTAT 1788848783 cpu  121962 0 273156 9476 228 0 345 0 0 0
+GUESTSTAT 1788848785 cpu  122104 0 273509 9476 228 0 345 0 0 0
+GUESTSTAT 1788848787 cpu  122240 0 273849 9476 228 0 345 0 0 0
+GUESTSTAT 1788848790 cpu  122379 0 274178 9476 228 0 345 0 0 0
+GUESTSTAT 1788848792 cpu  122512 0 274527 9476 228 0 345 0 0 0
+GUESTSTAT 1788848795 cpu  122640 0 274855 9476 228 0 345 0 0 0
+GUESTSTAT 1788848797 cpu  122780 0 275213 9477 228 0 348 0 0 0
+GUESTSTAT 1788848799 cpu  122921 0 275544 9477 228 0 348 0 0 0
+GUESTSTAT 1788848802 cpu  123054 0 275893 9477 228 0 348 0 0 0
+GUESTSTAT 1788848804 cpu  123193 0 276253 9477 228 0 348 0 0 0
+GUESTSTAT 1788848807 cpu  123327 0 276599 9477 228 0 348 0 0 0
+GUESTSTAT 1788848809 cpu  123458 0 276926 9477 228 0 348 0 0 0
+GUESTSTAT 1788848811 cpu  123593 0 277276 9477 228 0 348 0 0 0
+GUESTSTAT 1788848814 cpu  123732 0 277615 9477 228 0 348 0 0 0
+GUESTSTAT 1788848816 cpu  123869 0 277959 9477 228 0 348 0 0 0
+GUESTSTAT 1788848819 cpu  124006 0 278306 9477 228 0 348 0 0 0
+GUESTSTAT 1788848822 cpu  124158 0 278724 9477 228 0 351 0 0 0
+GUESTSTAT 1788848824 cpu  124298 0 279087 9478 228 0 351 0 0 0
+GUESTSTAT 1788848827 cpu  124434 0 279426 9478 228 0 351 0 0 0
+GUESTSTAT 1788848829 cpu  124571 0 279744 9478 228 0 357 0 0 0
+GUESTSTAT 1788848831 cpu  124704 0 280095 9478 228 0 357 0 0 0
+GUESTSTAT 1788848834 cpu  124834 0 280427 9478 228 0 357 0 0 0
+GUESTSTAT 1788848836 cpu  124967 0 280772 9478 228 0 357 0 0 0
+GUESTSTAT 1788848839 cpu  125109 0 281101 9478 228 0 357 0 0 0
+GUESTSTAT 1788848841 cpu  125236 0 281443 9479 228 0 357 0 0 0
+GUESTSTAT 1788848843 cpu  125368 0 281791 9479 228 0 357 0 0 0
+GUESTSTAT 1788848846 cpu  125499 0 282126 9479 228 0 357 0 0 0
+GUESTSTAT 1788848848 cpu  125632 0 282469 9479 228 0 357 0 0 0
+GUESTSTAT 1788848850 cpu  125779 0 282803 9479 228 0 357 0 0 0
+GUESTSTAT 1788848853 cpu  125917 0 283136 9479 228 0 357 0 0 0
+GUESTSTAT 1788848855 cpu  126056 0 283476 9479 228 0 357 0 0 0
+GUESTSTAT 1788848858 cpu  126199 0 283821 9480 228 0 357 0 0 0
+GUESTSTAT 1788848860 cpu  126337 0 284153 9480 228 0 361 0 0 0
+GUESTSTAT 1788848862 cpu  126473 0 284492 9481 228 0 361 0 0 0
+GUESTSTAT 1788848865 cpu  126613 0 284829 9481 228 0 361 0 0 0
+GUESTSTAT 1788848867 cpu  126755 0 285162 9481 228 0 361 0 0 0
+GUESTSTAT 1788848870 cpu  126892 0 285493 9481 228 0 361 0 0 0
+GUESTSTAT 1788848872 cpu  127038 0 285836 9482 228 0 361 0 0 0
+GUESTSTAT 1788848874 cpu  127184 0 286186 9482 228 0 361 0 0 0
+GUESTSTAT 1788848877 cpu  127324 0 286525 9482 228 0 361 0 0 0
+GUESTSTAT 1788848879 cpu  127468 0 286871 9482 228 0 361 0 0 0
+GUESTSTAT 1788848882 cpu  127607 0 287193 9482 228 0 361 0 0 0
+GUESTSTAT 1788848884 cpu  127740 0 287523 9482 228 0 361 0 0 0
+GUESTSTAT 1788848886 cpu  127875 0 287846 9483 228 0 361 0 0 0
+GUESTSTAT 1788848889 cpu  128019 0 288202 9483 228 0 363 0 0 0
+GUESTSTAT 1788848891 cpu  128154 0 288560 9483 228 0 363 0 0 0
+GUESTSTAT 1788848894 cpu  128280 0 288910 9483 228 0 363 0 0 0
+GUESTSTAT 1788848896 cpu  128408 0 289252 9483 228 0 363 0 0 0
+GUESTSTAT 1788848898 cpu  128541 0 289587 9483 228 0 363 0 0 0
+GUESTSTAT 1788848901 cpu  128674 0 289916 9483 228 0 363 0 0 0
+GUESTSTAT 1788848903 cpu  128810 0 290261 9483 228 0 363 0 0 0
+GUESTSTAT 1788848906 cpu  128949 0 290615 9483 228 0 363 0 0 0
+GUESTSTAT 1788848908 cpu  129077 0 290945 9483 228 0 363 0 0 0
+GUESTSTAT 1788848910 cpu  129213 0 291288 9483 228 0 363 0 0 0
+GUESTSTAT 1788848913 cpu  129355 0 291634 9483 228 0 363 0 0 0
+GUESTSTAT 1788848915 cpu  129478 0 291972 9483 228 0 363 0 0 0
+GUESTSTAT 1788848917 cpu  129614 0 292305 9484 228 0 363 0 0 0
+GUESTSTAT 1788848920 cpu  129751 0 292622 9484 228 0 366 0 0 0
+GUESTSTAT 1788848922 cpu  129884 0 292958 9484 228 0 366 0 0 0
+GUESTSTAT 1788848924 cpu  130012 0 293308 9485 228 0 366 0 0 0
+GUESTSTAT 1788848927 cpu  130143 0 293646 9485 228 0 366 0 0 0
+GUESTSTAT 1788848929 cpu  130289 0 293983 9485 228 0 366 0 0 0
+GUESTSTAT 1788848932 cpu  130418 0 294323 9485 228 0 366 0 0 0
+GUESTSTAT 1788848934 cpu  130545 0 294663 9486 228 0 366 0 0 0
+GUESTSTAT 1788848936 cpu  130685 0 295010 9486 228 0 366 0 0 0
+GUESTSTAT 1788848939 cpu  130825 0 295353 9486 228 0 366 0 0 0
+GUESTSTAT 1788848941 cpu  130960 0 295679 9486 228 0 366 0 0 0
+GUESTSTAT 1788848943 cpu  131084 0 296021 9486 228 0 366 0 0 0
+GUESTSTAT 1788848946 cpu  131217 0 296370 9486 228 0 366 0 0 0
+GUESTSTAT 1788848948 cpu  131355 0 296709 9486 228 0 366 0 0 0
+GUESTSTAT 1788848951 cpu  131491 0 297042 9486 228 0 368 0 0 0
+GUESTSTAT 1788848953 cpu  131620 0 297377 9486 228 0 368 0 0 0
+GUESTSTAT 1788848955 cpu  131752 0 297723 9486 228 0 368 0 0 0
+GUESTSTAT 1788848958 cpu  131886 0 298068 9487 228 0 368 0 0 0
+GUESTSTAT 1788848960 cpu  132022 0 298407 9487 228 0 368 0 0 0
+GUESTSTAT 1788848963 cpu  132156 0 298749 9487 228 0 368 0 0 0
+GUESTSTAT 1788848965 cpu  132287 0 299078 9487 228 0 368 0 0 0
+GUESTSTAT 1788848967 cpu  132423 0 299417 9487 228 0 368 0 0 0
+GUESTSTAT 1788848970 cpu  132564 0 299763 9487 228 0 368 0 0 0
+GUESTSTAT 1788848972 cpu  132695 0 300087 9487 228 0 368 0 0 0
+GUESTSTAT 1788848974 cpu  132835 0 300436 9487 228 0 368 0 0 0
+GUESTSTAT 1788848977 cpu  132969 0 300764 9487 228 0 368 0 0 0
+GUESTSTAT 1788848979 cpu  133100 0 301100 9487 228 0 368 0 0 0
+GUESTSTAT 1788848981 cpu  133228 0 301426 9489 228 0 370 0 0 0
+GUESTSTAT 1788848984 cpu  133358 0 301761 9489 228 0 370 0 0 0
+GUESTSTAT 1788848986 cpu  133487 0 302108 9489 228 0 370 0 0 0
+GUESTSTAT 1788848988 cpu  133629 0 302457 9489 228 0 370 0 0 0
+GUESTSTAT 1788848991 cpu  133756 0 302802 9489 228 0 370 0 0 0
+GUESTSTAT 1788848993 cpu  133890 0 303132 9489 228 0 370 0 0 0
+GUESTSTAT 1788848996 cpu  134031 0 303470 9489 228 0 370 0 0 0

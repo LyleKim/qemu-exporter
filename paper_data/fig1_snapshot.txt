@@ -1,0 +1,31 @@
+=== Fig.1 snapshot 2026-09-08T05:35:43+00:00 node=ip-10-0-1-129 ===
+-- QEMU (machine cgroup, k8s 회계 밖) --
+machine.total_memory.current   : 2538438656
+  fig-vm  (instance-00000002)  : 1877954560
+  test-vm (instance-00000001)  : 660439040
+-- k8s 회계 --
+kubepods.memory.current        : 8309219328
+-- 노드 실제 --
+MemTotal:      32906641408 bytes
+MemFree:       8563924992 bytes
+MemAvailable:  23375609856 bytes
+Cached:        14236069888 bytes
+SwapCached:    0 bytes
+Slab:          1272549376 bytes
+node used (Total-Available)    : 9531031552 bytes
+-- exporter가 Nova 신원으로 귀속한 값 --
+openstack_vm_memory_usage_bytes{flavor="m1.medium",instance_name="instance-00000002",instance_uuid="4ca2a958-d49b-422f-97ae-d75428d35415",node="ip-10-0-1-129",project_id="b03a4cf30a014ad1b7882b4fad2fbccf"} 1.87795456e+09
+openstack_vm_memory_usage_bytes{flavor="m1.tiny",instance_name="instance-00000001",instance_uuid="48704df8-9e53-4100-ade8-95a2949a57f9",node="ip-10-0-1-129",project_id="b03a4cf30a014ad1b7882b4fad2fbccf"} 6.6043904e+08
+-- cAdvisor는 machine cgroup 안 봄 --
+cadvisor id="/machine" 라인 수 : 0
+cadvisor id="/kubepods" 라인 수: 11553
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests    Limits
+  --------           --------    ------
+  cpu                860m (10%)  100m (1%)
+  memory             272Mi (0%)  404Mi (1%)
+  ephemeral-storage  0 (0%)      0 (0%)
+  hugepages-1Gi      0 (0%)      0 (0%)
+  hugepages-2Mi      0 (0%)      0 (0%)
+Events:

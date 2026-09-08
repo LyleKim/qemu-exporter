@@ -1,0 +1,5 @@
+window       dPsome/2s  dRunq/2s   dCPUusec/2s   guest_busy%  guest_dsteal
+baseline     0.0117     0.0454     4150730       ~100         0
+contention   0.1467     0.4631     4024207       ~100         0
+recovery     0.0067     0.0209     4146955       ~100         0
+pressure x12.5, runqueue x10, libvirt cpu_time -3%, guest blind (busy% flat, steal 0)

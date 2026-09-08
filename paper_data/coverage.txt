@@ -1,0 +1,88 @@
+===== libvirt: virsh domstats 전체 필드 =====
+Domain: 'instance-00000004'
+  state.state=1
+  state.reason=5
+  cpu.time=5786089695000
+  cpu.user=5167064576000
+  cpu.system=619025119000
+  cpu.cache.monitor.count=0
+  cpu.haltpoll.success.time=0
+  cpu.haltpoll.fail.time=0
+  balloon.current=4194304
+  balloon.maximum=4194304
+  balloon.swap_in=0
+  balloon.swap_out=0
+  balloon.major_fault=1643
+  balloon.minor_fault=709805
+  balloon.unused=3571816
+  balloon.available=4009856
+  balloon.usable=3613108
+  balloon.last-update=1788849612
+  balloon.disk_caches=250856
+  balloon.hugetlb_pgalloc=0
+  balloon.hugetlb_pgfail=0
+  balloon.rss=1896648
+  vcpu.current=2
+  vcpu.maximum=2
+  vcpu.0.state=1
+  vcpu.0.time=2787960000000
+  vcpu.0.wait=0
+  vcpu.0.delay=44242793817
+  vcpu.1.state=1
+  vcpu.1.time=2775350000000
+  vcpu.1.wait=0
+  vcpu.1.delay=46256199173
+  net.count=1
+  net.0.name=tapb3bce442-00
+  net.0.rx.bytes=756105
+  net.0.rx.pkts=7727
+  net.0.rx.errs=0
+  net.0.rx.drop=0
+  net.0.tx.bytes=716487
+  net.0.tx.pkts=7796
+  net.0.tx.errs=0
+  net.0.tx.drop=0
+  block.count=1
+  block.0.name=vda
+  block.0.path=/var/lib/nova/instances/b00eecaa-8eb1-42c4-9ba7-3b643305db5f/disk
+  block.0.backingIndex=1
+  block.0.rd.reqs=9550
+  block.0.rd.bytes=297624576
+  block.0.rd.times=6519682846
+  block.0.wr.reqs=3149
+  block.0.wr.bytes=1276231168
+  block.0.wr.times=16647467232
+  block.0.fl.reqs=384
+  block.0.fl.times=667310960
+  block.0.allocation=40304640
+  block.0.capacity=42949672960
+  block.0.physical=40251392
+  iothread.count=1
+  iothread.1.poll-max-ns=32768
+  iothread.1.poll-grow=0
+  iothread.1.poll-shrink=0
+  dirtyrate.calc_status=0
+  dirtyrate.calc_start_time=0
+  dirtyrate.calc_period=0
+  dirtyrate.calc_mode=page-sampling
+
+-- 경합 관련 필드 있나? --
+  vcpu.0.wait=0
+  vcpu.0.delay=44258827389
+  vcpu.1.wait=0
+  vcpu.1.delay=46274222130
+===== cAdvisor: machine cgroup / VM 보이나 =====
+id="/machine 라인 : 0
+instance-0000 언급 : 0
+id="/kubepods 라인: 11553
+===== ours: 지표 + 라벨 =====
+openstack_vm_cpu_pressure_stall_seconds_total{flavor="m1.medium",instance_name="instance-00000004",instance_uuid="b00eecaa-8eb1-42c4-9ba7-3b643305db5f",node="ip-10-0-1-129",project_id="b03a4cf30a014ad1b7882b4fad2fbccf",type="some"} 70.146691
+openstack_vm_cpu_pressure_stall_seconds_total{flavor="m1.tiny",instance_name="instance-00000001",instance_uuid="48704df8-9e53-4100-ade8-95a2949a57f9",node="ip-10-0-1-129",project_id="b03a4cf30a014ad1b7882b4fad2fbccf",type="some"} 12.236801
+openstack_vm_cpu_usage_seconds_total{flavor="m1.medium",instance_name="instance-00000004",instance_uuid="b00eecaa-8eb1-42c4-9ba7-3b643305db5f",node="ip-10-0-1-129",project_id="b03a4cf30a014ad1b7882b4fad2fbccf"} 5842.492434
+openstack_vm_cpu_usage_seconds_total{flavor="m1.tiny",instance_name="instance-00000001",instance_uuid="48704df8-9e53-4100-ade8-95a2949a57f9",node="ip-10-0-1-129",project_id="b03a4cf30a014ad1b7882b4fad2fbccf"} 174.945386
+openstack_vm_memory_usage_bytes{flavor="m1.medium",instance_name="instance-00000004",instance_uuid="b00eecaa-8eb1-42c4-9ba7-3b643305db5f",node="ip-10-0-1-129",project_id="b03a4cf30a014ad1b7882b4fad2fbccf"} 1.967976448e+09
+openstack_vm_memory_usage_bytes{flavor="m1.tiny",instance_name="instance-00000001",instance_uuid="48704df8-9e53-4100-ade8-95a2949a57f9",node="ip-10-0-1-129",project_id="b03a4cf30a014ad1b7882b4fad2fbccf"} 6.60242432e+08
+openstack_vm_sched_runqueue_wait_seconds_total{flavor="m1.medium",instance_name="instance-00000004",instance_uuid="b00eecaa-8eb1-42c4-9ba7-3b643305db5f",node="ip-10-0-1-129",project_id="b03a4cf30a014ad1b7882b4fad2fbccf"} 169.703802576
+openstack_vm_sched_runqueue_wait_seconds_total{flavor="m1.tiny",instance_name="instance-00000001",instance_uuid="48704df8-9e53-4100-ade8-95a2949a57f9",node="ip-10-0-1-129",project_id="b03a4cf30a014ad1b7882b4fad2fbccf"} 20.141589328
+qemu_exporter_scrape_errors_total 0
+qemu_exporter_vms_discovered 2

@@ -1,0 +1,3 @@
+window        : 73.6 s
+exporter CPU  : 1.1 mCPU  (0.112% of one core)
+exporter RSS  : 7.8 MiB (current)  peak=10.0 MiB

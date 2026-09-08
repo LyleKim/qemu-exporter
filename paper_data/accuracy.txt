@@ -1,0 +1,5 @@
+window   = 126 s
+exporter delta = 257.1628 s
+virsh    delta = 257.1595 s
+abs diff = 0.0033 s
+rel err  = 0.001 %
