@@ -158,17 +158,3 @@ spec:
 ```
 
 ---
-
-## Citation & Paper
-
-If you use or reference this work in an academic publication, please cite the following paper:
-
-```bibtex
-@inproceedings{kim2026qemu,
-  title     = {Monitoring and Observability Strategies for QEMU Processes in OpenStack on Kubernetes (OpenStack-Helm)},
-  author    = {Joon-Seok Kim},
-  booktitle = {Proceedings of the Korea Information Processing Society (KIPS) Conference},
-  year      = {2026}
-}
-
-```
