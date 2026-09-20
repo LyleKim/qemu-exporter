@@ -186,3 +186,5 @@ spec:
   * [`docs/paper_data/live_migration/README.md`](docs/paper_data/live_migration/README.md) — raw measurement data and result summary.
 
 ---
+
+The paper for this project (KIPS ASK) can be found under [`docs/Paper/`](docs/Paper/).
