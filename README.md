@@ -31,7 +31,7 @@ However, QEMU processes are placed under the host's root **`machine` cgroup (`ma
 ### The Observability Gap
 
 1. **Kubernetes (kubelet / cAdvisor):** Scrapes only `kubepods.slice`. Because QEMU runs under `machine.slice`, standard K8s monitoring fails to recognize VM resource utilization entirely (under-reporting host memory consumption by ~27%).
-2. **OpenStack (libvirt API / `virsh domstats`):** Measures raw resource usage but fails to expose real-time resource contention. While libvirt exposes `vcpu.N.wait`, it is merely a cumulative counter and lacks support for Linux kernel Pressure Stall Information (PSI) standards and Prometheus node labels.
+2. **OpenStack (libvirt API / `virsh domstats`):** Measures raw resource usage but fails to expose real-time resource contention. While libvirt exposes `vcpu.N.delay`, it is merely a cumulative counter and lacks support for Linux kernel Pressure Stall Information (PSI) standards and Prometheus node labels.
 
 `qemu-exporter` bridges this gap by directly extracting kernel-level PSI and resource metrics via read-only access to host cgroups and procfs.
 
@@ -76,7 +76,7 @@ The diagram below covers the full repository — the qemu-exporter path (top, �
 | Capabilities | libvirt (`virsh domstats`) | cAdvisor / kubelet | qemu-exporter (Proposed) |
 | --- | --- | --- | --- |
 | **VM Usage Metrics (CPU, Memory)** | **O** | **X** | **O** |
-| **Real-time PSI & Contention Metrics** | **X** *(Cumulative `vcpu.N.wait` only)* | **X** | **O** |
+| **Real-time PSI & Contention Metrics** | **X** *(Cumulative `vcpu.N.wait,delay` only)* | **X** | **O** |
 | **Nova Instance Metadata Mapping** | **O** | **X** | **O** |
 | **Kubernetes Node Label Correlation** | **X** | **O** | **O** |
 | **External Observability Integration** | **X** | **O** | **O** |
@@ -176,7 +176,7 @@ spec:
 
 ## Extension Track: live-migration-webhook
 
-`qemu-exporter` exposes contention (PSI) but does not act on it. **live-migration-webhook** closes that loop in a 2-node OpenStack-Helm environment: when `openstack_vm_cpu_pressure_stall_seconds_total{type="some"}` crosses a threshold, Alertmanager fires an alert carrying the VM's `instance_uuid`, a separate webhook receiver (`cmd/live-migration-webhook`) picks it up, and triggers a Nova live migration to preemptively evacuate the VM before it hits OOM/resource exhaustion. See the bottom half of the [Architecture diagram](#architecture) above (목표2 box) for the exact call path.
+`qemu-exporter` exposes contention (PSI) but does not act on it. **live-migration-webhook** closes that loop in a 2-node OpenStack-Helm environment: when `openstack_vm_cpu_pressure_stall_seconds_total{type="some"}` crosses a threshold, Alertmanager fires an alert carrying the VM's `instance_uuid`, a separate webhook receiver (`cmd/live-migration-webhook`) picks it up, and triggers a Nova live migration to preemptively evacuate the VM before it's performence is going down. See the bottom half of the [Architecture diagram](#architecture) above (목표2 box) for the exact call path.
 
 * **Separate binary, separate rules.** `live-migration-webhook` does not share a binary with `qemu-exporter`, and it is the only part of this repo allowed to call OpenStack REST APIs (Nova, scoped strictly to the live-migration trigger — no other Nova operation).
 * **Status:** experimentally validated end-to-end on a 2-node AWS testbed (`node-a`: control plane + qemu-exporter, `node-b`: compute-only). All 6 experiment stages (2-node provisioning → Nova multi-compute → manual migration → Alertmanager rule → webhook receiver → full scenario) completed successfully; instances are torn down between sessions (`make down`) to control cost.

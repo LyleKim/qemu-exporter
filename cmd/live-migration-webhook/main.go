@@ -8,16 +8,20 @@ package main
 
 import (
 	"bytes"
+	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
 )
+
+var instanceUUIDRe = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
 type alertmanagerWebhook struct {
 	Alerts []struct {
@@ -35,6 +39,7 @@ type migrator struct {
 	projectDomain string
 	novaURL       string
 	nodeHosts     [2]string
+	webhookSecret string
 	httpClient    *http.Client
 
 	mu       sync.Mutex
@@ -57,8 +62,13 @@ func main() {
 		projectDomain: os.Getenv("OS_PROJECT_DOMAIN_NAME"),
 		novaURL:       strings.TrimRight(os.Getenv("NOVA_URL"), "/"),
 		nodeHosts:     [2]string{nodeHosts[0], nodeHosts[1]},
+		webhookSecret: os.Getenv("WEBHOOK_SECRET"),
 		httpClient:    &http.Client{Timeout: 30 * time.Second},
 		inFlight:      map[string]bool{},
+	}
+	if m.webhookSecret == "" {
+		slog.Error("WEBHOOK_SECRET must be set so /webhook can authenticate Alertmanager")
+		os.Exit(1)
 	}
 
 	listenAddr := os.Getenv("LISTEN_ADDR")
@@ -75,6 +85,11 @@ func main() {
 }
 
 func (m *migrator) handleWebhook(w http.ResponseWriter, r *http.Request) {
+	if !constantTimeBearerMatch(r.Header.Get("Authorization"), m.webhookSecret) {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	var payload alertmanagerWebhook
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		http.Error(w, "bad request", http.StatusBadRequest)
@@ -89,6 +104,10 @@ func (m *migrator) handleWebhook(w http.ResponseWriter, r *http.Request) {
 		uuid := a.Labels["instance_uuid"]
 		if uuid == "" {
 			slog.Warn("alert missing instance_uuid label, skipping")
+			continue
+		}
+		if !instanceUUIDRe.MatchString(uuid) {
+			slog.Warn("alert instance_uuid is not a well-formed UUID, skipping", "instance_uuid", uuid)
 			continue
 		}
 
@@ -156,6 +175,15 @@ func (m *migrator) triggerLiveMigration(instanceUUID string) error {
 	}
 	slog.Info("migrate action accepted", "instance_uuid", instanceUUID, "from_host", currentHost, "to_host", destHost)
 	return nil
+}
+
+func constantTimeBearerMatch(authHeader, secret string) bool {
+	const prefix = "Bearer "
+	if !strings.HasPrefix(authHeader, prefix) {
+		return false
+	}
+	got := authHeader[len(prefix):]
+	return subtle.ConstantTimeCompare([]byte(got), []byte(secret)) == 1
 }
 
 func (m *migrator) otherHost(current string) string {

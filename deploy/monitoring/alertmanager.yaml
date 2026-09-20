@@ -18,6 +18,12 @@ data:
         webhook_configs:
           - url: http://10.0.1.129:8080/webhook
             send_resolved: false
+            # Bearer token sent as "Authorization: Bearer <credentials>" --
+            # must match WEBHOOK_SECRET passed to the live-migration-webhook
+            # process (see live_migration_tdl.md L5). Replace before apply.
+            http_config:
+              authorization:
+                credentials: CHANGE_ME_WEBHOOK_SECRET
 ---
 apiVersion: apps/v1
 kind: Deployment

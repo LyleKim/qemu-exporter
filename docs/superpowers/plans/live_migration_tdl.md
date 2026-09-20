@@ -158,8 +158,15 @@ systemd-run --unit=live-migration-webhook --working-directory=/opt/live-migratio
   --setenv=OS_PROJECT_DOMAIN_NAME=default \
   --setenv=NOVA_URL=http://<nova-api ClusterIP>:8774/v2.1 \
   --setenv=LISTEN_ADDR=:8080 \
+  --setenv=WEBHOOK_SECRET=<same value as alertmanager.yaml http_config.authorization.credentials> \
   /opt/live-migration-webhook/live-migration-webhook
 ```
+**주의 (보안 리뷰 반영, 2026-09-20)**: `WEBHOOK_SECRET`은 필수 환경변수로 바뀌었음(비어있으면
+프로세스가 즉시 종료됨) — `/webhook`이 `Authorization: Bearer <WEBHOOK_SECRET>` 헤더 없이 오는
+요청을 401로 거부한다. `deploy/monitoring/alertmanager.yaml`의
+`http_config.authorization.credentials`를 같은 값으로 apply 전에 채워둘 것(플레이스홀더
+`CHANGE_ME_WEBHOOK_SECRET` 그대로 두면 인증 실패). 또한 `instance_uuid` 라벨은 UUID 정규식
+검증을 통과해야 마이그레이션이 트리거됨(Nova API URL에 검증 없이 이어붙이던 경로 주입 이슈 수정).
 ClusterIP는 `kubectl -n openstack get svc keystone-api nova-api`로 매번 새로 확인
 (인스턴스 재기동마다 바뀜). 호스트 프로세스라 `*.svc.cluster.local` DNS는 못 쓰지만
 kube-proxy가 ClusterIP 라우팅을 호스트 netns에도 깔아두므로 IP 직접 지정은 됨.
