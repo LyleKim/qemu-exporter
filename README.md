@@ -4,6 +4,11 @@
 
 `qemu-exporter` resolves the monitoring blind spot in OpenStack-Helm (OSH) environments by parsing host `cgroup` and `procfs` metrics (including kernel Pressure Stall Information - PSI) without modifying OpenStack, Libvirt, or Kubernetes code.
 
+This repository has two tracks:
+
+1. **qemu-exporter** (this document) — the exporter itself. Prototype for a 3-page undergraduate paper, submitted to KIPS ASK (`docs/Paper/`).
+2. **[live-migration-webhook](#extension-track-live-migration-webhook)** — an extension that closes the loop: when the PSI contention metric exposed above crosses a threshold, Alertmanager fires a webhook that triggers a Nova live migration to preemptively evacuate the VM before resource exhaustion.
+
 ---
 
 ## Background & Motivation
@@ -43,7 +48,11 @@ However, QEMU processes are placed under the host's root **`machine` cgroup (`ma
 
 ## Architecture
 
-`qemu-exporter` operates in three non-intrusive stages:
+The diagram below covers the full repository — the qemu-exporter path (top, 목표1) and the live-migration-webhook extension (bottom, [목표2](#extension-track-live-migration-webhook)) that consumes its PSI metric.
+
+![System architecture: qemu-exporter feeding Prometheus/Grafana, and the live-migration-webhook extension triggered via Alertmanager](docs/images/system_diagram.png)
+
+`qemu-exporter` itself operates in three non-intrusive stages:
 
 ```text
 +-----------------------+     +-------------------------------------------------------+     +-------------------+
@@ -89,18 +98,24 @@ Benchmark results on an AWS EC2 `m5.2xlarge` instance (Ubuntu 24.04 LTS):
 
 | Metric Name | Type | Description |
 | --- | --- | --- |
-| `qemu_memory_usage_bytes` | Gauge | Current VM memory consumption (`memory.current`). |
-| `qemu_cpu_pressure_stall_seconds_total` | Counter | CPU Pressure Stall Information (`cpu.pressure` - some). |
-| `qemu_cpu_runqueue_wait_seconds_total` | Counter | Total CPU runqueue wait time parsed from `schedstat`. |
+| `openstack_vm_cpu_usage_seconds_total` | Counter | Cumulative CPU time consumed by the VM's QEMU process (cgroup `cpu.stat` `usage_usec`). |
+| `openstack_vm_memory_usage_bytes` | Gauge | Current VM memory consumption (`memory.current`). |
+| `openstack_vm_cpu_pressure_stall_seconds_total{type="some"}` | Counter | CPU Pressure Stall Information (`cpu.pressure` - some). |
+| `openstack_vm_sched_runqueue_wait_seconds_total` | Counter | Cumulative runqueue wait time for the VM's vCPU threads (`/proc/<pid>/schedstat`, field 2, summed over threads). |
+| `qemu_exporter_scrape_errors_total` | Counter | Cumulative count of per-domain or connection failures encountered while scraping. |
+| `qemu_exporter_vms_discovered` | Gauge | Number of VMs successfully scraped in the most recent collection. |
 
 ### Metric Labels
 
-All exported metrics include the following enrichment labels:
+The four `openstack_vm_*` metrics include the following enrichment labels:
 
-* `instance_id`: OpenStack Nova instance UUID
+* `node`: Host node hostname/identifier
+* `instance_uuid`: OpenStack Nova instance UUID
 * `instance_name`: Nova instance display name
 * `flavor`: Nova instance flavor/type
-* `node`: Host node hostname/identifier
+* `project_id`: OpenStack project (tenant) UUID
+
+`qemu_exporter_scrape_errors_total` and `qemu_exporter_vms_discovered` are exporter-level metrics and carry no labels.
 
 ---
 
@@ -156,5 +171,18 @@ spec:
           path: /var/run/libvirt/libvirt-sock-ro
 
 ```
+
+---
+
+## Extension Track: live-migration-webhook
+
+`qemu-exporter` exposes contention (PSI) but does not act on it. **live-migration-webhook** closes that loop in a 2-node OpenStack-Helm environment: when `openstack_vm_cpu_pressure_stall_seconds_total{type="some"}` crosses a threshold, Alertmanager fires an alert carrying the VM's `instance_uuid`, a separate webhook receiver (`cmd/live-migration-webhook`) picks it up, and triggers a Nova live migration to preemptively evacuate the VM before it hits OOM/resource exhaustion. See the bottom half of the [Architecture diagram](#architecture) above (목표2 box) for the exact call path.
+
+* **Separate binary, separate rules.** `live-migration-webhook` does not share a binary with `qemu-exporter`, and it is the only part of this repo allowed to call OpenStack REST APIs (Nova, scoped strictly to the live-migration trigger — no other Nova operation).
+* **Status:** experimentally validated end-to-end on a 2-node AWS testbed (`node-a`: control plane + qemu-exporter, `node-b`: compute-only). All 6 experiment stages (2-node provisioning → Nova multi-compute → manual migration → Alertmanager rule → webhook receiver → full scenario) completed successfully; instances are torn down between sessions (`make down`) to control cost.
+* **Measured (full scenario, threshold-crossing to alert fired):** ~35.7s–75.7s depending on measurement convention (see raw data), alert-to-migration-complete ~37.3s.
+* **Docs:**
+  * [`live_migration_tdl.md`](live_migration_tdl.md) — experiment design, resume procedure, and stage-by-stage progress log (single source of truth for this track).
+  * [`docs/paper_data/live_migration/README.md`](docs/paper_data/live_migration/README.md) — raw measurement data and result summary.
 
 ---

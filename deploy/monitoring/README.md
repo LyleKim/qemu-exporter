@@ -46,8 +46,11 @@
 ```bash
 kubectl create namespace monitoring
 kubectl apply -f deploy/monitoring/exporter-svc.yaml
+kubectl apply -f deploy/monitoring/alert-rules.yaml
+kubectl apply -f deploy/monitoring/alertmanager.yaml
 kubectl apply -f deploy/monitoring/prometheus.yaml
 kubectl apply -f deploy/monitoring/grafana.yaml
+kubectl -n monitoring rollout status deploy/alertmanager --timeout=150s
 kubectl -n monitoring rollout status deploy/prometheus --timeout=150s
 kubectl -n monitoring rollout status deploy/grafana --timeout=150s
 

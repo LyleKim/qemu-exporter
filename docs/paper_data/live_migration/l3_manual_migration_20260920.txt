@@ -1,0 +1,72 @@
+L3 — 수동 live-migration 1회 성공 시도 (재기동 세션 2026-09-20, 서브에이전트 실행)
+node-a = i-0533a052301376202 (private 10.0.1.129, ip-10-0-1-129.ap-northeast-2.compute.internal)
+node-b = i-0d466ea20e5b18c00 (private 10.0.1.174, ip-10-0-1-174.ap-northeast-2.compute.internal)
+test-vm = da91d986-a8ad-48d2-b5ad-9000fff723a0
+접근: AWS SSM send-command (AWS-RunShellScript) on node-a, KUBECONFIG=/etc/kubernetes/admin.conf,
+kubectl -n openstack exec osc -- openstack ...
+모든 시각은 UTC.
+
+---
+[1] 사전 상태 확인 (16:13:57Z 무렵)
+$ date -u
+Sat Sep 19 16:13:57 UTC 2026   # 로컬 macOS 시계와 일치 확인(참고: 'today'=2026-09-20는 KST 기준 표시, UTC로는 09-19 저녁)
+
+$ openstack server show da91d986-a8ad-48d2-b5ad-9000fff723a0 -f value -c OS-EXT-SRV-ATTR:host -c status
+ip-10-0-1-129.ap-northeast-2.compute.internal
+ACTIVE
+
+$ openstack hypervisor list
++--------------------------------------+-----------------------------------------------+-----------------+------------+-------+
+| ID                                   | Hypervisor Hostname                           | Hypervisor Type | Host IP    | State |
++--------------------------------------+-----------------------------------------------+-----------------+------------+-------+
+| 9ddf5a12-4f54-4501-a895-d4a6bda6558f | ip-10-0-1-129.ap-northeast-2.compute.internal | QEMU            | 10.0.1.129 | up    |
+| 37c5dd72-3ba7-4851-af62-54a6cb9f7bd1 | ip-10-0-1-174.ap-northeast-2.compute.internal | QEMU            | 10.0.1.174 | up    |
++--------------------------------------+-----------------------------------------------+-----------------+------------+-------+
+
+목적지 fqdn 확정: ip-10-0-1-174.ap-northeast-2.compute.internal (node-b)
+
+---
+[2] 마이그레이션 트리거 (16:14:40Z)
+$ date -u +"%Y-%m-%dT%H:%M:%SZ"
+2026-09-19T16:14:40Z
+
+$ openstack server migrate --live-migration --block-migration \
+    --host ip-10-0-1-174.ap-northeast-2.compute.internal \
+    da91d986-a8ad-48d2-b5ad-9000fff723a0
+(출력 없음 — 비동기 오퍼레이션, exit code 0)
+
+$ date -u +"%Y-%m-%dT%H:%M:%SZ"   # 커맨드 리턴 직후
+2026-09-19T16:14:50Z
+
+---
+[3] 폴링 (5초 간격, openstack server show)
+[2026-09-19T16:15:03Z] host=ip-10-0-1-129.ap-northeast-2.compute.internal status=MIGRATING
+[2026-09-19T16:15:10Z] host=ip-10-0-1-129.ap-northeast-2.compute.internal status=MIGRATING
+[2026-09-19T16:15:17Z] host=ip-10-0-1-174.ap-northeast-2.compute.internal status=ACTIVE   <- 목표 도달(node-b, ACTIVE)
+
+---
+[4] migration record (openstack server migration list --server <uuid>)
+Id=1, UUID=cd116063-2aba-4664-a327-6b4de9345c65
+Source Node/Compute = ip-10-0-1-129.ap-northeast-2.compute.internal
+Dest Node/Compute   = ip-10-0-1-174.ap-northeast-2.compute.internal
+Status = completed
+Type = live-migration
+Created At = 2026-09-19T16:14:42.000000
+Updated At = 2026-09-19T16:15:18.000000
+
+---
+[5] 안정성 재확인 (16:15:37Z, 트리거로부터 +57초)
+$ openstack server show ... -c OS-EXT-SRV-ATTR:host -c status
+ip-10-0-1-174.ap-northeast-2.compute.internal
+ACTIVE
+
+---
+[결론]
+- 첫 시도부터 성공 (ERROR 없음, 복구 조치 불필요).
+- 트리거(CLI 호출, 16:14:40Z) ~ 폴링상 ACTIVE+node-b 관측(16:15:17Z): 약 37초
+  (폴링 간격 7초라 실제 전환은 16:15:10~16:15:17Z 사이의 어느 시점).
+- migration record 기준(created 16:14:42Z → updated 16:15:18Z): 약 36초.
+- 최종 상태: host=ip-10-0-1-174.ap-northeast-2.compute.internal(node-b), status=ACTIVE, 안정적으로 유지(+57초 시점 재확인).
+- L2 patch a/b/c(Calico VXLAN Always, Felix vxlanPort 4790, libvirt listen_address 0.0.0.0)가
+  이번 재기동 세션에서도 그대로 유효함을 재검증함.
+

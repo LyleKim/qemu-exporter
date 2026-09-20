@@ -1,0 +1,91 @@
+L2 — Nova multi-compute 활성화 (2026-09-16)
+================================================================
+
+목적: node-b를 K8s 클러스터에 join시키고 OSH가 node-b에도 nova-compute/libvirt/
+neutron-ovs-agent/openvswitch를 스케줄하게 만들어, Nova가 2개의 하이퍼바이저를 인식하게 한다.
+CLAUDE.md 목표2 예외 구간(Nova/libvirt/OSH 설정 변경 허용) 적용.
+
+--- 1. node-b K8s join ---
+node-a에서 `kubeadm token create --print-join-command` -> node-b에서 root로 실행 -> 성공.
+
+kubectl get nodes -o wide:
+  NAME            STATUS   ROLES           AGE   VERSION
+  ip-10-0-1-216   Ready    control-plane   71m   v1.34.11
+  ip-10-0-1-84    Ready    <none>          27m   v1.34.11
+
+(node-a=ip-10-0-1-216, node-b=ip-10-0-1-84)
+
+첫 join 시도는 5분+ 멈춤 -> 원인: SG가 6443(kube-apiserver) 막고 있었음. 2번(SG 확장) 처리 후
+재시도해서 해결.
+
+--- 2. 보안그룹 확장 ---
+terraform/vpc.tf의 aws_security_group.node에 self-referencing all-traffic ingress 추가:
+  { from_port=0, to_port=0, protocol="-1", self=true }
+terraform plan: 0 to add, 1 to change, 0 to destroy (SG 룰 교체만) -> apply 성공.
+
+--- 3. node-b 라벨링 (node-a의 실제 DaemonSet nodeSelector를 확인 후 미러링, 추측 아님) ---
+kubectl -n openstack get ds -o wide 로 확인한 결과:
+  libvirt-libvirt-default, nova-compute-default        -> openstack-compute-node=enabled
+  neutron-ovs-agent-default, openvswitch                -> openvswitch=enabled
+  (control-plane 전용 DaemonSet은 제외 — openstack-control-plane 라벨 node-b엔 안 줌)
+  ovs-host, linuxbridge 라벨은 실제로 쓰는 DaemonSet이 없어 node-b에도 미부여
+
+kubectl label nodes ip-10-0-1-84 openstack-compute-node=enabled openvswitch=enabled --overwrite
+
+--- 4. 막힘: cross-node Pod 네트워킹 (근본 원인 규명 + 해결) ---
+증상: node-b -> node-a 파드 간 통신 실패(ping 100% loss, CoreDNS 질의 timeout).
+neutron-ovs-agent가 `hostname --fqdn`에서 DNS 실패 -> CrashLoopBackOff.
+libvirt/nova-compute는 그 의존성 대기로 Init 단계에 정체.
+
+근본 원인: Calico IPPool encapsulation이 VXLANCrossSubnet -> node-a/node-b가 같은 서브넷
+(10.0.1.0/24)이라 Calico가 캡슐화 없이 언더레이(ens5) 직접 라우팅 시도 -> AWS SourceDestCheck
+(양쪽 인스턴스 모두 True)가 자기 ENI IP가 아닌 출발/도착지를 가진 패킷을 드롭.
+
+해결 (사용자가 node-a에서 직접 실행, Tigera operator가 IPPool을 직접 관리해서 IPPool 직접
+patch는 되돌아감 -> Installation CR을 patch해야 함):
+  kubectl patch installation.operator.tigera.io default --type merge \
+    -p '{"spec":{"calicoNetwork":{"ipPools":[{"cidr":"192.168.0.0/16","encapsulation":"VXLAN","natOutgoing":"Enabled","nodeSelector":"all()"}]}}}'
+
+확인: kubectl get ippool default-ipv4-ippool -o jsonpath='{.spec.vxlanMode}' -> Always (유지됨)
+
+patch 직후 재확인 (node-b 호스트):
+  ping 192.168.85.198(node-a CoreDNS 파드 IP) -> 0% loss, RTT ~0.2ms
+  ip route -> 192.168.85.192/26 via 192.168.85.192 dev vxlan.calico onlink (VXLAN 터널 정상)
+  dig @10.96.0.10 ip-10-0-1-84... -> 10.0.1.84 정상 응답
+  (calico-node 재시작 불필요 — Installation CR patch만으로 기존 파드가 새 인코딩 반영)
+
+CrashLoop 파드 1개만 재생성 유도:
+  kubectl -n openstack delete pod neutron-ovs-agent-default-chtbl
+  -> neutron-ovs-agent-default-2k4mq로 재생성, 1/1 Running (재시작 없이 정상 기동)
+  -> libvirt/nova-compute는 파드 재생성 없이 자동으로 Init 통과, 약 2분 뒤 전부 Running
+
+최종 node-b 파드 상태:
+  libvirt-libvirt-default-h5cdc      1/1   Running   0
+  neutron-ovs-agent-default-2k4mq    1/1   Running   0
+  nova-compute-default-dflhd         1/1   Running   0
+  openvswitch-vm7gl                  2/2   Running   0
+
+--- 5. Nova cell 등록 / 최종 검증 ---
+nova-manage cell_v2 discover_hosts --verbose:
+  Checking host mapping for compute host 'ip-10-0-1-84...': 34f1b491-e597-4346-9d09-13abe9b18c6d
+  Creating host mapping for compute host 'ip-10-0-1-84...': 34f1b491-e597-4346-9d09-13abe9b18c6d
+  Found 1 unmapped computes in cell: 2adde9a9-e369-4a5e-8f8a-bb58a5114176
+
+openstack compute service list:
+  nova-conductor  nova-conductor-86d447b469-6z6wk                internal  enabled  up
+  nova-scheduler  nova-scheduler-75d6d85877-hkm8k                internal  enabled  up
+  nova-compute    ip-10-0-1-216.ap-northeast-2.compute.internal  nova      enabled  up
+  nova-compute    ip-10-0-1-84.ap-northeast-2.compute.internal   nova      enabled  up
+
+openstack hypervisor list:
+  ip-10-0-1-216.ap-northeast-2.compute.internal   QEMU   10.0.1.216   up
+  ip-10-0-1-84.ap-northeast-2.compute.internal    QEMU   10.0.1.84    up
+
+-> L2 목표 달성: Nova가 2개 하이퍼바이저를 모두 up 상태로 인식.
+
+--- 수정 파일 ---
+terraform/vpc.tf — SG all-traffic self ingress 추가(apply 완료). 그 외 파일 변경 없음(이번
+라운드는 K8s/OpenStack 리소스 조작 위주, terraform 코드 변경은 SG 룰 하나뿐).
+
+--- 남은 것 (L3에서 확인 예정) ---
+libvirtd 마이그레이션 URI가 node-b에 실제로 닿는지는 아직 미검증 — L3에서 처음 시도.

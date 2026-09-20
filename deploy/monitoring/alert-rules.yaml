@@ -1,0 +1,21 @@
+# Prometheus alerting rule for L4 (live_migration_tdl.md).
+# ponytail: threshold 0.01 is set low on purpose to prove the rule->Prometheus
+# ->Alertmanager pipeline actually fires (L4 gate) -- the design doc's original
+# 0.5 draft never fires at all: Fig.3's measured peak PSI(some) rate was only
+# 0.1467 under load, well under 0.5. Recalibrate for real once L6 re-measures
+# contention in this 2-node env.
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: prometheus-rules, namespace: monitoring}
+data:
+  qemu-contention.rules.yml: |
+    groups:
+      - name: qemu-contention
+        rules:
+          - alert: VMCPUPressureHigh
+            expr: rate(openstack_vm_cpu_pressure_stall_seconds_total{type="some"}[1m]) > 0.005
+            for: 30s
+            labels: {severity: warning}
+            annotations:
+              instance_uuid: '{{ $labels.instance_uuid }}'
+              node: '{{ $labels.node }}'

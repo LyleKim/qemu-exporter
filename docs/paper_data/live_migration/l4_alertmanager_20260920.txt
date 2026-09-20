@@ -1,0 +1,75 @@
+=== L4 alertmanager deploy log, 2026-09-20 ===
+node-a=i-0533a052301376202 (10.0.1.129), node-b=i-0d466ea20e5b18c00 (10.0.1.174), region ap-northeast-2
+timestamp: 2026-09-19T16:17:31Z
+
+=== 0. Pre-check: SSM connectivity + cluster sanity ===
+$ aws ssm describe-instance-information --filters Key=InstanceIds,Values=i-0533a052301376202
+PingStatus: Online
+
+$ kubectl get nodes -o wide (via SSM RunShellScript)
+NAME            STATUS   ROLES           AGE   VERSION    INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION   CONTAINER-RUNTIME
+ip-10-0-1-129   Ready    control-plane   58m   v1.34.11   10.0.1.129    <none>        Ubuntu 24.04.4 LTS   7.0.0-1012-aws   containerd://2.2.1
+ip-10-0-1-174   Ready    <none>          28m   v1.34.11   10.0.1.174    <none>        Ubuntu 24.04.4 LTS   7.0.0-1012-aws   containerd://2.2.1
+
+=== 1. Edit alertmanager.yaml webhook_configs.url ===
+OLD: http://10.0.1.14:8080/webhook  (stale IP from previous 2026-09-19 session, instance no longer exists)
+NEW: http://10.0.1.129:8080/webhook (current node-a private IP, this session)
+Edited locally in repo: deploy/monitoring/alertmanager.yaml line 19
+
+=== 2. Upload manifests to node-a via SSM (base64 -> /tmp/l4manifests/) ===
+total 32
+drwxr-xr-x  2 root root 4096 Sep 19 16:18 .
+drwxrwxrwt 14 root root 4096 Sep 19 16:18 ..
+-rw-r--r--  1 root root  908 Sep 19 16:18 alert-rules.yaml
+-rw-r--r--  1 root root 1699 Sep 19 16:18 alertmanager.yaml
+-rw-r--r--  1 root root 1938 Sep 19 16:18 daemonset.yaml
+-rw-r--r--  1 root root  215 Sep 19 16:18 exporter-svc.yaml
+-rw-r--r--  1 root root 4226 Sep 19 16:18 prometheus.yaml
+(remote clock shows 16:18 UTC 09-19 due to instance boot time reporting quirk; actual wall-clock session is 2026-09-20)
+
+=== verify uploaded alertmanager.yaml webhook url ===
+$ grep -n url: /tmp/l4manifests/alertmanager.yaml
+19:          - url: http://10.0.1.129:8080/webhook
+
+=== 3. kubectl apply (in order) ===
+--- apply daemonset.yaml ---
+daemonset.apps/qemu-exporter created
+--- apply exporter-svc.yaml ---
+service/qemu-exporter created
+--- create namespace monitoring ---
+namespace/monitoring created
+--- apply alert-rules.yaml ---
+configmap/prometheus-rules created
+--- apply alertmanager.yaml ---
+configmap/alertmanager-config created
+deployment.apps/alertmanager created
+service/alertmanager created
+--- apply prometheus.yaml ---
+serviceaccount/prometheus created
+clusterrole.rbac.authorization.k8s.io/prometheus created
+clusterrolebinding.rbac.authorization.k8s.io/prometheus created
+configmap/prometheus-config created
+deployment.apps/prometheus created
+service/prometheus created
+
+=== 4. rollout status ===
+--- qemu-exporter DaemonSet rollout ---
+daemon set "qemu-exporter" successfully rolled out
+NAME                  READY   STATUS    RESTARTS   AGE   IP               NODE            NOMINATED NODE   READINESS GATES
+qemu-exporter-7mdpd   1/1     Running   0          25s   192.168.217.63   ip-10-0-1-129   <none>           <none>
+qemu-exporter-w425h   1/1     Running   0          25s   192.168.201.3    ip-10-0-1-174   <none>           <none>
+--- prometheus rollout ---
+deployment "prometheus" successfully rolled out
+--- alertmanager rollout ---
+deployment "alertmanager" successfully rolled out
+NAME                            READY   STATUS    RESTARTS   AGE   IP              NODE            NOMINATED NODE   READINESS GATES
+alertmanager-58c5b8dffb-zlkhf   1/1     Running   0          26s   192.168.201.4   ip-10-0-1-174   <none>           <none>
+prometheus-64bc98dcf6-k87tz     1/1     Running   0          25s   192.168.201.5   ip-10-0-1-174   <none>           <none>
+
+=== 5. Prometheus /api/v1/targets health summary ===
+$ kubectl -n monitoring exec prometheus-64bc98dcf6-k87tz -- wget -T 5 -qO- http://localhost:9090/api/v1/targets | python3 -c "count by (job, health)"
+('kubelet-cadvisor', 'up') 2
+('kubelet-resource', 'up') 2
+('qemu-exporter', 'up') 2
+
+=== DONE: L4 complete, all targets up on both nodes (ip-10-0-1-129, ip-10-0-1-174) ===

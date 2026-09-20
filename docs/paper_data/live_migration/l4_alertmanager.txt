@@ -1,0 +1,151 @@
+L4 — Alertmanager 룰 적용 및 alert fire 확인 (2026-09-19)
+================================================================
+
+전제 상태: L1~L3 완료된 2노드 클러스터(node-a=i-0ee904b7547b9ee9f/10.0.1.4,
+node-b=i-0548b42c537e6fc56/10.0.1.207). test-vm(1bfa7dda-638f-42a4-b377-287144591b6a)은
+L3 마이그레이션 결과 node-b에 위치. 접근: 메인 세션이 AWS CLI(aws ssm send-command)로
+node-a에 직접 SSM 커맨드 실행, 파일 전송은 base64 인코딩 후 remote에서 디코드.
+
+--- 0. 사전 확인: 모니터링 스택이 이 클러스터엔 전혀 없었음 ---
+
+$ kubectl get ns  →  calico-system/default/kube-*/local-path-storage/openstack/tigera-operator만 존재
+$ helm list -A    →  OSH 코어(glance/keystone/libvirt/mariadb/memcached/neutron/nova/
+                      openvswitch/placement/rabbitmq)만 존재, monitoring 없음
+$ kubectl get ds -A | grep qemu   →  결과 없음 (qemu-exporter도 미배포)
+
+-> 목표1 검증 환경(단일노드)에서 쓴 deploy/monitoring/(prometheus.yaml, grafana.yaml,
+   exporter-svc.yaml, cpu-hog.yaml)은 Prometheus+Grafana만 있고 Alertmanager는 없었음.
+   이번 세션에서 deploy/monitoring/alertmanager.yaml, alert-rules.yaml을 신규 작성하고
+   prometheus.yaml에 rule_files+alerting 설정을 추가(코드 diff는 git으로 확인 가능).
+
+--- 1. qemu-exporter DaemonSet + Service 배포 ---
+
+$ kubectl -n openstack apply -f daemonset.yaml
+  daemonset.apps/qemu-exporter created
+$ kubectl -n openstack apply -f exporter-svc.yaml
+  service/qemu-exporter created
+
+결과: 양쪽 노드에 1개씩, 2/2 Running.
+  qemu-exporter-cf7x8   1/1 Running   ip-10-0-1-207
+  qemu-exporter-wdppg   1/1 Running   ip-10-0-1-4
+
+--- 2. monitoring 네임스페이스 + rules/alertmanager/prometheus 배포 ---
+
+$ kubectl create namespace monitoring
+$ kubectl apply -f alert-rules.yaml        (configmap/prometheus-rules)
+$ kubectl apply -f alertmanager.yaml       (configmap+deployment+service)
+$ kubectl apply -f prometheus.yaml         (SA+RBAC+configmap+deployment+service)
+
+rollout 전부 정상 완료(alertmanager, prometheus 각각 successfully rolled out).
+
+--- 3. 버그 발견: qemu-exporter 스크레이프가 2노드에서 한쪽만 잡힘 ---
+
+최초 확인 시 exporter counter는 정상 증가(node-b 파드에서 1.478865 -> 1.514044,
+15초간)하는데 Prometheus의 openstack_vm_cpu_pressure_stall_seconds_total 인스턴트 쿼리는
+빈 결과. 원인: 기존 scrape_config가 ClusterIP Service(qemu-exporter.openstack.svc.cluster.
+local:9179)를 static target으로 잡고 있었음 — DaemonSet은 노드당 1개 파드인데 Service
+뒤에 2개 엔드포인트가 있으면 kube-proxy의 connection stickiness 때문에 Prometheus는
+매번 같은 파드 하나만 계속 스크레이프(이번 경우 node-a 파드, VM이 없어 0으로 유지).
+단일노드 때는 문제가 될 수 없었던 설계 — 2노드에서 처음 드러난 버그.
+
+수정: kubernetes_sd_configs(role: pod, namespace: openstack, label app=qemu-exporter)로
+전환해 각 파드 IP를 직접 타겟팅하도록 prometheus.yaml 변경(cAdvisor job과 동일 패턴).
+ConfigMap만 바꾸고 Deployment 스펙은 안 바뀌어 자동 재시작이 안 걸려서
+`kubectl -n monitoring rollout restart deploy/prometheus`로 수동 재기동 필요했음.
+
+수정 후 확인:
+$ curl .../api/v1/targets?state=active | ...
+  qemu-exporter http://192.168.86.255:9179/metrics up   (node-a, VM 없음)
+  qemu-exporter http://192.168.235.131:9179/metrics up  (node-b, test-vm 있음)
+$ curl .../api/v1/query?query=openstack_vm_cpu_pressure_stall_seconds_total
+  1개 series 반환(node-b 파드분), instance_uuid=1bfa7dda... 정상.
+
+--- 4. cpu-hog로 부하 유발, threshold 문제 발견 ---
+
+$ kubectl apply -f cpu-hog.yaml
+$ kubectl -n default patch deployment cpu-hog --type merge \
+    -p '{"spec":{"template":{"spec":{"nodeSelector":{"kubernetes.io/hostname":"ip-10-0-1-207"}}}}}'
+  (test-vm이 있는 node-b를 직접 지정 — cpu-hog.yaml 자체엔 nodeSelector 없음)
+
+replicas=4로 시작, 5분 이상 관찰해도 rate(...[1m]) 0.005~0.012 사이에서만 등락,
+TDL 원안의 threshold 0.5에는 전혀 근접 못함. replicas=8로 증량(node-b는 8vCPU,
+load average는 4.46/8까지만 올랐다가 8개로도 크게 안 오름 — TCG 소프트웨어 에뮬레이션 +
+컴퓨트 전용 노드라 절대적인 경합 강도 자체가 목표1 논문 실측(Fig.3 피크 0.1467)과
+비슷한 자릿수에 머무름).
+
+**threshold 0.5는 TDL 문서에 처음부터 "Fig.3 실측(0.0117→0.1467)보다 훨씬 높게 잡은
+잠정치, L6 재측정 후 보정 예정"이라고 명시돼 있었음** — 이번 실측으로 그 잠정치가
+이 부하 패턴에서는 사실상 도달 불가능한 값임을 재확인. 사용자 확인 후 L4 게이트
+통과 목적으로만 threshold를 임시로 낮춤(0.5→0.01→0.005, 관측된 rate 변동폭 상단이
+0.005를 안정적으로 넘도록). deploy/monitoring/alert-rules.yaml에 ponytail 주석으로
+"L6 재측정 후 실제 값으로 재조정 필요"를 명시해둠 — 이 0.005는 실사용 값이 아니라
+파이프라인 검증용.
+
+--- 5. Alert 발화 확인 ---
+
+$ curl .../api/v1/rules  →  VMCPUPressureHigh, state: pending → firing (약 34초, "for: 30s"와 일치)
+$ curl http://<alertmanager-ip>:9093/api/v2/alerts
+  [{
+    "labels": {"alertname":"VMCPUPressureHigh","instance_uuid":"1bfa7dda-638f-42a4-b377-287144591b6a",
+               "node":"ip-10-0-1-207","severity":"warning", ...},
+    "annotations": {"instance_uuid":"1bfa7dda-638f-42a4-b377-287144591b6a","node":"ip-10-0-1-207"},
+    "status": {"state":"active", ...},
+    "startsAt": "2026-09-19T06:58:40.729Z"
+  }]
+
+**결과: Alertmanager API에 alert가 state=active로 정확한 instance_uuid/node 라벨과 함께
+나타남 — L4 게이트 통과.** rule evaluate(pending, 06:58:06 근방) → firing(06:58:54)까지
+약 30~40초, "for: 30s" 설정과 부합.
+
+--- 6. 정리 ---
+
+$ kubectl delete -f cpu-hog.yaml  (06:59:07Z) — hog 부하 제거, test-vm/OSH 정상 상태로 복귀.
+qemu-exporter/prometheus/alertmanager는 L5(webhook)에서 계속 쓸 것이므로 유지.
+
+================================================================
+요약: qemu-exporter+Prometheus+Alertmanager를 이 2노드 클러스터에 신규 배포(목표1
+단일노드 스택엔 Alertmanager가 없었음). 배포 중 2노드 환경에서만 드러나는 실버그(Service
+기반 정적 타겟이 DaemonSet 멀티파드 중 하나만 스크레이프)를 발견·수정. threshold 0.5는
+Fig.3 실측 대비 애초에 도달 불가능한 값임을 실측으로 재확인, L4 게이트 통과 목적의
+임시값(0.005)으로 낮춰 alert fire를 실제로 검증. 실사용 threshold는 L6에서 재측정 후 결정.
+================================================================
+
+=== L4 재기동 세션 (2026-09-19, 2노드 재기동 후 재배포) ===
+node-a=i-0b29a1676600d5303(private 10.0.1.14), node-b=i-006fae231dc69ca23(private 10.0.1.76)
+
+$ kubectl -n openstack apply -f deploy/daemonset.yaml
+daemonset.apps/qemu-exporter created
+$ kubectl -n openstack apply -f deploy/monitoring/exporter-svc.yaml
+service/qemu-exporter created
+$ kubectl create namespace monitoring
+namespace/monitoring created
+$ kubectl apply -f deploy/monitoring/alert-rules.yaml
+configmap/prometheus-rules created
+$ kubectl apply -f deploy/monitoring/alertmanager.yaml   (webhook url 10.0.1.4 -> 10.0.1.14로 갱신 후 apply)
+configmap/alertmanager-config, deployment.apps/alertmanager, service/alertmanager created
+$ kubectl apply -f deploy/monitoring/prometheus.yaml
+serviceaccount/prometheus, clusterrole/prometheus, clusterrolebinding/prometheus,
+configmap/prometheus-config, deployment.apps/prometheus, service/prometheus created
+
+$ kubectl -n openstack rollout status ds qemu-exporter --timeout=90s
+daemon set "qemu-exporter" successfully rolled out
+
+$ kubectl -n monitoring get pods -o wide
+alertmanager-58c5b8dffb-n2qpc   1/1   Running   ip-10-0-1-76
+prometheus-64bc98dcf6-n8wdr    1/1   Running   ip-10-0-1-76
+
+$ kubectl -n openstack get pods -l app=qemu-exporter -o wide
+qemu-exporter-9jx7d   1/1   Running   ip-10-0-1-14
+qemu-exporter-f4m2n   1/1   Running   ip-10-0-1-76
+
+$ (via wget in prom pod) http://localhost:9090/api/v1/targets 분석:
+job=qemu-exporter: 2 active, health=up (양쪽 노드)
+job=kubelet-cadvisor: 2 active, health=up
+job=kubelet-resource: 2 active, health=up
+=> 2노드 스크레이프 버그(ClusterIP 고정 타겟 문제) fix가 재기동 환경에서도 유효함 확인.
+
+threshold 변경 없음(0.005 임시값 유지). cpu-hog 부하 재현 테스트는 이번 세션엔 생략(이전 세션에 이미
+같은 threshold로 alert fire 검증됨, 파이프라인 구성 요소가 정상 동작함만 재확인) — L6에서
+end-to-end로 다시 검증 예정.
+
+=== L4 완료 (2026-09-19 재기동 세션) ===

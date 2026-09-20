@@ -1,0 +1,47 @@
+L1 — Terraform 2노드 확장 및 기동 (2026-09-16)
+================================================================
+
+목적: node-b(컴퓨트 전용) EC2 인스턴스를 추가하고 두 노드 모두 cgroup v2 + PSI 전제를
+재확인한다. 상세 계획: 레포 루트 live_migration_tdl.md L1 섹션.
+
+--- terraform plan (apply 전) ---
+Plan: 11 to add, 0 to change, 0 to destroy
+(state가 비어있던 상태에서 시작 — VPC/IGW/서브넷/라우트테이블/SG/IAM role+attachment+profile
+전체 9개 + node-a + node-b 인스턴스 2개 = 11개. destroy 없음, 기존 리소스 훼손 위험 없음 확인)
+
+--- terraform apply 결과 (사용자가 직접 `make up` 실행) ---
+node-a (control+data plane): instance_id=i-0280f3badaba22a4d, public_ip=3.34.191.154
+node-b (compute-only, 신규): instance_id=i-0c16666d3c6bcfbdd, public_ip=13.124.182.171
+region: ap-northeast-2
+
+--- 부트스트랩 완료 확인 (SSM AWS-RunShellScript, non-interactive) ---
+node-a: /var/log/user-data-complete 존재 → NODE_A_READY, "Node is Ready." (kubeadm init + Calico)
+node-b: /var/log/user-data-complete 존재 → NODE_B_READY (K8s 바이너리 설치까지만, join은 L2에서)
+
+--- cgroup v2 / PSI 실측 (CLAUDE.md Day1 전제 재확인, 2노드 양쪽) ---
+node-a (i-0280f3badaba22a4d):
+  stat -fc %T /sys/fs/cgroup -> cgroup2fs
+  ls /proc/pressure/        -> cpu io memory
+
+node-b (i-0c16666d3c6bcfbdd):
+  stat -fc %T /sys/fs/cgroup -> cgroup2fs
+  ls /proc/pressure/        -> cpu io memory
+
+--- node-a OSH 베이스라인 재배포 (기존 단일노드 실험과 동일 절차) ---
+make osh-deploy -> SSM status=Success
+make osh-vm     -> SSM status=Success
+openstack server list (osc 파드) -> test-vm ACTIVE, network demo-net=10.10.10.212
+
+--- 수정 파일 (terraform 레포: openstack-on-kubernetes-terraform, 별개 git, 커밋 안 함) ---
+terraform/ec2.tf            - aws_instance "compute"(node-b) 추가
+terraform/vpc.tf            - SG ingress TCP 49152-49215 self=true 추가 (마이그레이션 포트)
+terraform/outputs.tf        - compute_instance_id / compute_public_ip 추가
+terraform/user_data_compute.sh (신규) - K8s 패키지 설치까지만, kubeadm init 없음
+Makefile                    - ssm-compute/logs-compute/ready-compute/status-compute 타깃 추가
+
+--- 알려진 이슈 (기록용) ---
+- session-manager-plugin의 AWS-StartInteractiveCommand 문서가 로컬 환경과 호환 안 됨
+  ("Plugin with name InteractiveCommands not found") -> AWS-RunShellScript(send-command)로 대체.
+  인프라 자체 문제 아님, 기존 단일노드 실험(prometheus_grafana_tdl.md)에서도 동일 이슈 있었음.
+- terraform apply는 Claude Code 하니스의 IaC-apply 보호정책에 걸려 서브에이전트가 직접 실행
+  못 함 -> 사용자가 `make up` 직접 실행.

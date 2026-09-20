@@ -1,0 +1,2294 @@
+=== L1 reprovision session 2026-09-19 ===
+--- $ git status (terraform repo) ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   Makefile
+	modified:   terraform/ec2.tf
+	modified:   terraform/outputs.tf
+	modified:   terraform/vpc.tf
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	osh-node-env-handoff.md
+	terraform/user_data_compute.sh
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+--- $ terraform plan ---
+data.aws_ami.ubuntu: Reading...
+data.aws_availability_zones.available: Reading...
+data.aws_availability_zones.available: Read complete after 0s [id=ap-northeast-2]
+data.aws_ami.ubuntu: Read complete after 0s [id=ami-086a43496cb46286c]
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # aws_iam_instance_profile.ssm will be created
+  + resource "aws_iam_instance_profile" "ssm" {
+      + arn         = (known after apply)
+      + create_date = (known after apply)
+      + id          = (known after apply)
+      + name        = "osh-lab-ssm-profile"
+      + name_prefix = (known after apply)
+      + path        = "/"
+      + role        = "osh-lab-ssm-role"
+      + tags_all    = (known after apply)
+      + unique_id   = (known after apply)
+    }
+
+  # aws_iam_role.ssm will be created
+  + resource "aws_iam_role" "ssm" {
+      + arn                   = (known after apply)
+      + assume_role_policy    = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action    = "sts:AssumeRole"
+                      + Effect    = "Allow"
+                      + Principal = {
+                          + Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + create_date           = (known after apply)
+      + force_detach_policies = false
+      + id                    = (known after apply)
+      + managed_policy_arns   = (known after apply)
+      + max_session_duration  = 3600
+      + name                  = "osh-lab-ssm-role"
+      + name_prefix           = (known after apply)
+      + path                  = "/"
+      + tags_all              = (known after apply)
+      + unique_id             = (known after apply)
+
+      + inline_policy (known after apply)
+    }
+
+  # aws_iam_role_policy_attachment.ssm_core will be created
+  + resource "aws_iam_role_policy_attachment" "ssm_core" {
+      + id         = (known after apply)
+      + policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      + role       = "osh-lab-ssm-role"
+    }
+
+  # aws_instance.compute will be created
+  + resource "aws_instance" "compute" {
+      + ami                                  = "ami-086a43496cb46286c"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + cpu_core_count                       = (known after apply)
+      + cpu_threads_per_core                 = (known after apply)
+      + disable_api_stop                     = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + enable_primary_ipv6                  = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + host_resource_group_arn              = (known after apply)
+      + iam_instance_profile                 = "osh-lab-ssm-profile"
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_lifecycle                   = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "m5.2xlarge"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = (known after apply)
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + spot_instance_request_id             = (known after apply)
+      + subnet_id                            = (known after apply)
+      + tags                                 = {
+          + "Name" = "osh-lab-compute"
+        }
+      + tags_all                             = {
+          + "Name" = "osh-lab-compute"
+        }
+      + tenancy                              = (known after apply)
+      + user_data                            = "a47bfaed69d92b1cd7782d900f2a1965abd60893"
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = (known after apply)
+
+      + capacity_reservation_specification (known after apply)
+
+      + cpu_options (known after apply)
+
+      + ebs_block_device (known after apply)
+
+      + enclave_options (known after apply)
+
+      + ephemeral_block_device (known after apply)
+
+      + instance_market_options (known after apply)
+
+      + maintenance_options (known after apply)
+
+      + metadata_options {
+          + http_endpoint               = "enabled"
+          + http_protocol_ipv6          = "disabled"
+          + http_put_response_hop_limit = (known after apply)
+          + http_tokens                 = "required"
+          + instance_metadata_tags      = (known after apply)
+        }
+
+      + network_interface (known after apply)
+
+      + private_dns_name_options (known after apply)
+
+      + root_block_device {
+          + delete_on_termination = true
+          + device_name           = (known after apply)
+          + encrypted             = (known after apply)
+          + iops                  = (known after apply)
+          + kms_key_id            = (known after apply)
+          + tags_all              = (known after apply)
+          + throughput            = (known after apply)
+          + volume_id             = (known after apply)
+          + volume_size           = 100
+          + volume_type           = "gp3"
+        }
+    }
+
+  # aws_instance.node will be created
+  + resource "aws_instance" "node" {
+      + ami                                  = "ami-086a43496cb46286c"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + cpu_core_count                       = (known after apply)
+      + cpu_threads_per_core                 = (known after apply)
+      + disable_api_stop                     = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + enable_primary_ipv6                  = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + host_resource_group_arn              = (known after apply)
+      + iam_instance_profile                 = "osh-lab-ssm-profile"
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_lifecycle                   = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "m5.2xlarge"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = (known after apply)
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns                          = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + spot_instance_request_id             = (known after apply)
+      + subnet_id                            = (known after apply)
+      + tags                                 = {
+          + "Name" = "osh-lab-node"
+        }
+      + tags_all                             = {
+          + "Name" = "osh-lab-node"
+        }
+      + tenancy                              = (known after apply)
+      + user_data                            = "e67a4abeaac23b4390b6bb91ec3d267490335f43"
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = (known after apply)
+
+      + capacity_reservation_specification (known after apply)
+
+      + cpu_options (known after apply)
+
+      + ebs_block_device (known after apply)
+
+      + enclave_options (known after apply)
+
+      + ephemeral_block_device (known after apply)
+
+      + instance_market_options (known after apply)
+
+      + maintenance_options (known after apply)
+
+      + metadata_options {
+          + http_endpoint               = "enabled"
+          + http_protocol_ipv6          = "disabled"
+          + http_put_response_hop_limit = (known after apply)
+          + http_tokens                 = "required"
+          + instance_metadata_tags      = (known after apply)
+        }
+
+      + network_interface (known after apply)
+
+      + private_dns_name_options (known after apply)
+
+      + root_block_device {
+          + delete_on_termination = true
+          + device_name           = (known after apply)
+          + encrypted             = (known after apply)
+          + iops                  = (known after apply)
+          + kms_key_id            = (known after apply)
+          + tags_all              = (known after apply)
+          + throughput            = (known after apply)
+          + volume_id             = (known after apply)
+          + volume_size           = 100
+          + volume_type           = "gp3"
+        }
+    }
+
+  # aws_internet_gateway.main will be created
+  + resource "aws_internet_gateway" "main" {
+      + arn      = (known after apply)
+      + id       = (known after apply)
+      + owner_id = (known after apply)
+      + tags     = {
+          + "Name" = "osh-lab-igw"
+        }
+      + tags_all = {
+          + "Name" = "osh-lab-igw"
+        }
+      + vpc_id   = (known after apply)
+    }
+
+  # aws_route_table.public will be created
+  + resource "aws_route_table" "public" {
+      + arn              = (known after apply)
+      + id               = (known after apply)
+      + owner_id         = (known after apply)
+      + propagating_vgws = (known after apply)
+      + route            = [
+          + {
+              + cidr_block                 = "0.0.0.0/0"
+              + gateway_id                 = (known after apply)
+                # (11 unchanged attributes hidden)
+            },
+        ]
+      + tags             = {
+          + "Name" = "osh-lab-public-rt"
+        }
+      + tags_all         = {
+          + "Name" = "osh-lab-public-rt"
+        }
+      + vpc_id           = (known after apply)
+    }
+
+  # aws_route_table_association.public will be created
+  + resource "aws_route_table_association" "public" {
+      + id             = (known after apply)
+      + route_table_id = (known after apply)
+      + subnet_id      = (known after apply)
+    }
+
+  # aws_security_group.node will be created
+  + resource "aws_security_group" "node" {
+      + arn                    = (known after apply)
+      + description            = "Egress only; access the node via SSM Session Manager"
+      + egress                 = [
+          + {
+              + cidr_blocks      = [
+                  + "0.0.0.0/0",
+                ]
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = false
+              + to_port          = 0
+                # (1 unchanged attribute hidden)
+            },
+        ]
+      + id                     = (known after apply)
+      + ingress                = [
+          + {
+              + cidr_blocks      = []
+              + from_port        = 49152
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "tcp"
+              + security_groups  = []
+              + self             = true
+              + to_port          = 49215
+                # (1 unchanged attribute hidden)
+            },
+          + {
+              + cidr_blocks      = []
+              + description      = "all traffic between node-a/node-b (Calico, OVS tunnel, libvirt control+migration)"
+              + from_port        = 0
+              + ipv6_cidr_blocks = []
+              + prefix_list_ids  = []
+              + protocol         = "-1"
+              + security_groups  = []
+              + self             = true
+              + to_port          = 0
+            },
+        ]
+      + name                   = "osh-lab-node-sg"
+      + name_prefix            = (known after apply)
+      + owner_id               = (known after apply)
+      + revoke_rules_on_delete = false
+      + tags                   = {
+          + "Name" = "osh-lab-node-sg"
+        }
+      + tags_all               = {
+          + "Name" = "osh-lab-node-sg"
+        }
+      + vpc_id                 = (known after apply)
+    }
+
+  # aws_subnet.public will be created
+  + resource "aws_subnet" "public" {
+      + arn                                            = (known after apply)
+      + assign_ipv6_address_on_creation                = false
+      + availability_zone                              = "ap-northeast-2a"
+      + availability_zone_id                           = (known after apply)
+      + cidr_block                                     = "10.0.1.0/24"
+      + enable_dns64                                   = false
+      + enable_resource_name_dns_a_record_on_launch    = false
+      + enable_resource_name_dns_aaaa_record_on_launch = false
+      + id                                             = (known after apply)
+      + ipv6_cidr_block_association_id                 = (known after apply)
+      + ipv6_native                                    = false
+      + map_public_ip_on_launch                        = true
+      + owner_id                                       = (known after apply)
+      + private_dns_hostname_type_on_launch            = (known after apply)
+      + tags                                           = {
+          + "Name" = "osh-lab-public"
+        }
+      + tags_all                                       = {
+          + "Name" = "osh-lab-public"
+        }
+      + vpc_id                                         = (known after apply)
+    }
+
+  # aws_vpc.main will be created
+  + resource "aws_vpc" "main" {
+      + arn                                  = (known after apply)
+      + cidr_block                           = "10.0.0.0/16"
+      + default_network_acl_id               = (known after apply)
+      + default_route_table_id               = (known after apply)
+      + default_security_group_id            = (known after apply)
+      + dhcp_options_id                      = (known after apply)
+      + enable_dns_hostnames                 = true
+      + enable_dns_support                   = true
+      + enable_network_address_usage_metrics = (known after apply)
+      + id                                   = (known after apply)
+      + instance_tenancy                     = "default"
+      + ipv6_association_id                  = (known after apply)
+      + ipv6_cidr_block                      = (known after apply)
+      + ipv6_cidr_block_network_border_group = (known after apply)
+      + main_route_table_id                  = (known after apply)
+      + owner_id                             = (known after apply)
+      + tags                                 = {
+          + "Name" = "osh-lab-vpc"
+        }
+      + tags_all                             = {
+          + "Name" = "osh-lab-vpc"
+        }
+    }
+
+Plan: 11 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  + compute_instance_id = (known after apply)
+  + compute_public_ip   = (known after apply)
+  + instance_id         = (known after apply)
+  + public_ip           = (known after apply)
+  + region              = "ap-northeast-2"
+  + ssm_command         = (known after apply)
+  + tail_bootstrap_log  = "sudo tail -f /var/log/user-data.log"
+
+─────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
+
+--- $ make up ---
+terraform -chdir=terraform apply -auto-approve
+[0m[1mdata.aws_availability_zones.available: Reading...[0m[0m
+[0m[1mdata.aws_ami.ubuntu: Reading...[0m[0m
+[0m[1mdata.aws_availability_zones.available: Read complete after 1s [id=ap-northeast-2][0m
+[0m[1mdata.aws_ami.ubuntu: Read complete after 1s [id=ami-086a43496cb46286c][0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [32m+[0m create[0m
+
+Terraform will perform the following actions:
+
+[1m  # aws_iam_instance_profile.ssm[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_instance_profile" "ssm" {
+      [32m+[0m[0m arn         = (known after apply)
+      [32m+[0m[0m create_date = (known after apply)
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "osh-lab-ssm-profile"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m path        = "/"
+      [32m+[0m[0m role        = "osh-lab-ssm-role"
+      [32m+[0m[0m tags_all    = (known after apply)
+      [32m+[0m[0m unique_id   = (known after apply)
+    }
+
+[1m  # aws_iam_role.ssm[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role" "ssm" {
+      [32m+[0m[0m arn                   = (known after apply)
+      [32m+[0m[0m assume_role_policy    = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action    = "sts:AssumeRole"
+                      [32m+[0m[0m Effect    = "Allow"
+                      [32m+[0m[0m Principal = {
+                          [32m+[0m[0m Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m create_date           = (known after apply)
+      [32m+[0m[0m force_detach_policies = false
+      [32m+[0m[0m id                    = (known after apply)
+      [32m+[0m[0m managed_policy_arns   = (known after apply)
+      [32m+[0m[0m max_session_duration  = 3600
+      [32m+[0m[0m name                  = "osh-lab-ssm-role"
+      [32m+[0m[0m name_prefix           = (known after apply)
+      [32m+[0m[0m path                  = "/"
+      [32m+[0m[0m tags_all              = (known after apply)
+      [32m+[0m[0m unique_id             = (known after apply)
+
+      [32m+[0m[0m inline_policy (known after apply)
+    }
+
+[1m  # aws_iam_role_policy_attachment.ssm_core[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy_attachment" "ssm_core" {
+      [32m+[0m[0m id         = (known after apply)
+      [32m+[0m[0m policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      [32m+[0m[0m role       = "osh-lab-ssm-role"
+    }
+
+[1m  # aws_instance.compute[0m will be created
+[0m  [32m+[0m[0m resource "aws_instance" "compute" {
+      [32m+[0m[0m ami                                  = "ami-086a43496cb46286c"
+      [32m+[0m[0m arn                                  = (known after apply)
+      [32m+[0m[0m associate_public_ip_address          = (known after apply)
+      [32m+[0m[0m availability_zone                    = (known after apply)
+      [32m+[0m[0m cpu_core_count                       = (known after apply)
+      [32m+[0m[0m cpu_threads_per_core                 = (known after apply)
+      [32m+[0m[0m disable_api_stop                     = (known after apply)
+      [32m+[0m[0m disable_api_termination              = (known after apply)
+      [32m+[0m[0m ebs_optimized                        = (known after apply)
+      [32m+[0m[0m enable_primary_ipv6                  = (known after apply)
+      [32m+[0m[0m get_password_data                    = false
+      [32m+[0m[0m host_id                              = (known after apply)
+      [32m+[0m[0m host_resource_group_arn              = (known after apply)
+      [32m+[0m[0m iam_instance_profile                 = "osh-lab-ssm-profile"
+      [32m+[0m[0m id                                   = (known after apply)
+      [32m+[0m[0m instance_initiated_shutdown_behavior = (known after apply)
+      [32m+[0m[0m instance_lifecycle                   = (known after apply)
+      [32m+[0m[0m instance_state                       = (known after apply)
+      [32m+[0m[0m instance_type                        = "m5.2xlarge"
+      [32m+[0m[0m ipv6_address_count                   = (known after apply)
+      [32m+[0m[0m ipv6_addresses                       = (known after apply)
+      [32m+[0m[0m key_name                             = (known after apply)
+      [32m+[0m[0m monitoring                           = (known after apply)
+      [32m+[0m[0m outpost_arn                          = (known after apply)
+      [32m+[0m[0m password_data                        = (known after apply)
+      [32m+[0m[0m placement_group                      = (known after apply)
+      [32m+[0m[0m placement_partition_number           = (known after apply)
+      [32m+[0m[0m primary_network_interface_id         = (known after apply)
+      [32m+[0m[0m private_dns                          = (known after apply)
+      [32m+[0m[0m private_ip                           = (known after apply)
+      [32m+[0m[0m public_dns                           = (known after apply)
+      [32m+[0m[0m public_ip                            = (known after apply)
+      [32m+[0m[0m secondary_private_ips                = (known after apply)
+      [32m+[0m[0m security_groups                      = (known after apply)
+      [32m+[0m[0m source_dest_check                    = true
+      [32m+[0m[0m spot_instance_request_id             = (known after apply)
+      [32m+[0m[0m subnet_id                            = (known after apply)
+      [32m+[0m[0m tags                                 = {
+          [32m+[0m[0m "Name" = "osh-lab-compute"
+        }
+      [32m+[0m[0m tags_all                             = {
+          [32m+[0m[0m "Name" = "osh-lab-compute"
+        }
+      [32m+[0m[0m tenancy                              = (known after apply)
+      [32m+[0m[0m user_data                            = "a47bfaed69d92b1cd7782d900f2a1965abd60893"
+      [32m+[0m[0m user_data_base64                     = (known after apply)
+      [32m+[0m[0m user_data_replace_on_change          = false
+      [32m+[0m[0m vpc_security_group_ids               = (known after apply)
+
+      [32m+[0m[0m capacity_reservation_specification (known after apply)
+
+      [32m+[0m[0m cpu_options (known after apply)
+
+      [32m+[0m[0m ebs_block_device (known after apply)
+
+      [32m+[0m[0m enclave_options (known after apply)
+
+      [32m+[0m[0m ephemeral_block_device (known after apply)
+
+      [32m+[0m[0m instance_market_options (known after apply)
+
+      [32m+[0m[0m maintenance_options (known after apply)
+
+      [32m+[0m[0m metadata_options {
+          [32m+[0m[0m http_endpoint               = "enabled"
+          [32m+[0m[0m http_protocol_ipv6          = "disabled"
+          [32m+[0m[0m http_put_response_hop_limit = (known after apply)
+          [32m+[0m[0m http_tokens                 = "required"
+          [32m+[0m[0m instance_metadata_tags      = (known after apply)
+        }
+
+      [32m+[0m[0m network_interface (known after apply)
+
+      [32m+[0m[0m private_dns_name_options (known after apply)
+
+      [32m+[0m[0m root_block_device {
+          [32m+[0m[0m delete_on_termination = true
+          [32m+[0m[0m device_name           = (known after apply)
+          [32m+[0m[0m encrypted             = (known after apply)
+          [32m+[0m[0m iops                  = (known after apply)
+          [32m+[0m[0m kms_key_id            = (known after apply)
+          [32m+[0m[0m tags_all              = (known after apply)
+          [32m+[0m[0m throughput            = (known after apply)
+          [32m+[0m[0m volume_id             = (known after apply)
+          [32m+[0m[0m volume_size           = 100
+          [32m+[0m[0m volume_type           = "gp3"
+        }
+    }
+
+[1m  # aws_instance.node[0m will be created
+[0m  [32m+[0m[0m resource "aws_instance" "node" {
+      [32m+[0m[0m ami                                  = "ami-086a43496cb46286c"
+      [32m+[0m[0m arn                                  = (known after apply)
+      [32m+[0m[0m associate_public_ip_address          = (known after apply)
+      [32m+[0m[0m availability_zone                    = (known after apply)
+      [32m+[0m[0m cpu_core_count                       = (known after apply)
+      [32m+[0m[0m cpu_threads_per_core                 = (known after apply)
+      [32m+[0m[0m disable_api_stop                     = (known after apply)
+      [32m+[0m[0m disable_api_termination              = (known after apply)
+      [32m+[0m[0m ebs_optimized                        = (known after apply)
+      [32m+[0m[0m enable_primary_ipv6                  = (known after apply)
+      [32m+[0m[0m get_password_data                    = false
+      [32m+[0m[0m host_id                              = (known after apply)
+      [32m+[0m[0m host_resource_group_arn              = (known after apply)
+      [32m+[0m[0m iam_instance_profile                 = "osh-lab-ssm-profile"
+      [32m+[0m[0m id                                   = (known after apply)
+      [32m+[0m[0m instance_initiated_shutdown_behavior = (known after apply)
+      [32m+[0m[0m instance_lifecycle                   = (known after apply)
+      [32m+[0m[0m instance_state                       = (known after apply)
+      [32m+[0m[0m instance_type                        = "m5.2xlarge"
+      [32m+[0m[0m ipv6_address_count                   = (known after apply)
+      [32m+[0m[0m ipv6_addresses                       = (known after apply)
+      [32m+[0m[0m key_name                             = (known after apply)
+      [32m+[0m[0m monitoring                           = (known after apply)
+      [32m+[0m[0m outpost_arn                          = (known after apply)
+      [32m+[0m[0m password_data                        = (known after apply)
+      [32m+[0m[0m placement_group                      = (known after apply)
+      [32m+[0m[0m placement_partition_number           = (known after apply)
+      [32m+[0m[0m primary_network_interface_id         = (known after apply)
+      [32m+[0m[0m private_dns                          = (known after apply)
+      [32m+[0m[0m private_ip                           = (known after apply)
+      [32m+[0m[0m public_dns                           = (known after apply)
+      [32m+[0m[0m public_ip                            = (known after apply)
+      [32m+[0m[0m secondary_private_ips                = (known after apply)
+      [32m+[0m[0m security_groups                      = (known after apply)
+      [32m+[0m[0m source_dest_check                    = true
+      [32m+[0m[0m spot_instance_request_id             = (known after apply)
+      [32m+[0m[0m subnet_id                            = (known after apply)
+      [32m+[0m[0m tags                                 = {
+          [32m+[0m[0m "Name" = "osh-lab-node"
+        }
+      [32m+[0m[0m tags_all                             = {
+          [32m+[0m[0m "Name" = "osh-lab-node"
+        }
+      [32m+[0m[0m tenancy                              = (known after apply)
+      [32m+[0m[0m user_data                            = "e67a4abeaac23b4390b6bb91ec3d267490335f43"
+      [32m+[0m[0m user_data_base64                     = (known after apply)
+      [32m+[0m[0m user_data_replace_on_change          = false
+      [32m+[0m[0m vpc_security_group_ids               = (known after apply)
+
+      [32m+[0m[0m capacity_reservation_specification (known after apply)
+
+      [32m+[0m[0m cpu_options (known after apply)
+
+      [32m+[0m[0m ebs_block_device (known after apply)
+
+      [32m+[0m[0m enclave_options (known after apply)
+
+      [32m+[0m[0m ephemeral_block_device (known after apply)
+
+      [32m+[0m[0m instance_market_options (known after apply)
+
+      [32m+[0m[0m maintenance_options (known after apply)
+
+      [32m+[0m[0m metadata_options {
+          [32m+[0m[0m http_endpoint               = "enabled"
+          [32m+[0m[0m http_protocol_ipv6          = "disabled"
+          [32m+[0m[0m http_put_response_hop_limit = (known after apply)
+          [32m+[0m[0m http_tokens                 = "required"
+          [32m+[0m[0m instance_metadata_tags      = (known after apply)
+        }
+
+      [32m+[0m[0m network_interface (known after apply)
+
+      [32m+[0m[0m private_dns_name_options (known after apply)
+
+      [32m+[0m[0m root_block_device {
+          [32m+[0m[0m delete_on_termination = true
+          [32m+[0m[0m device_name           = (known after apply)
+          [32m+[0m[0m encrypted             = (known after apply)
+          [32m+[0m[0m iops                  = (known after apply)
+          [32m+[0m[0m kms_key_id            = (known after apply)
+          [32m+[0m[0m tags_all              = (known after apply)
+          [32m+[0m[0m throughput            = (known after apply)
+          [32m+[0m[0m volume_id             = (known after apply)
+          [32m+[0m[0m volume_size           = 100
+          [32m+[0m[0m volume_type           = "gp3"
+        }
+    }
+
+[1m  # aws_internet_gateway.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_internet_gateway" "main" {
+      [32m+[0m[0m arn      = (known after apply)
+      [32m+[0m[0m id       = (known after apply)
+      [32m+[0m[0m owner_id = (known after apply)
+      [32m+[0m[0m tags     = {
+          [32m+[0m[0m "Name" = "osh-lab-igw"
+        }
+      [32m+[0m[0m tags_all = {
+          [32m+[0m[0m "Name" = "osh-lab-igw"
+        }
+      [32m+[0m[0m vpc_id   = (known after apply)
+    }
+
+[1m  # aws_route_table.public[0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table" "public" {
+      [32m+[0m[0m arn              = (known after apply)
+      [32m+[0m[0m id               = (known after apply)
+      [32m+[0m[0m owner_id         = (known after apply)
+      [32m+[0m[0m propagating_vgws = (known after apply)
+      [32m+[0m[0m route            = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_block                 = "0.0.0.0/0"
+              [32m+[0m[0m gateway_id                 = (known after apply)
+                [90m# (11 unchanged attributes hidden)[0m[0m
+            },
+        ]
+      [32m+[0m[0m tags             = {
+          [32m+[0m[0m "Name" = "osh-lab-public-rt"
+        }
+      [32m+[0m[0m tags_all         = {
+          [32m+[0m[0m "Name" = "osh-lab-public-rt"
+        }
+      [32m+[0m[0m vpc_id           = (known after apply)
+    }
+
+[1m  # aws_route_table_association.public[0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table_association" "public" {
+      [32m+[0m[0m id             = (known after apply)
+      [32m+[0m[0m route_table_id = (known after apply)
+      [32m+[0m[0m subnet_id      = (known after apply)
+    }
+
+[1m  # aws_security_group.node[0m will be created
+[0m  [32m+[0m[0m resource "aws_security_group" "node" {
+      [32m+[0m[0m arn                    = (known after apply)
+      [32m+[0m[0m description            = "Egress only; access the node via SSM Session Manager"
+      [32m+[0m[0m egress                 = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = [
+                  [32m+[0m[0m "0.0.0.0/0",
+                ]
+              [32m+[0m[0m from_port        = 0
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "-1"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = false
+              [32m+[0m[0m to_port          = 0
+                [90m# (1 unchanged attribute hidden)[0m[0m
+            },
+        ]
+      [32m+[0m[0m id                     = (known after apply)
+      [32m+[0m[0m ingress                = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = []
+              [32m+[0m[0m from_port        = 49152
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "tcp"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = true
+              [32m+[0m[0m to_port          = 49215
+                [90m# (1 unchanged attribute hidden)[0m[0m
+            },
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = []
+              [32m+[0m[0m description      = "all traffic between node-a/node-b (Calico, OVS tunnel, libvirt control+migration)"
+              [32m+[0m[0m from_port        = 0
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "-1"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = true
+              [32m+[0m[0m to_port          = 0
+            },
+        ]
+      [32m+[0m[0m name                   = "osh-lab-node-sg"
+      [32m+[0m[0m name_prefix            = (known after apply)
+      [32m+[0m[0m owner_id               = (known after apply)
+      [32m+[0m[0m revoke_rules_on_delete = false
+      [32m+[0m[0m tags                   = {
+          [32m+[0m[0m "Name" = "osh-lab-node-sg"
+        }
+      [32m+[0m[0m tags_all               = {
+          [32m+[0m[0m "Name" = "osh-lab-node-sg"
+        }
+      [32m+[0m[0m vpc_id                 = (known after apply)
+    }
+
+[1m  # aws_subnet.public[0m will be created
+[0m  [32m+[0m[0m resource "aws_subnet" "public" {
+      [32m+[0m[0m arn                                            = (known after apply)
+      [32m+[0m[0m assign_ipv6_address_on_creation                = false
+      [32m+[0m[0m availability_zone                              = "ap-northeast-2a"
+      [32m+[0m[0m availability_zone_id                           = (known after apply)
+      [32m+[0m[0m cidr_block                                     = "10.0.1.0/24"
+      [32m+[0m[0m enable_dns64                                   = false
+      [32m+[0m[0m enable_resource_name_dns_a_record_on_launch    = false
+      [32m+[0m[0m enable_resource_name_dns_aaaa_record_on_launch = false
+      [32m+[0m[0m id                                             = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block_association_id                 = (known after apply)
+      [32m+[0m[0m ipv6_native                                    = false
+      [32m+[0m[0m map_public_ip_on_launch                        = true
+      [32m+[0m[0m owner_id                                       = (known after apply)
+      [32m+[0m[0m private_dns_hostname_type_on_launch            = (known after apply)
+      [32m+[0m[0m tags                                           = {
+          [32m+[0m[0m "Name" = "osh-lab-public"
+        }
+      [32m+[0m[0m tags_all                                       = {
+          [32m+[0m[0m "Name" = "osh-lab-public"
+        }
+      [32m+[0m[0m vpc_id                                         = (known after apply)
+    }
+
+[1m  # aws_vpc.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_vpc" "main" {
+      [32m+[0m[0m arn                                  = (known after apply)
+      [32m+[0m[0m cidr_block                           = "10.0.0.0/16"
+      [32m+[0m[0m default_network_acl_id               = (known after apply)
+      [32m+[0m[0m default_route_table_id               = (known after apply)
+      [32m+[0m[0m default_security_group_id            = (known after apply)
+      [32m+[0m[0m dhcp_options_id                      = (known after apply)
+      [32m+[0m[0m enable_dns_hostnames                 = true
+      [32m+[0m[0m enable_dns_support                   = true
+      [32m+[0m[0m enable_network_address_usage_metrics = (known after apply)
+      [32m+[0m[0m id                                   = (known after apply)
+      [32m+[0m[0m instance_tenancy                     = "default"
+      [32m+[0m[0m ipv6_association_id                  = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block                      = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block_network_border_group = (known after apply)
+      [32m+[0m[0m main_route_table_id                  = (known after apply)
+      [32m+[0m[0m owner_id                             = (known after apply)
+      [32m+[0m[0m tags                                 = {
+          [32m+[0m[0m "Name" = "osh-lab-vpc"
+        }
+      [32m+[0m[0m tags_all                             = {
+          [32m+[0m[0m "Name" = "osh-lab-vpc"
+        }
+    }
+
+[1mPlan:[0m [0m11 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  [32m+[0m[0m compute_instance_id = (known after apply)
+  [32m+[0m[0m compute_public_ip   = (known after apply)
+  [32m+[0m[0m instance_id         = (known after apply)
+  [32m+[0m[0m public_ip           = (known after apply)
+  [32m+[0m[0m region              = "ap-northeast-2"
+  [32m+[0m[0m ssm_command         = (known after apply)
+  [32m+[0m[0m tail_bootstrap_log  = "sudo tail -f /var/log/user-data.log"
+[0m[1maws_iam_role.ssm: Creating...[0m[0m
+[0m[1maws_vpc.main: Creating...[0m[0m
+[0m[1maws_iam_role.ssm: Creation complete after 1s [id=osh-lab-ssm-role][0m
+[0m[1maws_iam_role_policy_attachment.ssm_core: Creating...[0m[0m
+[0m[1maws_iam_instance_profile.ssm: Creating...[0m[0m
+[0m[1maws_iam_role_policy_attachment.ssm_core: Creation complete after 1s [id=osh-lab-ssm-role-20260919045600512000000001][0m
+[0m[1maws_iam_instance_profile.ssm: Creation complete after 8s [id=osh-lab-ssm-profile][0m
+[0m[1maws_vpc.main: Still creating... [00m10s elapsed][0m[0m
+[0m[1maws_vpc.main: Creation complete after 11s [id=vpc-0e83a86701228cc4d][0m
+[0m[1maws_internet_gateway.main: Creating...[0m[0m
+[0m[1maws_subnet.public: Creating...[0m[0m
+[0m[1maws_security_group.node: Creating...[0m[0m
+[0m[1maws_internet_gateway.main: Creation complete after 1s [id=igw-03e361961ac052f51][0m
+[0m[1maws_route_table.public: Creating...[0m[0m
+[0m[1maws_route_table.public: Creation complete after 1s [id=rtb-0961a2550c0d7c250][0m
+[0m[1maws_security_group.node: Creation complete after 3s [id=sg-0e0f407aadca778e0][0m
+[0m[1maws_subnet.public: Still creating... [00m10s elapsed][0m[0m
+[0m[1maws_subnet.public: Creation complete after 11s [id=subnet-0322c1fa8efb44425][0m
+[0m[1maws_route_table_association.public: Creating...[0m[0m
+[0m[1maws_instance.compute: Creating...[0m[0m
+[0m[1maws_instance.node: Creating...[0m[0m
+[0m[1maws_route_table_association.public: Creation complete after 1s [id=rtbassoc-0c57349b7ef72c734][0m
+[0m[1maws_instance.compute: Still creating... [00m10s elapsed][0m[0m
+[0m[1maws_instance.node: Still creating... [00m10s elapsed][0m[0m
+[0m[1maws_instance.node: Creation complete after 12s [id=i-0ee904b7547b9ee9f][0m
+[0m[1maws_instance.compute: Creation complete after 12s [id=i-0548b42c537e6fc56][0m
+[0m[1m[32m
+Apply complete! Resources: 11 added, 0 changed, 0 destroyed.[0m
+[0m[1m[32m
+Outputs:
+
+[0mcompute_instance_id = "i-0548b42c537e6fc56"
+compute_public_ip = "13.124.156.226"
+instance_id = "i-0ee904b7547b9ee9f"
+public_ip = "3.39.253.218"
+region = "ap-northeast-2"
+ssm_command = "aws ssm start-session --target i-0ee904b7547b9ee9f --region ap-northeast-2"
+tail_bootstrap_log = "sudo tail -f /var/log/user-data.log"
+
+Node is up. Bootstrap (K8s + OSH clone) takes ~5-8 min.
+Tail the bootstrap log:  make logs
+Open a shell:            make ssm
+
+--- $ make ready (node-a) ---
+Checking /var/log/user-data-complete on the node...
+
+Starting session with SessionId: aws-tester1-jt3odr3sli72i2ctck6kvxnlxu
+K8S_READY
+Cannot perform start session: EOF
+
+--- $ node-a cgroup/PSI check (instance i-0ee904b7547b9ee9f) ---
+
+Starting session with SessionId: aws-tester1-kc77ijk42eyuyq5tfuxku56s8y
+CGROUP=cgroup2fs
+PRESSURE=cpu io memory
+
+
+Exiting session with sessionId: aws-tester1-kc77ijk42eyuyq5tfuxku56s8y.
+
+Cannot perform start session: EOF
+
+--- $ node-b cgroup/PSI check (instance i-0548b42c537e6fc56) ---
+
+Starting session with SessionId: aws-tester1-r5elq4hc7te3kvfllllf8r59zq
+CGROUP=cgroup2fs
+PRESSURE=cpu io memory
+Cannot perform start session: EOF
+
+--- $ make osh-deploy (node-a, started 2026-09-19T05:01:24Z) ---
+Dispatching osh/deploy.sh to i-0ee904b7547b9ee9f in ap-northeast-2 (timeout=3600s)...
+CMD_ID=218bc0e8-7386-45b9-93c7-254f7db08639
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=Success
+===== STDOUT (tail) =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f helm-toolkit/Makefile ]; then make -C helm-toolkit; fi
+if grep -qE "^dependencies:" helm-toolkit/Chart.yaml; then helm dep up helm-toolkit; fi
+Saving 0 charts
+Deleting outdated charts
+if [ -d helm-toolkit ]; then helm lint helm-toolkit; fi
+==> Linting helm-toolkit
+
+1 chart(s) linted, 0 chart(s) failed
+if [ -d helm-toolkit ]; then \
+	helm package helm-toolkit --version $(tools/chart_version.sh helm-toolkit 2026.1.0) ; \
+fi
+Successfully packaged chart and saved it to: /opt/openstack-helm/openstack-helm/helm-toolkit-2026.1.0+c665eed.tgz
+make[1]: Leaving directory '/opt/openstack-helm/openstack-helm'
+
+===== Processing [horizon] chart =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f horizon/Makefile ]; then make -C horizon; fi
+if grep -qE "^dependencies:" horizon/Chart.yaml; then helm dep up horizon; fi
+Saving 1 charts
+Deleting outdated charts
+if [ -d horizon ]; then helm lint horizon; fi
+==> Linting horizon
+
+1 chart(s) linted, 0 chart(s) failed
+if [ -d horizon ]; then \
+	helm package horizon --version $(tools/chart_version.sh horizon 2026.1.0) ; \
+fi
+Successfully packaged chart and saved it to: /opt/openstack-helm/openstack-helm/horizon-2026.1.0+c665eed.tgz
+make[1]: Leaving directory '/opt/openstack-helm/openstack-helm'
+
+===== Processing [ironic] chart =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f ironic/Makefile ]; then make -C ironic; fi
+if grep -qE "^dependencies:" ironic/Chart.yaml; then helm dep up ironic; fi
+Saving 1 charts
+Deleting outdated charts
+if [ -d ironic ]; then helm lint ironic; fi
+==> Linting ironic
+
+1 chart(s) linted, 0 chart(s) failed
+if [ -d ironic ]; then \
+	helm package ironic --version $(tools/chart_version.sh ironic 2026.1.0) ; \
+fi
+Successfully packaged chart and saved it to: /opt/openstack-helm/openstack-helm/ironic-2026.1.0+c665eed.tgz
+make[1]: Leaving directory '/opt/openstack-helm/openstack-helm'
+
+===== Processing [keystone] chart =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f keystone/Makefile ]; then make -C keyston--output truncated--
+--- osh-deploy finished 2026-09-19T05:22:39Z, exit=0 ---
+
+--- $ make osh-vm (node-a, resumed session, started 2026-09-19T05:24:53Z) ---
+Dispatching osh/cirros-boot.sh to i-0ee904b7547b9ee9f in ap-northeast-2 (timeout=900s)...
+CMD_ID=680ad211-9943-4cbd-8680-1e033872efe8
+  status=InProgress
+  status=InProgress
+  status=Success
+===== STDOUT (tail) =====
+| name                 | demo-subnet                          |
+| network_id           | 9a0e5d34-6589-4107-b0e2-fc9cf318052b |
+| project_id           | 0bbe7db5ab0f41d0951b235c914cd455     |
+| revision_number      | 0                                    |
+| router:external      | False                                |
+| segment_id           | None                                 |
+| service_types        |                                      |
+| subnetpool_id        | None                                 |
+| tags                 |                                      |
+| updated_at           | 2026-09-19T05:25:29Z                 |
++----------------------+--------------------------------------+
+===== boot test-vm =====
++-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field                               | Value                                                                                                                                                                                   |
++-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| OS-DCF:diskConfig                   | MANUAL                                                                                                                                                                                  |
+| OS-EXT-AZ:availability_zone         | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:host                | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:hostname            | test-vm                                                                                                                                                                                 |
+| OS-EXT-SRV-ATTR:hypervisor_hostname | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:instance_name       | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:kernel_id           | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:launch_index        | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:ramdisk_id          | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:reservation_id      | r-mdc0la4d                                                                                                                                                                              |
+| OS-EXT-SRV-ATTR:root_device_name    | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:user_data           | None                                                                                                                                                                                    |
+| OS-EXT-STS:power_state              | N/A                                                                                                                                                                                     |
+| OS-EXT-STS:task_state               | scheduling                                                                                                                                                                              |
+| OS-EXT-STS:vm_state                 | building                                                                                                                                                                                |
+| OS-SRV-USG:launched_at              | None                                                                                                                                                                                    |
+| OS-SRV-USG:terminated_at            | None                                                                                                                                                                                    |
+| accessIPv4                          | None                                                                                                                                                                                    |
+| accessIPv6                          | None                                                                                                                                                                                    |
+| addresses                           | N/A                                                                                                                                                                                     |
+| adminPass                           | 52keJXfyXH9C                                                                                                                                                                            |
+| config_drive                        | None                                                                                                                                                                                    |
+| created                             | 2026-09-19T05:25:36Z                                                                                                                                                                    |
+| description                         | None                                                                                                                                                                                    |
+| flavor                              | description=, disk='1', ephemeral='0', , id='m1.tiny', is_disabled=, is_public='True', location=, name='m1.tiny', original_name='m1.tiny', ram='512', rxtx_factor=, swap='0', vcpus='1' |
+| hostId                              | None                                                                                                                                                                                    |
+| host_status                         | None                                                                                                                                                                                    |
+| id                                  | 1bfa7dda-638f-42a4-b377-287144591b6a                                                                                                                                                    |
+| image                               | cirros (39551b00-aab2-48bb-b3c7-5e68f82ed6a0)                                                                                                                                           |
+| key_name                            | None                                                                                                                                                                                    |
+| locked                              | None                                                                                                                                                                                    |
+| locked_reason                       | None                                                                                                                                                                                    |
+| name                                | test-vm                                                                                                                                                                                 |
+| pinned_availability_zone            | None                                                                                                                                                                                    |
+| progress      --output truncated--
+
+--- $ make osh-vm final status check (node-a) ---
+test-vm status: ACTIVE, host=ip-10-0-1-4.ap-northeast-2.compute.internal, IP=10.10.10.225
+
+--- $ cgroup/PSI re-verify (node-a i-0ee904b7547b9ee9f) ---
+CGROUP=cgroup2fs
+PRESSURE=cpu io memory
+
+--- $ cgroup/PSI re-verify (node-b i-0548b42c537e6fc56) ---
+CGROUP=cgroup2fs
+PRESSURE=cpu io memory
+
+
+=== L1 완료 요약 (2026-09-19) ===
+- node-a: i-0ee904b7547b9ee9f, public=3.39.253.218, private=10.0.1.4, state=running
+- node-b (compute): i-0548b42c537e6fc56, public=13.124.156.226, private=10.0.1.207, state=running
+- terraform: 11 add/0 change/0 destroy (잔여물 없이 처음부터 재기동), state 확인 완료
+- cgroup v2: 양쪽 모두 cgroup2fs 확인
+- PSI: 양쪽 모두 /proc/pressure/{cpu,io,memory} 확인
+- node-a OSH: make osh-deploy exit=0, make osh-vm 성공
+- test-vm: ACTIVE, host=ip-10-0-1-4.ap-northeast-2.compute.internal, network=10.10.10.225
+- node-b: 아직 K8s 미join (L2 담당 범위, 이번 세션에서 손대지 않음)
+- L1 완료. 다음은 L2(node-b K8s join)부터.
+
+================================================================
+=== L1 재기동 세션 2 (같은 날짜, 2026-09-19 — 이전 세션 make down 이후 재기동) ===
+=== 시작 시각(UTC): 2026-09-19T10:08:15Z ===
+================================================================
+
+--- $ terraform -chdir=terraform init (idempotent check) ---
+[0m[1mInitializing the backend...[0m
+
+[0m[1mInitializing provider plugins...[0m
+- Reusing previous version of hashicorp/aws from the dependency lock file
+- Using previously-installed hashicorp/aws v5.100.0
+
+
+[0m[1m[32mTerraform has been successfully initialized![0m[32m[0m
+[0m[32m
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.[0m
+
+--- $ make plan (terraform plan) ---
+terraform -chdir=terraform plan
+[0m[1mdata.aws_ami.ubuntu: Reading...[0m[0m
+[0m[1mdata.aws_availability_zones.available: Reading...[0m[0m
+[0m[1mdata.aws_availability_zones.available: Read complete after 1s [id=ap-northeast-2][0m
+[0m[1mdata.aws_ami.ubuntu: Read complete after 1s [id=ami-086a43496cb46286c][0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [32m+[0m create[0m
+
+Terraform will perform the following actions:
+
+[1m  # aws_iam_instance_profile.ssm[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_instance_profile" "ssm" {
+      [32m+[0m[0m arn         = (known after apply)
+      [32m+[0m[0m create_date = (known after apply)
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "osh-lab-ssm-profile"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m path        = "/"
+      [32m+[0m[0m role        = "osh-lab-ssm-role"
+      [32m+[0m[0m tags_all    = (known after apply)
+      [32m+[0m[0m unique_id   = (known after apply)
+    }
+
+[1m  # aws_iam_role.ssm[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role" "ssm" {
+      [32m+[0m[0m arn                   = (known after apply)
+      [32m+[0m[0m assume_role_policy    = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action    = "sts:AssumeRole"
+                      [32m+[0m[0m Effect    = "Allow"
+                      [32m+[0m[0m Principal = {
+                          [32m+[0m[0m Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m create_date           = (known after apply)
+      [32m+[0m[0m force_detach_policies = false
+      [32m+[0m[0m id                    = (known after apply)
+      [32m+[0m[0m managed_policy_arns   = (known after apply)
+      [32m+[0m[0m max_session_duration  = 3600
+      [32m+[0m[0m name                  = "osh-lab-ssm-role"
+      [32m+[0m[0m name_prefix           = (known after apply)
+      [32m+[0m[0m path                  = "/"
+      [32m+[0m[0m tags_all              = (known after apply)
+      [32m+[0m[0m unique_id             = (known after apply)
+
+      [32m+[0m[0m inline_policy (known after apply)
+    }
+
+[1m  # aws_iam_role_policy_attachment.ssm_core[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy_attachment" "ssm_core" {
+      [32m+[0m[0m id         = (known after apply)
+      [32m+[0m[0m policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      [32m+[0m[0m role       = "osh-lab-ssm-role"
+    }
+
+[1m  # aws_instance.compute[0m will be created
+[0m  [32m+[0m[0m resource "aws_instance" "compute" {
+      [32m+[0m[0m ami                                  = "ami-086a43496cb46286c"
+      [32m+[0m[0m arn                                  = (known after apply)
+      [32m+[0m[0m associate_public_ip_address          = (known after apply)
+      [32m+[0m[0m availability_zone                    = (known after apply)
+      [32m+[0m[0m cpu_core_count                       = (known after apply)
+      [32m+[0m[0m cpu_threads_per_core                 = (known after apply)
+      [32m+[0m[0m disable_api_stop                     = (known after apply)
+      [32m+[0m[0m disable_api_termination              = (known after apply)
+      [32m+[0m[0m ebs_optimized                        = (known after apply)
+      [32m+[0m[0m enable_primary_ipv6                  = (known after apply)
+      [32m+[0m[0m get_password_data                    = false
+      [32m+[0m[0m host_id                              = (known after apply)
+      [32m+[0m[0m host_resource_group_arn              = (known after apply)
+      [32m+[0m[0m iam_instance_profile                 = "osh-lab-ssm-profile"
+      [32m+[0m[0m id                                   = (known after apply)
+      [32m+[0m[0m instance_initiated_shutdown_behavior = (known after apply)
+      [32m+[0m[0m instance_lifecycle                   = (known after apply)
+      [32m+[0m[0m instance_state                       = (known after apply)
+      [32m+[0m[0m instance_type                        = "m5.2xlarge"
+      [32m+[0m[0m ipv6_address_count                   = (known after apply)
+      [32m+[0m[0m ipv6_addresses                       = (known after apply)
+      [32m+[0m[0m key_name                             = (known after apply)
+      [32m+[0m[0m monitoring                           = (known after apply)
+      [32m+[0m[0m outpost_arn                          = (known after apply)
+      [32m+[0m[0m password_data                        = (known after apply)
+      [32m+[0m[0m placement_group                      = (known after apply)
+      [32m+[0m[0m placement_partition_number           = (known after apply)
+      [32m+[0m[0m primary_network_interface_id         = (known after apply)
+      [32m+[0m[0m private_dns                          = (known after apply)
+      [32m+[0m[0m private_ip                           = (known after apply)
+      [32m+[0m[0m public_dns                           = (known after apply)
+      [32m+[0m[0m public_ip                            = (known after apply)
+      [32m+[0m[0m secondary_private_ips                = (known after apply)
+      [32m+[0m[0m security_groups                      = (known after apply)
+      [32m+[0m[0m source_dest_check                    = true
+      [32m+[0m[0m spot_instance_request_id             = (known after apply)
+      [32m+[0m[0m subnet_id                            = (known after apply)
+      [32m+[0m[0m tags                                 = {
+          [32m+[0m[0m "Name" = "osh-lab-compute"
+        }
+      [32m+[0m[0m tags_all                             = {
+          [32m+[0m[0m "Name" = "osh-lab-compute"
+        }
+      [32m+[0m[0m tenancy                              = (known after apply)
+      [32m+[0m[0m user_data                            = "a47bfaed69d92b1cd7782d900f2a1965abd60893"
+      [32m+[0m[0m user_data_base64                     = (known after apply)
+      [32m+[0m[0m user_data_replace_on_change          = false
+      [32m+[0m[0m vpc_security_group_ids               = (known after apply)
+
+      [32m+[0m[0m capacity_reservation_specification (known after apply)
+
+      [32m+[0m[0m cpu_options (known after apply)
+
+      [32m+[0m[0m ebs_block_device (known after apply)
+
+      [32m+[0m[0m enclave_options (known after apply)
+
+      [32m+[0m[0m ephemeral_block_device (known after apply)
+
+      [32m+[0m[0m instance_market_options (known after apply)
+
+      [32m+[0m[0m maintenance_options (known after apply)
+
+      [32m+[0m[0m metadata_options {
+          [32m+[0m[0m http_endpoint               = "enabled"
+          [32m+[0m[0m http_protocol_ipv6          = "disabled"
+          [32m+[0m[0m http_put_response_hop_limit = (known after apply)
+          [32m+[0m[0m http_tokens                 = "required"
+          [32m+[0m[0m instance_metadata_tags      = (known after apply)
+        }
+
+      [32m+[0m[0m network_interface (known after apply)
+
+      [32m+[0m[0m private_dns_name_options (known after apply)
+
+      [32m+[0m[0m root_block_device {
+          [32m+[0m[0m delete_on_termination = true
+          [32m+[0m[0m device_name           = (known after apply)
+          [32m+[0m[0m encrypted             = (known after apply)
+          [32m+[0m[0m iops                  = (known after apply)
+          [32m+[0m[0m kms_key_id            = (known after apply)
+          [32m+[0m[0m tags_all              = (known after apply)
+          [32m+[0m[0m throughput            = (known after apply)
+          [32m+[0m[0m volume_id             = (known after apply)
+          [32m+[0m[0m volume_size           = 100
+          [32m+[0m[0m volume_type           = "gp3"
+        }
+    }
+
+[1m  # aws_instance.node[0m will be created
+[0m  [32m+[0m[0m resource "aws_instance" "node" {
+      [32m+[0m[0m ami                                  = "ami-086a43496cb46286c"
+      [32m+[0m[0m arn                                  = (known after apply)
+      [32m+[0m[0m associate_public_ip_address          = (known after apply)
+      [32m+[0m[0m availability_zone                    = (known after apply)
+      [32m+[0m[0m cpu_core_count                       = (known after apply)
+      [32m+[0m[0m cpu_threads_per_core                 = (known after apply)
+      [32m+[0m[0m disable_api_stop                     = (known after apply)
+      [32m+[0m[0m disable_api_termination              = (known after apply)
+      [32m+[0m[0m ebs_optimized                        = (known after apply)
+      [32m+[0m[0m enable_primary_ipv6                  = (known after apply)
+      [32m+[0m[0m get_password_data                    = false
+      [32m+[0m[0m host_id                              = (known after apply)
+      [32m+[0m[0m host_resource_group_arn              = (known after apply)
+      [32m+[0m[0m iam_instance_profile                 = "osh-lab-ssm-profile"
+      [32m+[0m[0m id                                   = (known after apply)
+      [32m+[0m[0m instance_initiated_shutdown_behavior = (known after apply)
+      [32m+[0m[0m instance_lifecycle                   = (known after apply)
+      [32m+[0m[0m instance_state                       = (known after apply)
+      [32m+[0m[0m instance_type                        = "m5.2xlarge"
+      [32m+[0m[0m ipv6_address_count                   = (known after apply)
+      [32m+[0m[0m ipv6_addresses                       = (known after apply)
+      [32m+[0m[0m key_name                             = (known after apply)
+      [32m+[0m[0m monitoring                           = (known after apply)
+      [32m+[0m[0m outpost_arn                          = (known after apply)
+      [32m+[0m[0m password_data                        = (known after apply)
+      [32m+[0m[0m placement_group                      = (known after apply)
+      [32m+[0m[0m placement_partition_number           = (known after apply)
+      [32m+[0m[0m primary_network_interface_id         = (known after apply)
+      [32m+[0m[0m private_dns                          = (known after apply)
+      [32m+[0m[0m private_ip                           = (known after apply)
+      [32m+[0m[0m public_dns                           = (known after apply)
+      [32m+[0m[0m public_ip                            = (known after apply)
+      [32m+[0m[0m secondary_private_ips                = (known after apply)
+      [32m+[0m[0m security_groups                      = (known after apply)
+      [32m+[0m[0m source_dest_check                    = true
+      [32m+[0m[0m spot_instance_request_id             = (known after apply)
+      [32m+[0m[0m subnet_id                            = (known after apply)
+      [32m+[0m[0m tags                                 = {
+          [32m+[0m[0m "Name" = "osh-lab-node"
+        }
+      [32m+[0m[0m tags_all                             = {
+          [32m+[0m[0m "Name" = "osh-lab-node"
+        }
+      [32m+[0m[0m tenancy                              = (known after apply)
+      [32m+[0m[0m user_data                            = "e67a4abeaac23b4390b6bb91ec3d267490335f43"
+      [32m+[0m[0m user_data_base64                     = (known after apply)
+      [32m+[0m[0m user_data_replace_on_change          = false
+      [32m+[0m[0m vpc_security_group_ids               = (known after apply)
+
+      [32m+[0m[0m capacity_reservation_specification (known after apply)
+
+      [32m+[0m[0m cpu_options (known after apply)
+
+      [32m+[0m[0m ebs_block_device (known after apply)
+
+      [32m+[0m[0m enclave_options (known after apply)
+
+      [32m+[0m[0m ephemeral_block_device (known after apply)
+
+      [32m+[0m[0m instance_market_options (known after apply)
+
+      [32m+[0m[0m maintenance_options (known after apply)
+
+      [32m+[0m[0m metadata_options {
+          [32m+[0m[0m http_endpoint               = "enabled"
+          [32m+[0m[0m http_protocol_ipv6          = "disabled"
+          [32m+[0m[0m http_put_response_hop_limit = (known after apply)
+          [32m+[0m[0m http_tokens                 = "required"
+          [32m+[0m[0m instance_metadata_tags      = (known after apply)
+        }
+
+      [32m+[0m[0m network_interface (known after apply)
+
+      [32m+[0m[0m private_dns_name_options (known after apply)
+
+      [32m+[0m[0m root_block_device {
+          [32m+[0m[0m delete_on_termination = true
+          [32m+[0m[0m device_name           = (known after apply)
+          [32m+[0m[0m encrypted             = (known after apply)
+          [32m+[0m[0m iops                  = (known after apply)
+          [32m+[0m[0m kms_key_id            = (known after apply)
+          [32m+[0m[0m tags_all              = (known after apply)
+          [32m+[0m[0m throughput            = (known after apply)
+          [32m+[0m[0m volume_id             = (known after apply)
+          [32m+[0m[0m volume_size           = 100
+          [32m+[0m[0m volume_type           = "gp3"
+        }
+    }
+
+[1m  # aws_internet_gateway.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_internet_gateway" "main" {
+      [32m+[0m[0m arn      = (known after apply)
+      [32m+[0m[0m id       = (known after apply)
+      [32m+[0m[0m owner_id = (known after apply)
+      [32m+[0m[0m tags     = {
+          [32m+[0m[0m "Name" = "osh-lab-igw"
+        }
+      [32m+[0m[0m tags_all = {
+          [32m+[0m[0m "Name" = "osh-lab-igw"
+        }
+      [32m+[0m[0m vpc_id   = (known after apply)
+    }
+
+[1m  # aws_route_table.public[0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table" "public" {
+      [32m+[0m[0m arn              = (known after apply)
+      [32m+[0m[0m id               = (known after apply)
+      [32m+[0m[0m owner_id         = (known after apply)
+      [32m+[0m[0m propagating_vgws = (known after apply)
+      [32m+[0m[0m route            = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_block                 = "0.0.0.0/0"
+              [32m+[0m[0m gateway_id                 = (known after apply)
+                [90m# (11 unchanged attributes hidden)[0m[0m
+            },
+        ]
+      [32m+[0m[0m tags             = {
+          [32m+[0m[0m "Name" = "osh-lab-public-rt"
+        }
+      [32m+[0m[0m tags_all         = {
+          [32m+[0m[0m "Name" = "osh-lab-public-rt"
+        }
+      [32m+[0m[0m vpc_id           = (known after apply)
+    }
+
+[1m  # aws_route_table_association.public[0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table_association" "public" {
+      [32m+[0m[0m id             = (known after apply)
+      [32m+[0m[0m route_table_id = (known after apply)
+      [32m+[0m[0m subnet_id      = (known after apply)
+    }
+
+[1m  # aws_security_group.node[0m will be created
+[0m  [32m+[0m[0m resource "aws_security_group" "node" {
+      [32m+[0m[0m arn                    = (known after apply)
+      [32m+[0m[0m description            = "Egress only; access the node via SSM Session Manager"
+      [32m+[0m[0m egress                 = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = [
+                  [32m+[0m[0m "0.0.0.0/0",
+                ]
+              [32m+[0m[0m from_port        = 0
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "-1"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = false
+              [32m+[0m[0m to_port          = 0
+                [90m# (1 unchanged attribute hidden)[0m[0m
+            },
+        ]
+      [32m+[0m[0m id                     = (known after apply)
+      [32m+[0m[0m ingress                = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = []
+              [32m+[0m[0m from_port        = 49152
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "tcp"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = true
+              [32m+[0m[0m to_port          = 49215
+                [90m# (1 unchanged attribute hidden)[0m[0m
+            },
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = []
+              [32m+[0m[0m description      = "all traffic between node-a/node-b (Calico, OVS tunnel, libvirt control+migration)"
+              [32m+[0m[0m from_port        = 0
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "-1"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = true
+              [32m+[0m[0m to_port          = 0
+            },
+        ]
+      [32m+[0m[0m name                   = "osh-lab-node-sg"
+      [32m+[0m[0m name_prefix            = (known after apply)
+      [32m+[0m[0m owner_id               = (known after apply)
+      [32m+[0m[0m revoke_rules_on_delete = false
+      [32m+[0m[0m tags                   = {
+          [32m+[0m[0m "Name" = "osh-lab-node-sg"
+        }
+      [32m+[0m[0m tags_all               = {
+          [32m+[0m[0m "Name" = "osh-lab-node-sg"
+        }
+      [32m+[0m[0m vpc_id                 = (known after apply)
+    }
+
+[1m  # aws_subnet.public[0m will be created
+[0m  [32m+[0m[0m resource "aws_subnet" "public" {
+      [32m+[0m[0m arn                                            = (known after apply)
+      [32m+[0m[0m assign_ipv6_address_on_creation                = false
+      [32m+[0m[0m availability_zone                              = "ap-northeast-2a"
+      [32m+[0m[0m availability_zone_id                           = (known after apply)
+      [32m+[0m[0m cidr_block                                     = "10.0.1.0/24"
+      [32m+[0m[0m enable_dns64                                   = false
+      [32m+[0m[0m enable_resource_name_dns_a_record_on_launch    = false
+      [32m+[0m[0m enable_resource_name_dns_aaaa_record_on_launch = false
+      [32m+[0m[0m id                                             = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block_association_id                 = (known after apply)
+      [32m+[0m[0m ipv6_native                                    = false
+      [32m+[0m[0m map_public_ip_on_launch                        = true
+      [32m+[0m[0m owner_id                                       = (known after apply)
+      [32m+[0m[0m private_dns_hostname_type_on_launch            = (known after apply)
+      [32m+[0m[0m tags                                           = {
+          [32m+[0m[0m "Name" = "osh-lab-public"
+        }
+      [32m+[0m[0m tags_all                                       = {
+          [32m+[0m[0m "Name" = "osh-lab-public"
+        }
+      [32m+[0m[0m vpc_id                                         = (known after apply)
+    }
+
+[1m  # aws_vpc.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_vpc" "main" {
+      [32m+[0m[0m arn                                  = (known after apply)
+      [32m+[0m[0m cidr_block                           = "10.0.0.0/16"
+      [32m+[0m[0m default_network_acl_id               = (known after apply)
+      [32m+[0m[0m default_route_table_id               = (known after apply)
+      [32m+[0m[0m default_security_group_id            = (known after apply)
+      [32m+[0m[0m dhcp_options_id                      = (known after apply)
+      [32m+[0m[0m enable_dns_hostnames                 = true
+      [32m+[0m[0m enable_dns_support                   = true
+      [32m+[0m[0m enable_network_address_usage_metrics = (known after apply)
+      [32m+[0m[0m id                                   = (known after apply)
+      [32m+[0m[0m instance_tenancy                     = "default"
+      [32m+[0m[0m ipv6_association_id                  = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block                      = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block_network_border_group = (known after apply)
+      [32m+[0m[0m main_route_table_id                  = (known after apply)
+      [32m+[0m[0m owner_id                             = (known after apply)
+      [32m+[0m[0m tags                                 = {
+          [32m+[0m[0m "Name" = "osh-lab-vpc"
+        }
+      [32m+[0m[0m tags_all                             = {
+          [32m+[0m[0m "Name" = "osh-lab-vpc"
+        }
+    }
+
+[1mPlan:[0m [0m11 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  [32m+[0m[0m compute_instance_id = (known after apply)
+  [32m+[0m[0m compute_public_ip   = (known after apply)
+  [32m+[0m[0m instance_id         = (known after apply)
+  [32m+[0m[0m public_ip           = (known after apply)
+  [32m+[0m[0m region              = "ap-northeast-2"
+  [32m+[0m[0m ssm_command         = (known after apply)
+  [32m+[0m[0m tail_bootstrap_log  = "sudo tail -f /var/log/user-data.log"
+[90m
+─────────────────────────────────────────────────────────────────────────────[0m
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.
+
+--- $ make up ---
+terraform -chdir=terraform apply -auto-approve
+[0m[1mdata.aws_ami.ubuntu: Reading...[0m[0m
+[0m[1mdata.aws_availability_zones.available: Reading...[0m[0m
+[0m[1mdata.aws_availability_zones.available: Read complete after 0s [id=ap-northeast-2][0m
+[0m[1mdata.aws_ami.ubuntu: Read complete after 0s [id=ami-086a43496cb46286c][0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [32m+[0m create[0m
+
+Terraform will perform the following actions:
+
+[1m  # aws_iam_instance_profile.ssm[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_instance_profile" "ssm" {
+      [32m+[0m[0m arn         = (known after apply)
+      [32m+[0m[0m create_date = (known after apply)
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "osh-lab-ssm-profile"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m path        = "/"
+      [32m+[0m[0m role        = "osh-lab-ssm-role"
+      [32m+[0m[0m tags_all    = (known after apply)
+      [32m+[0m[0m unique_id   = (known after apply)
+    }
+
+[1m  # aws_iam_role.ssm[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role" "ssm" {
+      [32m+[0m[0m arn                   = (known after apply)
+      [32m+[0m[0m assume_role_policy    = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action    = "sts:AssumeRole"
+                      [32m+[0m[0m Effect    = "Allow"
+                      [32m+[0m[0m Principal = {
+                          [32m+[0m[0m Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m create_date           = (known after apply)
+      [32m+[0m[0m force_detach_policies = false
+      [32m+[0m[0m id                    = (known after apply)
+      [32m+[0m[0m managed_policy_arns   = (known after apply)
+      [32m+[0m[0m max_session_duration  = 3600
+      [32m+[0m[0m name                  = "osh-lab-ssm-role"
+      [32m+[0m[0m name_prefix           = (known after apply)
+      [32m+[0m[0m path                  = "/"
+      [32m+[0m[0m tags_all              = (known after apply)
+      [32m+[0m[0m unique_id             = (known after apply)
+
+      [32m+[0m[0m inline_policy (known after apply)
+    }
+
+[1m  # aws_iam_role_policy_attachment.ssm_core[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy_attachment" "ssm_core" {
+      [32m+[0m[0m id         = (known after apply)
+      [32m+[0m[0m policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      [32m+[0m[0m role       = "osh-lab-ssm-role"
+    }
+
+[1m  # aws_instance.compute[0m will be created
+[0m  [32m+[0m[0m resource "aws_instance" "compute" {
+      [32m+[0m[0m ami                                  = "ami-086a43496cb46286c"
+      [32m+[0m[0m arn                                  = (known after apply)
+      [32m+[0m[0m associate_public_ip_address          = (known after apply)
+      [32m+[0m[0m availability_zone                    = (known after apply)
+      [32m+[0m[0m cpu_core_count                       = (known after apply)
+      [32m+[0m[0m cpu_threads_per_core                 = (known after apply)
+      [32m+[0m[0m disable_api_stop                     = (known after apply)
+      [32m+[0m[0m disable_api_termination              = (known after apply)
+      [32m+[0m[0m ebs_optimized                        = (known after apply)
+      [32m+[0m[0m enable_primary_ipv6                  = (known after apply)
+      [32m+[0m[0m get_password_data                    = false
+      [32m+[0m[0m host_id                              = (known after apply)
+      [32m+[0m[0m host_resource_group_arn              = (known after apply)
+      [32m+[0m[0m iam_instance_profile                 = "osh-lab-ssm-profile"
+      [32m+[0m[0m id                                   = (known after apply)
+      [32m+[0m[0m instance_initiated_shutdown_behavior = (known after apply)
+      [32m+[0m[0m instance_lifecycle                   = (known after apply)
+      [32m+[0m[0m instance_state                       = (known after apply)
+      [32m+[0m[0m instance_type                        = "m5.2xlarge"
+      [32m+[0m[0m ipv6_address_count                   = (known after apply)
+      [32m+[0m[0m ipv6_addresses                       = (known after apply)
+      [32m+[0m[0m key_name                             = (known after apply)
+      [32m+[0m[0m monitoring                           = (known after apply)
+      [32m+[0m[0m outpost_arn                          = (known after apply)
+      [32m+[0m[0m password_data                        = (known after apply)
+      [32m+[0m[0m placement_group                      = (known after apply)
+      [32m+[0m[0m placement_partition_number           = (known after apply)
+      [32m+[0m[0m primary_network_interface_id         = (known after apply)
+      [32m+[0m[0m private_dns                          = (known after apply)
+      [32m+[0m[0m private_ip                           = (known after apply)
+      [32m+[0m[0m public_dns                           = (known after apply)
+      [32m+[0m[0m public_ip                            = (known after apply)
+      [32m+[0m[0m secondary_private_ips                = (known after apply)
+      [32m+[0m[0m security_groups                      = (known after apply)
+      [32m+[0m[0m source_dest_check                    = true
+      [32m+[0m[0m spot_instance_request_id             = (known after apply)
+      [32m+[0m[0m subnet_id                            = (known after apply)
+      [32m+[0m[0m tags                                 = {
+          [32m+[0m[0m "Name" = "osh-lab-compute"
+        }
+      [32m+[0m[0m tags_all                             = {
+          [32m+[0m[0m "Name" = "osh-lab-compute"
+        }
+      [32m+[0m[0m tenancy                              = (known after apply)
+      [32m+[0m[0m user_data                            = "a47bfaed69d92b1cd7782d900f2a1965abd60893"
+      [32m+[0m[0m user_data_base64                     = (known after apply)
+      [32m+[0m[0m user_data_replace_on_change          = false
+      [32m+[0m[0m vpc_security_group_ids               = (known after apply)
+
+      [32m+[0m[0m capacity_reservation_specification (known after apply)
+
+      [32m+[0m[0m cpu_options (known after apply)
+
+      [32m+[0m[0m ebs_block_device (known after apply)
+
+      [32m+[0m[0m enclave_options (known after apply)
+
+      [32m+[0m[0m ephemeral_block_device (known after apply)
+
+      [32m+[0m[0m instance_market_options (known after apply)
+
+      [32m+[0m[0m maintenance_options (known after apply)
+
+      [32m+[0m[0m metadata_options {
+          [32m+[0m[0m http_endpoint               = "enabled"
+          [32m+[0m[0m http_protocol_ipv6          = "disabled"
+          [32m+[0m[0m http_put_response_hop_limit = (known after apply)
+          [32m+[0m[0m http_tokens                 = "required"
+          [32m+[0m[0m instance_metadata_tags      = (known after apply)
+        }
+
+      [32m+[0m[0m network_interface (known after apply)
+
+      [32m+[0m[0m private_dns_name_options (known after apply)
+
+      [32m+[0m[0m root_block_device {
+          [32m+[0m[0m delete_on_termination = true
+          [32m+[0m[0m device_name           = (known after apply)
+          [32m+[0m[0m encrypted             = (known after apply)
+          [32m+[0m[0m iops                  = (known after apply)
+          [32m+[0m[0m kms_key_id            = (known after apply)
+          [32m+[0m[0m tags_all              = (known after apply)
+          [32m+[0m[0m throughput            = (known after apply)
+          [32m+[0m[0m volume_id             = (known after apply)
+          [32m+[0m[0m volume_size           = 100
+          [32m+[0m[0m volume_type           = "gp3"
+        }
+    }
+
+[1m  # aws_instance.node[0m will be created
+[0m  [32m+[0m[0m resource "aws_instance" "node" {
+      [32m+[0m[0m ami                                  = "ami-086a43496cb46286c"
+      [32m+[0m[0m arn                                  = (known after apply)
+      [32m+[0m[0m associate_public_ip_address          = (known after apply)
+      [32m+[0m[0m availability_zone                    = (known after apply)
+      [32m+[0m[0m cpu_core_count                       = (known after apply)
+      [32m+[0m[0m cpu_threads_per_core                 = (known after apply)
+      [32m+[0m[0m disable_api_stop                     = (known after apply)
+      [32m+[0m[0m disable_api_termination              = (known after apply)
+      [32m+[0m[0m ebs_optimized                        = (known after apply)
+      [32m+[0m[0m enable_primary_ipv6                  = (known after apply)
+      [32m+[0m[0m get_password_data                    = false
+      [32m+[0m[0m host_id                              = (known after apply)
+      [32m+[0m[0m host_resource_group_arn              = (known after apply)
+      [32m+[0m[0m iam_instance_profile                 = "osh-lab-ssm-profile"
+      [32m+[0m[0m id                                   = (known after apply)
+      [32m+[0m[0m instance_initiated_shutdown_behavior = (known after apply)
+      [32m+[0m[0m instance_lifecycle                   = (known after apply)
+      [32m+[0m[0m instance_state                       = (known after apply)
+      [32m+[0m[0m instance_type                        = "m5.2xlarge"
+      [32m+[0m[0m ipv6_address_count                   = (known after apply)
+      [32m+[0m[0m ipv6_addresses                       = (known after apply)
+      [32m+[0m[0m key_name                             = (known after apply)
+      [32m+[0m[0m monitoring                           = (known after apply)
+      [32m+[0m[0m outpost_arn                          = (known after apply)
+      [32m+[0m[0m password_data                        = (known after apply)
+      [32m+[0m[0m placement_group                      = (known after apply)
+      [32m+[0m[0m placement_partition_number           = (known after apply)
+      [32m+[0m[0m primary_network_interface_id         = (known after apply)
+      [32m+[0m[0m private_dns                          = (known after apply)
+      [32m+[0m[0m private_ip                           = (known after apply)
+      [32m+[0m[0m public_dns                           = (known after apply)
+      [32m+[0m[0m public_ip                            = (known after apply)
+      [32m+[0m[0m secondary_private_ips                = (known after apply)
+      [32m+[0m[0m security_groups                      = (known after apply)
+      [32m+[0m[0m source_dest_check                    = true
+      [32m+[0m[0m spot_instance_request_id             = (known after apply)
+      [32m+[0m[0m subnet_id                            = (known after apply)
+      [32m+[0m[0m tags                                 = {
+          [32m+[0m[0m "Name" = "osh-lab-node"
+        }
+      [32m+[0m[0m tags_all                             = {
+          [32m+[0m[0m "Name" = "osh-lab-node"
+        }
+      [32m+[0m[0m tenancy                              = (known after apply)
+      [32m+[0m[0m user_data                            = "e67a4abeaac23b4390b6bb91ec3d267490335f43"
+      [32m+[0m[0m user_data_base64                     = (known after apply)
+      [32m+[0m[0m user_data_replace_on_change          = false
+      [32m+[0m[0m vpc_security_group_ids               = (known after apply)
+
+      [32m+[0m[0m capacity_reservation_specification (known after apply)
+
+      [32m+[0m[0m cpu_options (known after apply)
+
+      [32m+[0m[0m ebs_block_device (known after apply)
+
+      [32m+[0m[0m enclave_options (known after apply)
+
+      [32m+[0m[0m ephemeral_block_device (known after apply)
+
+      [32m+[0m[0m instance_market_options (known after apply)
+
+      [32m+[0m[0m maintenance_options (known after apply)
+
+      [32m+[0m[0m metadata_options {
+          [32m+[0m[0m http_endpoint               = "enabled"
+          [32m+[0m[0m http_protocol_ipv6          = "disabled"
+          [32m+[0m[0m http_put_response_hop_limit = (known after apply)
+          [32m+[0m[0m http_tokens                 = "required"
+          [32m+[0m[0m instance_metadata_tags      = (known after apply)
+        }
+
+      [32m+[0m[0m network_interface (known after apply)
+
+      [32m+[0m[0m private_dns_name_options (known after apply)
+
+      [32m+[0m[0m root_block_device {
+          [32m+[0m[0m delete_on_termination = true
+          [32m+[0m[0m device_name           = (known after apply)
+          [32m+[0m[0m encrypted             = (known after apply)
+          [32m+[0m[0m iops                  = (known after apply)
+          [32m+[0m[0m kms_key_id            = (known after apply)
+          [32m+[0m[0m tags_all              = (known after apply)
+          [32m+[0m[0m throughput            = (known after apply)
+          [32m+[0m[0m volume_id             = (known after apply)
+          [32m+[0m[0m volume_size           = 100
+          [32m+[0m[0m volume_type           = "gp3"
+        }
+    }
+
+[1m  # aws_internet_gateway.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_internet_gateway" "main" {
+      [32m+[0m[0m arn      = (known after apply)
+      [32m+[0m[0m id       = (known after apply)
+      [32m+[0m[0m owner_id = (known after apply)
+      [32m+[0m[0m tags     = {
+          [32m+[0m[0m "Name" = "osh-lab-igw"
+        }
+      [32m+[0m[0m tags_all = {
+          [32m+[0m[0m "Name" = "osh-lab-igw"
+        }
+      [32m+[0m[0m vpc_id   = (known after apply)
+    }
+
+[1m  # aws_route_table.public[0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table" "public" {
+      [32m+[0m[0m arn              = (known after apply)
+      [32m+[0m[0m id               = (known after apply)
+      [32m+[0m[0m owner_id         = (known after apply)
+      [32m+[0m[0m propagating_vgws = (known after apply)
+      [32m+[0m[0m route            = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_block                 = "0.0.0.0/0"
+              [32m+[0m[0m gateway_id                 = (known after apply)
+                [90m# (11 unchanged attributes hidden)[0m[0m
+            },
+        ]
+      [32m+[0m[0m tags             = {
+          [32m+[0m[0m "Name" = "osh-lab-public-rt"
+        }
+      [32m+[0m[0m tags_all         = {
+          [32m+[0m[0m "Name" = "osh-lab-public-rt"
+        }
+      [32m+[0m[0m vpc_id           = (known after apply)
+    }
+
+[1m  # aws_route_table_association.public[0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table_association" "public" {
+      [32m+[0m[0m id             = (known after apply)
+      [32m+[0m[0m route_table_id = (known after apply)
+      [32m+[0m[0m subnet_id      = (known after apply)
+    }
+
+[1m  # aws_security_group.node[0m will be created
+[0m  [32m+[0m[0m resource "aws_security_group" "node" {
+      [32m+[0m[0m arn                    = (known after apply)
+      [32m+[0m[0m description            = "Egress only; access the node via SSM Session Manager"
+      [32m+[0m[0m egress                 = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = [
+                  [32m+[0m[0m "0.0.0.0/0",
+                ]
+              [32m+[0m[0m from_port        = 0
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "-1"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = false
+              [32m+[0m[0m to_port          = 0
+                [90m# (1 unchanged attribute hidden)[0m[0m
+            },
+        ]
+      [32m+[0m[0m id                     = (known after apply)
+      [32m+[0m[0m ingress                = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = []
+              [32m+[0m[0m from_port        = 49152
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "tcp"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = true
+              [32m+[0m[0m to_port          = 49215
+                [90m# (1 unchanged attribute hidden)[0m[0m
+            },
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = []
+              [32m+[0m[0m description      = "all traffic between node-a/node-b (Calico, OVS tunnel, libvirt control+migration)"
+              [32m+[0m[0m from_port        = 0
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "-1"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = true
+              [32m+[0m[0m to_port          = 0
+            },
+        ]
+      [32m+[0m[0m name                   = "osh-lab-node-sg"
+      [32m+[0m[0m name_prefix            = (known after apply)
+      [32m+[0m[0m owner_id               = (known after apply)
+      [32m+[0m[0m revoke_rules_on_delete = false
+      [32m+[0m[0m tags                   = {
+          [32m+[0m[0m "Name" = "osh-lab-node-sg"
+        }
+      [32m+[0m[0m tags_all               = {
+          [32m+[0m[0m "Name" = "osh-lab-node-sg"
+        }
+      [32m+[0m[0m vpc_id                 = (known after apply)
+    }
+
+[1m  # aws_subnet.public[0m will be created
+[0m  [32m+[0m[0m resource "aws_subnet" "public" {
+      [32m+[0m[0m arn                                            = (known after apply)
+      [32m+[0m[0m assign_ipv6_address_on_creation                = false
+      [32m+[0m[0m availability_zone                              = "ap-northeast-2a"
+      [32m+[0m[0m availability_zone_id                           = (known after apply)
+      [32m+[0m[0m cidr_block                                     = "10.0.1.0/24"
+      [32m+[0m[0m enable_dns64                                   = false
+      [32m+[0m[0m enable_resource_name_dns_a_record_on_launch    = false
+      [32m+[0m[0m enable_resource_name_dns_aaaa_record_on_launch = false
+      [32m+[0m[0m id                                             = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block_association_id                 = (known after apply)
+      [32m+[0m[0m ipv6_native                                    = false
+      [32m+[0m[0m map_public_ip_on_launch                        = true
+      [32m+[0m[0m owner_id                                       = (known after apply)
+      [32m+[0m[0m private_dns_hostname_type_on_launch            = (known after apply)
+      [32m+[0m[0m tags                                           = {
+          [32m+[0m[0m "Name" = "osh-lab-public"
+        }
+      [32m+[0m[0m tags_all                                       = {
+          [32m+[0m[0m "Name" = "osh-lab-public"
+        }
+      [32m+[0m[0m vpc_id                                         = (known after apply)
+    }
+
+[1m  # aws_vpc.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_vpc" "main" {
+      [32m+[0m[0m arn                                  = (known after apply)
+      [32m+[0m[0m cidr_block                           = "10.0.0.0/16"
+      [32m+[0m[0m default_network_acl_id               = (known after apply)
+      [32m+[0m[0m default_route_table_id               = (known after apply)
+      [32m+[0m[0m default_security_group_id            = (known after apply)
+      [32m+[0m[0m dhcp_options_id                      = (known after apply)
+      [32m+[0m[0m enable_dns_hostnames                 = true
+      [32m+[0m[0m enable_dns_support                   = true
+      [32m+[0m[0m enable_network_address_usage_metrics = (known after apply)
+      [32m+[0m[0m id                                   = (known after apply)
+      [32m+[0m[0m instance_tenancy                     = "default"
+      [32m+[0m[0m ipv6_association_id                  = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block                      = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block_network_border_group = (known after apply)
+      [32m+[0m[0m main_route_table_id                  = (known after apply)
+      [32m+[0m[0m owner_id                             = (known after apply)
+      [32m+[0m[0m tags                                 = {
+          [32m+[0m[0m "Name" = "osh-lab-vpc"
+        }
+      [32m+[0m[0m tags_all                             = {
+          [32m+[0m[0m "Name" = "osh-lab-vpc"
+        }
+    }
+
+[1mPlan:[0m [0m11 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  [32m+[0m[0m compute_instance_id = (known after apply)
+  [32m+[0m[0m compute_public_ip   = (known after apply)
+  [32m+[0m[0m instance_id         = (known after apply)
+  [32m+[0m[0m public_ip           = (known after apply)
+  [32m+[0m[0m region              = "ap-northeast-2"
+  [32m+[0m[0m ssm_command         = (known after apply)
+  [32m+[0m[0m tail_bootstrap_log  = "sudo tail -f /var/log/user-data.log"
+[0m[1maws_iam_role.ssm: Creating...[0m[0m
+[0m[1maws_vpc.main: Creating...[0m[0m
+[0m[1maws_iam_role.ssm: Creation complete after 1s [id=osh-lab-ssm-role][0m
+[0m[1maws_iam_role_policy_attachment.ssm_core: Creating...[0m[0m
+[0m[1maws_iam_instance_profile.ssm: Creating...[0m[0m
+[0m[1maws_iam_role_policy_attachment.ssm_core: Creation complete after 1s [id=osh-lab-ssm-role-20260919100904532000000001][0m
+[0m[1maws_iam_instance_profile.ssm: Creation complete after 8s [id=osh-lab-ssm-profile][0m
+[0m[1maws_vpc.main: Still creating... [00m10s elapsed][0m[0m
+[0m[1maws_vpc.main: Creation complete after 12s [id=vpc-023509698a685e5e3][0m
+[0m[1maws_internet_gateway.main: Creating...[0m[0m
+[0m[1maws_subnet.public: Creating...[0m[0m
+[0m[1maws_security_group.node: Creating...[0m[0m
+[0m[1maws_internet_gateway.main: Creation complete after 0s [id=igw-006b673822fb38764][0m
+[0m[1maws_route_table.public: Creating...[0m[0m
+[0m[1maws_route_table.public: Creation complete after 1s [id=rtb-03290fe4fa12f60e5][0m
+[0m[1maws_security_group.node: Creation complete after 3s [id=sg-069eb861a450f63db][0m
+[0m[1maws_subnet.public: Still creating... [00m10s elapsed][0m[0m
+[0m[1maws_subnet.public: Creation complete after 11s [id=subnet-020b083eca394fa86][0m
+[0m[1maws_route_table_association.public: Creating...[0m[0m
+[0m[1maws_instance.node: Creating...[0m[0m
+[0m[1maws_instance.compute: Creating...[0m[0m
+[0m[1maws_route_table_association.public: Creation complete after 1s [id=rtbassoc-07b4e95bf4332961d][0m
+[0m[1maws_instance.compute: Still creating... [00m10s elapsed][0m[0m
+[0m[1maws_instance.node: Still creating... [00m10s elapsed][0m[0m
+[0m[1maws_instance.compute: Creation complete after 13s [id=i-006fae231dc69ca23][0m
+[0m[1maws_instance.node: Creation complete after 13s [id=i-0b29a1676600d5303][0m
+[0m[1m[32m
+Apply complete! Resources: 11 added, 0 changed, 0 destroyed.[0m
+[0m[1m[32m
+Outputs:
+
+[0mcompute_instance_id = "i-006fae231dc69ca23"
+compute_public_ip = "43.200.255.205"
+instance_id = "i-0b29a1676600d5303"
+public_ip = "3.39.254.210"
+region = "ap-northeast-2"
+ssm_command = "aws ssm start-session --target i-0b29a1676600d5303 --region ap-northeast-2"
+tail_bootstrap_log = "sudo tail -f /var/log/user-data.log"
+
+Node is up. Bootstrap (K8s + OSH clone) takes ~5-8 min.
+Tail the bootstrap log:  make logs
+Open a shell:            make ssm
+
+--- terraform apply 결과 ---
+Apply complete! Resources: 11 added, 0 changed, 0 destroyed.
+node-a: instance_id=i-0b29a1676600d5303, public_ip=3.39.254.210, private_ip=10.0.1.14
+node-b(compute): instance_id=i-006fae231dc69ca23, public_ip=43.200.255.205, private_ip=10.0.1.76
+region=ap-northeast-2
+
+--- $ make ready / make ready-compute 폴링 시작 (bootstrap 대기, UTC 2026-09-19T10:10:14Z) ---
+=== poll 0 10:10:14 ===
+Checking /var/log/user-data-complete on the node...
+
+Starting session with SessionId: aws-tester1-2t4aoopz4xpesofrec46t7c6j4
+K8S_STILL_BOOTSTRAPPING
+Setting up libasan8:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libtsan2:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libjs-jquery (3.6.1+dfsg+~3.5.14-1) ...
+Setting up libbinutils:amd64 (2.42-4ubuntu2.10) ...
+Setting up ipset (7.19-1ubuntu2) ...
+Setting up libisl23:amd64 (0.26-3build1.1) ...
+Setting up libc-dev-bin (2.39-0ubuntu8.9) ...
+Setting up libalgorithm-diff-xs-perl:amd64 (0.04-8build3) ...
+Setting up libcc1-0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up liblsan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libitm1:amd64 (14.2.0-4ubuntu2~24.04.1) ...
+Setting up libjs-underscore (1.13.4~dfsg+~1.11.4-3) ...
+Setting up libalgorithm-merge-perl (0.08-5) ...
+Setting up libctf0:amd64 (2.42-4ubuntu2.10) ...
+Setting up libjpeg8:amd64 (8c-2ubuntu11) ...
+Setting up python3.12-minimal (3.12.3-1ubuntu0.17) ...
+Setting up libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.17) ...
+Setting up cpp-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1) ...
+Setting up fontconfig-config (2.15.0-1.1ubuntu2) ...
+Setting up python3.12 (3.12.3-1ubuntu0.17) ...
+Cannot perform start session: EOF
+Checking /var/log/user-data-complete on node-b...
+
+Starting session with SessionId: aws-tester1-urzpjy9z7tefdj7suss74px2rq
+K8S_STILL_BOOTSTRAPPING
+Setting up python3-dev (3.12.3-0ubuntu2.1) ...
+Setting up g++ (4:13.2.0-7ubuntu1) ...
+update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+Setting up build-essential (12.10ubuntu1) ...
+Setting up libheif-plugin-aomdec:amd64 (1.17.6-1ubuntu4.8) ...
+Setting up libheif1:amd64 (1.17.6-1ubuntu4.8) ...
+Setting up libheif-plugin-aomenc:amd64 (1.17.6-1ubuntu4.8) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+Processing triggers for systemd (255.4-1ubuntu8.17) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for sgml-base (1.31) ...
+Setting up libfontconfig1:amd64 (2.15.0-1.1ubuntu2) ...
+Setting up libgd3:amd64 (2.3.3-9ubuntu5) ...
+Setting up libc-devtools (2.39-0ubuntu8.9) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+
+Running kernel seems to be up-to-date.
+
+Restarting services...
+ systemctl restart acpid.service chrony.service cron.service irqbalance.service multipathd.service packagekit.service polkit.service rsyslog.service snapd.service systemd-journald.service systemd-networkd.service systemd-resolved.service systemd-udevd.service udisks2.service
+Cannot perform start session: EOF
+=== poll 1 10:10:56 ===
+Checking /var/log/user-data-complete on the node...
+
+Starting session with SessionId: aws-tester1-5zn4vle2uvvxet2tvpjoookba4
+K8S_STILL_BOOTSTRAPPING
+[certs] etcd/peer serving cert is signed for DNS names [ip-10-0-1-14 localhost] and IPs [10.0.1.14 127.0.0.1 ::1]
+[certs] Generating "etcd/healthcheck-client" certificate and key
+[certs] Generating "apiserver-etcd-client" certificate and key
+[certs] Generating "sa" key and public key
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+[kubeconfig] Writing "admin.conf" kubeconfig file
+[kubeconfig] Writing "super-admin.conf" kubeconfig file
+[kubeconfig] Writing "kubelet.conf" kubeconfig file
+[kubeconfig] Writing "controller-manager.conf" kubeconfig file
+[kubeconfig] Writing "scheduler.conf" kubeconfig file
+[etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/instance-config.yaml"
+[patches] Applied patch of type "application/strategic-merge-patch+json" to target "kubeletconfiguration"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Starting the kubelet
+Cannot perform start session: EOF
+Checking /var/log/user-data-complete on node-b...
+
+Starting session with SessionId: aws-tester1-8fnn94gu3h4x954hbn42kch46u
+K8S_READY
+Cannot perform start session: EOF
+=== poll 2 10:11:37 ===
+Checking /var/log/user-data-complete on the node...
+
+Starting session with SessionId: aws-tester1-5hdglbye3rkc8xdxiaqbouenu8
+K8S_STILL_BOOTSTRAPPING
++ for i in $(seq 1 60)
++ kubectl get nodes --no-headers
++ grep -qx Ready
++ awk '{print $2}'
++ sleep 5
++ for i in $(seq 1 60)
++ kubectl get nodes --no-headers
++ grep -qx Ready
++ awk '{print $2}'
++ sleep 5
++ for i in $(seq 1 60)
++ kubectl get nodes --no-headers
++ awk '{print $2}'
++ grep -qx Ready
++ sleep 5
++ for i in $(seq 1 60)
++ kubectl get nodes --no-headers
++ awk '{print $2}'
++ grep -qx Ready
++ sleep 5
+Cannot perform start session: EOF
+Checking /var/log/user-data-complete on node-b...
+
+Starting session with SessionId: aws-tester1-s7h7zu22egqek6yit77kiuoz2i
+K8S_READY
+Cannot perform start session: EOF
+=== poll 3 10:12:18 ===
+Checking /var/log/user-data-complete on the node...
+
+Starting session with SessionId: aws-tester1-ha7949kiyk6fnuhi3tl7aus8bu
+K8S_READY
+Cannot perform start session: EOF
+Checking /var/log/user-data-complete on node-b...
+
+Starting session with SessionId: aws-tester1-rohtl3gq36jx6vugth7up23inq
+K8S_READY
+Cannot perform start session: EOF
+
+--- 부트스트랩 완료 확인 (양쪽 K8S_READY, UTC 2026-09-19T10:13:00Z) ---
+--- node-a cgroup/PSI check ---
+{
+    "Status": "Success",
+    "Out": "cgroup2fs\ncpu\nio\nmemory\n",
+    "Err": ""
+}
+--- node-b cgroup/PSI check ---
+{
+    "Status": "Success",
+    "Out": "cgroup2fs\ncpu\nio\nmemory\n",
+    "Err": ""
+}
+
+--- $ make osh-deploy (시작 UTC 2026-09-19T10:14:09Z) ---
+Dispatching osh/deploy.sh to i-0b29a1676600d5303 in ap-northeast-2 (timeout=3600s)...
+CMD_ID=1bfe0add-e2bd-4448-a672-e0d136dd2e37
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=Success
+===== STDOUT (tail) =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f helm-toolkit/Makefile ]; then make -C helm-toolkit; fi
+if grep -qE "^dependencies:" helm-toolkit/Chart.yaml; then helm dep up helm-toolkit; fi
+Saving 0 charts
+Deleting outdated charts
+if [ -d helm-toolkit ]; then helm lint helm-toolkit; fi
+==> Linting helm-toolkit
+
+1 chart(s) linted, 0 chart(s) failed
+if [ -d helm-toolkit ]; then \
+	helm package helm-toolkit --version $(tools/chart_version.sh helm-toolkit 2026.1.0) ; \
+fi
+Successfully packaged chart and saved it to: /opt/openstack-helm/openstack-helm/helm-toolkit-2026.1.0+c665eed.tgz
+make[1]: Leaving directory '/opt/openstack-helm/openstack-helm'
+
+===== Processing [horizon] chart =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f horizon/Makefile ]; then make -C horizon; fi
+if grep -qE "^dependencies:" horizon/Chart.yaml; then helm dep up horizon; fi
+Saving 1 charts
+Deleting outdated charts
+if [ -d horizon ]; then helm lint horizon; fi
+==> Linting horizon
+
+1 chart(s) linted, 0 chart(s) failed
+if [ -d horizon ]; then \
+	helm package horizon --version $(tools/chart_version.sh horizon 2026.1.0) ; \
+fi
+Successfully packaged chart and saved it to: /opt/openstack-helm/openstack-helm/horizon-2026.1.0+c665eed.tgz
+make[1]: Leaving directory '/opt/openstack-helm/openstack-helm'
+
+===== Processing [ironic] chart =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f ironic/Makefile ]; then make -C ironic; fi
+if grep -qE "^dependencies:" ironic/Chart.yaml; then helm dep up ironic; fi
+Saving 1 charts
+Deleting outdated charts
+if [ -d ironic ]; then helm lint ironic; fi
+==> Linting ironic
+
+1 chart(s) linted, 0 chart(s) failed
+if [ -d ironic ]; then \
+	helm package ironic --version $(tools/chart_version.sh ironic 2026.1.0) ; \
+fi
+Successfully packaged chart and saved it to: /opt/openstack-helm/openstack-helm/ironic-2026.1.0+c665eed.tgz
+make[1]: Leaving directory '/opt/openstack-helm/openstack-helm'
+
+===== Processing [keystone] chart =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f keystone/Makefile ]; then make -C keyston--output truncated--
+OSH_DEPLOY_EXIT=
+
+--- $ make osh-deploy 결과: SSM command status=Success (Failed/TimedOut 없음) ---
+
+--- $ make osh-vm (시작 UTC 2026-09-19T10:35:00Z) ---
+Dispatching osh/cirros-boot.sh to i-0b29a1676600d5303 in ap-northeast-2 (timeout=900s)...
+CMD_ID=2c13f9a0-9205-4c5a-9f27-fd800d13d83a
+  status=InProgress
+  status=InProgress
+  status=Success
+===== STDOUT (tail) =====
+| ipv6_ra_mode         | None                                 |
+| name                 | demo-subnet                          |
+| network_id           | 1a9b0034-3611-4024-b67e-ee4b91fdd327 |
+| project_id           | cfcbc969d55f452ab50c4538ed28d5ba     |
+| revision_number      | 0                                    |
+| router:external      | False                                |
+| segment_id           | None                                 |
+| service_types        |                                      |
+| subnetpool_id        | None                                 |
+| tags                 |                                      |
+| updated_at           | 2026-09-19T10:35:36Z                 |
++----------------------+--------------------------------------+
+===== boot test-vm =====
++-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field                               | Value                                                                                                                                                                                   |
++-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| OS-DCF:diskConfig                   | MANUAL                                                                                                                                                                                  |
+| OS-EXT-AZ:availability_zone         | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:host                | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:hostname            | test-vm                                                                                                                                                                                 |
+| OS-EXT-SRV-ATTR:hypervisor_hostname | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:instance_name       | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:kernel_id           | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:launch_index        | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:ramdisk_id          | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:reservation_id      | r-ra0iupbt                                                                                                                                                                              |
+| OS-EXT-SRV-ATTR:root_device_name    | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:user_data           | None                                                                                                                                                                                    |
+| OS-EXT-STS:power_state              | N/A                                                                                                                                                                                     |
+| OS-EXT-STS:task_state               | scheduling                                                                                                                                                                              |
+| OS-EXT-STS:vm_state                 | building                                                                                                                                                                                |
+| OS-SRV-USG:launched_at              | None                                                                                                                                                                                    |
+| OS-SRV-USG:terminated_at            | None                                                                                                                                                                                    |
+| accessIPv4                          | None                                                                                                                                                                                    |
+| accessIPv6                          | None                                                                                                                                                                                    |
+| addresses                           | N/A                                                                                                                                                                                     |
+| adminPass                           | EJuS9RtGEY9A                                                                                                                                                                            |
+| config_drive                        | None                                                                                                                                                                                    |
+| created                             | 2026-09-19T10:35:42Z                                                                                                                                                                    |
+| description                         | None                                                                                                                                                                                    |
+| flavor                              | description=, disk='1', ephemeral='0', , id='m1.tiny', is_disabled=, is_public='True', location=, name='m1.tiny', original_name='m1.tiny', ram='512', rxtx_factor=, swap='0', vcpus='1' |
+| hostId                              | None                                                                                                                                                                                    |
+| host_status                         | None                                                                                                                                                                                    |
+| id                                  | ee75b45b-66ad-4e4a-9498-6ace843b5087                                                                                                                                                    |
+| image                               | cirros (bdece703-ff99-4d94-b2a8-c2b56c18e7ae)                                                                                                                                           |
+| key_name                            | None                                                                                                                                                                                    |
+| locked                              | None                                                                                                                                                                                    |
+| locked_reason                       | None                                                                                                                                                                                    |
+| name                                | test-vm                                                                                                                                                                                 |
+| pinned_availability_zone            | None                                                                                                                                                                             --output truncated--
+
+--- test-vm 최종 상태 확인 (UTC 2026-09-19T10:37:04Z) ---
+{
+    "Status": "Success",
+    "Out": "ip-10-0-1-14.ap-northeast-2.compute.internal\n{'demo-net': ['10.10.10.87']}\nACTIVE\n",
+    "Err": ""
+}
+
+================================================================
+=== L1 완료 요약 (재기동 세션 2, 2026-09-19) ===
+- node-a: i-0b29a1676600d5303, public=3.39.254.210, private=10.0.1.14, state=running
+- node-b (compute): i-006fae231dc69ca23, public=43.200.255.205, private=10.0.1.76, state=running
+- region: ap-northeast-2
+- terraform: 11 add/0 change/0 destroy (state 사전 확인 결과 잔여물 없음) -> make up 성공
+- cgroup v2: 양쪽 모두 cgroup2fs 확인
+- PSI: 양쪽 모두 /proc/pressure/{cpu,io,memory} 확인
+- node-a OSH: make osh-deploy SSM status=Success (Failed/TimedOut 없음)
+- test-vm: ACTIVE, host=ip-10-0-1-14.ap-northeast-2.compute.internal, network=10.10.10.87 (demo-net)
+- node-b: 아직 K8s 미join (L2 담당 범위, 이번 세션에서 손대지 않음)
+- 막힌 점: 없음. 전 과정이 재개 절차 문서대로 막힘 없이 진행됨.
+- L1 완료. 다음은 L2(node-b K8s join)부터.
+=== 종료 시각(UTC): 2026-09-19T10:37:18Z ===
+================================================================

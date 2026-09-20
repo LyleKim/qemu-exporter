@@ -1,0 +1,186 @@
+L2 — Nova multi-compute 활성화, patch(a/b/c) 적용 이전 부분만 (2026-09-19, 신규 인스턴스)
+================================================================================
+
+목적: L1(2026-09-19 재기동)로 새로 띄운 node-a(i-0ee904b7547b9ee9f, 10.0.1.4)/
+node-b(i-0548b42c537e6fc56, 10.0.1.207)에 대해, patch 적용 이전 범위(node-b K8s join,
+라벨링, SG 확인, pod-to-pod 통신 테스트)만 서브에이전트가 전담 실행한 기록.
+Calico Installation/FelixConfiguration patch, libvirt helm upgrade는 이 세션의 범위 밖
+(사용자가 직접 실행) — 시도하지 않았다.
+
+--- 0. 인스턴스 상태 재확인 ---
+$ terraform -chdir=terraform output
+  compute_instance_id = "i-0548b42c537e6fc56"
+  compute_public_ip   = "13.124.156.226"
+  instance_id         = "i-0ee904b7547b9ee9f"
+  public_ip           = "3.39.253.218"
+  region              = "ap-northeast-2"
+
+$ aws ec2 describe-instances --region ap-northeast-2 \
+    --instance-ids i-0ee904b7547b9ee9f i-0548b42c537e6fc56
+  i-0ee904b7547b9ee9f (node-a): running, priv=10.0.1.4,   pub=3.39.253.218
+  i-0548b42c537e6fc56 (node-b): running, priv=10.0.1.207, pub=13.124.156.226
+
+--- 1. node-a 현재 상태 + DaemonSet nodeSelector 실측 확인 (추측 금지, kubectl -o json) ---
+$ kubectl get nodes -o wide
+  ip-10-0-1-4   Ready   control-plane   37m   v1.34.11
+
+$ kubectl -n openstack get ds -o json | jq -r '.items[] | .metadata.name + ": " + (.spec.template.spec.nodeSelector // {} | tostring)'
+  libvirt-libvirt-default:            {"openstack-compute-node":"enabled"}
+  neutron-dhcp-agent-default:         {"dhcp-agent":"enabled"}
+  neutron-l3-agent-default:           {"l3-agent":"enabled"}
+  neutron-metadata-agent-default:     {"metadata-agent":"enabled"}
+  neutron-netns-cleanup-cron-default: {"openstack-control-plane":"enabled"}
+  neutron-ovs-agent-default:          {"openvswitch":"enabled"}
+  nova-compute-default:               {"openstack-compute-node":"enabled"}
+  openvswitch:                        {"openvswitch":"enabled"}
+
+-> 지난 세션(2026-09-17)과 동일 결과 재확인: node-b(컴퓨트 전용)에 필요한 라벨은
+   openstack-compute-node=enabled + openvswitch=enabled 뿐.
+
+--- 2. join token 발급 (node-a) ---
+$ sudo kubeadm token create --print-join-command
+  kubeadm join 10.0.1.4:6443 --token 920gmp.p6160yif3rj21c5v \
+    --discovery-token-ca-cert-hash sha256:465083d9511eaf277e4090e2757f24ddc5b49f01278ce0acd436129c41de9ce2
+
+--- 3. node-b에서 join 실행 (SSM AWS-StartInteractiveCommand) ---
+$ sudo kubeadm join 10.0.1.4:6443 --token 920gmp.p6160yif3rj21c5v --discovery-token-ca-cert-hash ...
+  [kubelet-check] The kubelet is healthy after 501.468835ms
+  This node has joined the cluster.
+-> 성공, SG 6443은 이미 열려있어 즉시 성공(코드 불변 확인, terraform plan 참조 아래).
+
+--- 4. node-b Ready 대기 (node-a에서 폴링, 5초 간격) ---
+$ kubectl get nodes -o wide  (반복 폴링)
+  poll 1 (~9s):  ip-10-0-1-207  NotReady
+  poll 2 (~20s): ip-10-0-1-207  NotReady
+  poll 3 (~29s): ip-10-0-1-207  Ready       <- 전환 시점
+  이후 poll 4~12까지 계속 Ready 유지 확인.
+-> NotReady -> Ready 전환까지 약 29초.
+
+--- 5. 라벨링 (node-a에서) ---
+$ kubectl label nodes ip-10-0-1-207 openstack-compute-node=enabled openvswitch=enabled --overwrite
+  node/ip-10-0-1-207 labeled
+$ kubectl get nodes ip-10-0-1-207 --show-labels
+  ...,kubernetes.io/hostname=ip-10-0-1-207,kubernetes.io/os=linux,openstack-compute-node=enabled,openvswitch=enabled
+
+--- 6. terraform plan (SG 등 잔여 변경 없는지 read-only 확인, 코드 수정 없음) ---
+$ terraform -chdir=terraform plan
+  No changes. Your infrastructure matches the configuration.
+-> SG(마이그레이션 포트 49152-49215, self=true 등)는 이미 코드에 반영되어 있고 apply도
+   완료된 상태 — 이번 세션에서 추가 조치 불필요.
+
+--- 7. pod-to-pod 통신 테스트 (Calico cross-subnet 문제 재확인 목적) ---
+node-a의 CoreDNS pod IP 확인:
+$ kubectl -n kube-system get pods -o wide -l k8s-app=kube-dns
+  coredns-66bc5c9577-jmfz4   192.168.86.200   ip-10-0-1-4
+  coredns-66bc5c9577-q2pwg   192.168.86.196   ip-10-0-1-4
+
+node-b에 강제 스케줄된 busybox 디버그 pod 생성 (nodeName: ip-10-0-1-207 명시):
+$ kubectl apply -f debug-nodeb.yaml   # busybox:1.36, sleep 3600
+  pod/debug-nodeb created
+$ kubectl get pod debug-nodeb -o wide
+  debug-nodeb   1/1   Running   192.168.235.130   ip-10-0-1-207
+
+$ kubectl exec debug-nodeb -- ping -c 4 -W 2 192.168.86.200
+  PING 192.168.86.200 (192.168.86.200): 56 data bytes
+  --- 192.168.86.200 ping statistics ---
+  4 packets transmitted, 0 packets received, 100% packet loss
+  command terminated with exit code 1
+
+$ kubectl exec debug-nodeb -- nslookup kubernetes.default
+  ;; connection timed out; no servers could be reached
+  command terminated with exit code 1
+
+-> **예상대로 실패**. 지난 세션(2026-09-17, l2_activation_20260917.txt)과 동일한 증상
+   (ping 100% loss, DNS timeout) 재현.
+
+근본원인 재확인 (read-only, patch 시도 안 함):
+$ kubectl get ippool default-ipv4-ippool -o jsonpath='{.spec.vxlanMode}'
+  CrossSubnet
+$ kubectl -n calico-system get pods -o wide | grep calico-node
+  calico-node-f5qbg   10.0.1.4     ip-10-0-1-4    Running
+  calico-node-v9nbf   10.0.1.207   ip-10-0-1-207  Running (4m34s, 정상 기동)
+
+-> node-a/node-b가 같은 서브넷(10.0.1.0/24)이라 vxlanMode=CrossSubnet에서는 VXLAN
+   캡슐화 없이 언더레이(ens5) 직접 라우팅 시도 → AWS SourceDestCheck가 드롭.
+   TDL 문서의 기존 진단과 정확히 일치.
+
+--- 8. 참고: OSH 파드 스케줄링 상태 (node-b, read-only 확인, 조치 없음) ---
+$ kubectl -n openstack get pods -o wide | grep ip-10-0-1-207
+  libvirt-libvirt-default-t9sdp     0/1  Init:0/2  ip-10-0-1-207
+  neutron-ovs-agent-default-ss94v   0/1  Error(재시작 반복)  ip-10-0-1-207
+  nova-compute-default-thbzm        0/1  Init:0/3  ip-10-0-1-207
+  openvswitch-96dhr                 2/2  Running   ip-10-0-1-207
+
+-> neutron-ovs-agent가 hostname --fqdn(cluster DNS 필요) 실패로 CrashLoop 진입,
+   libvirt/nova-compute는 그 의존성 대기로 Init 정지 — 지난 세션과 동일 패턴.
+   patch a(Calico ipPool encapsulation=VXLAN Always)는 이 세션 범위 밖(사용자 직접 실행).
+
+--- 9. 정리 ---
+$ kubectl delete pod debug-nodeb --now
+  pod "debug-nodeb" deleted from default namespace
+$ kubectl get pods -A -o wide | grep debug-nodeb
+  (결과 없음, CLEANED 확인)
+
+================================================================================
+요약: node-b K8s join 성공(NotReady->Ready 약 29초), 라벨링 완료
+(openstack-compute-node=enabled, openvswitch=enabled), terraform plan No changes로
+SG 잔여 변경 없음 확인. pod-to-pod 통신 테스트는 예상대로 실패(ping 100% loss,
+DNS timeout) — Calico ippool vxlanMode=CrossSubnet + AWS SourceDestCheck 조합이
+원인임을 read-only로 재확인. patch a/b/c는 시도하지 않음(범위 밖) — 다음 단계는
+사용자가 TDL의 patch a/b/c를 순서대로 직접 적용.
+
+================================================================================
+--- 10. patch a/b/c 적용 (사용자가 node-a SSM에서 직접 실행) ---
+================================================================================
+
+사용자가 node-a SSM(`sudo -i`)에서 재개 절차의 patch a(Calico ipPool
+encapsulation=VXLAN)/b(felixconfiguration vxlanPort=4790)/c(libvirt helm upgrade
+listen_address=0.0.0.0)를 순서대로 실행. a/b는 즉시 반영, c의 DaemonSet rollout이
+"1 out of 2 new pods have been updated"에서 정지.
+
+$ kubectl get pods -n openstack | grep neutron-ovs
+  neutron-ovs-agent-default-kgm8k   1/1  Running            1 (23m ago)   54m
+  neutron-ovs-agent-default-ss94v   0/1  CrashLoopBackOff   10 (3m17s ago) 33m
+
+-> ss94v는 patch 적용 이전 타이밍에 이미 떠 있던 파드(위 섹션 8에서 CrashLoop 상태로
+   최초 관측된 바로 그 파드) — 재개 절차에 기록된 "rollout 멈춤 시 CrashLoopBackOff
+   파드부터 지워봐라" 팁을 사용자가 직접 적용.
+
+$ kubectl -n openstack delete pod neutron-ovs-agent-default-ss94v
+  pod "neutron-ovs-agent-default-ss94v" deleted
+
+$ kubectl -n openstack get pods -l application=neutron,component=neutron-ovs-agent -o wide
+  neutron-ovs-agent-default-kgm8k   1/1  Running   1 (26m ago)   58m    10.0.1.4    ip-10-0-1-4
+  neutron-ovs-agent-default-rw9sq   1/1  Running   0             2m58s  10.0.1.207  ip-10-0-1-207
+
+$ kubectl -n openstack rollout status ds libvirt-libvirt-default
+  Waiting for daemon set "libvirt-libvirt-default" rollout to finish: 1 out of 2 new pods have been updated...
+  Waiting for daemon set "libvirt-libvirt-default" rollout to finish: 1 of 2 updated pods are available...
+  daemon set "libvirt-libvirt-default" successfully rolled out
+
+-> 삭제 직후 재생성된 파드가 정상화되고, libvirt rollout도 곧바로 이어서 완료됨.
+   "새 근본원인 아님, 타이밍 이슈였다"는 재개 절차의 가설이 이번 세션에서 실측으로
+   재검증됨(2026-09-17 세션에 이어 두 번째).
+
+--- 11. L2 최종 확인 (compute service list / discover_hosts / hypervisor list) ---
+
+$ kubectl -n openstack exec -t osc -- openstack compute service list -f value -c Host -c Zone -c Status -c State
+  nova-conductor-65469b89b-drfv5              internal  enabled  up
+  nova-scheduler-657cdcbcb-27q5l               internal  enabled  up
+  ip-10-0-1-4.ap-northeast-2.compute.internal  nova      enabled  up
+  ip-10-0-1-207.ap-northeast-2.compute.internal nova     enabled  up
+
+$ kubectl -n openstack exec -t deploy/nova-conductor -c nova-conductor -- nova-manage cell_v2 discover_hosts --verbose
+  Found 2 cell mappings.
+  Skipping cell0 since it does not contain hosts.
+  Getting computes from cell 'cell1': 3457b055-b15f-4404-9436-c22584799f76
+  Checking host mapping for compute host 'ip-10-0-1-207...': 7e32e0e2-18e3-4035-97e8-20ffa55dde78
+  Creating host mapping for compute host 'ip-10-0-1-207...': 7e32e0e2-18e3-4035-97e8-20ffa55dde78
+
+$ kubectl -n openstack exec -t osc -- openstack hypervisor list -f value -c "Hypervisor Hostname" -c State
+  ip-10-0-1-4.ap-northeast-2.compute.internal    up
+  ip-10-0-1-207.ap-northeast-2.compute.internal  up
+
+================================================================================
+L2 완료. 하이퍼바이저 2개 모두 up. L3(수동 마이그레이션) 재시도로 진행.
+================================================================================

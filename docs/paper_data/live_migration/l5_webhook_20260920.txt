@@ -1,0 +1,164 @@
+L5 webhook e2e run log - 2026-09-19T16:21:35Z
+{
+    "UserId": "AIDAWVUMEL64GRCLVBUZG",
+    "Account": "458781646776",
+    "Arn": "arn:aws:iam::458781646776:user/aws-tester1"
+}
+{
+    "Status": "Failed",
+    "StdOut": "head: invalid trailing option -- n\nTry 'head --help' for more information.\n",
+    "StdErr": "/var/lib/amazon/ssm/i-0533a052301376202/document/orchestration/af868739-0310-4f91-a578-7a50a203e6a7/awsrunShellScript/0.awsrunShellScript/_script.sh: 2: Syntax error: Bad fd number\n/var/lib/amazon/ssm/i-0533a052301376202/document/orchestration/af868739-0310-4f91-a578-7a50a203e6a7/awsrunShellScript/0.awsrunShellScript/_script.sh: 1: truen: not found\nfailed to run commands: exit status 127"
+}
+{
+    "Status": "Success",
+    "StdOut": "ls: cannot access '/opt/live-migration-webhook': No such file or directory\nNAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE\nkeystone-api   ClusterIP   10.97.104.246    <none>        5000/TCP   56m\nnova-api       ClusterIP   10.108.102.209   <none>        8774/TCP   47m\nNAME            STATUS   ROLES           AGE   VERSION    INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION   CONTAINER-RUNTIME\nip-10-0-1-129   Ready    control-plane   63m   v1.34.11   10.0.1.129    <none>        Ubuntu 24.04.4 LTS   7.0.0-1012-aws   containerd://2.2.1\nip-10-0-1-174   Ready    <none>          33m   v1.34.11   10.0.1.174    <none>        Ubuntu 24.04.4 LTS   7.0.0-1012-aws   containerd://2.2.1\nUnit live-migration-webhook.service could not be found.\n/var/lib/amazon/ssm/i-0533a052301376202/document/orchestration/4b0f87dc-83e9-4ce7-a90f-0ee02cf3025f/awsrunShellScript/0.awsrunShellScript/_script.sh: 8: openstack: not found\n",
+    "StdErr": "+ which go /usr/lib/go-1.22/bin/go\n+ ls -la /opt/live-migration-webhook\n+ export KUBECONFIG=/etc/kubernetes/admin.conf\n+ kubectl -n openstack get svc keystone-api nova-api\n+ kubectl get nodes -o wide\n+ systemctl status live-migration-webhook\n+ head -20\n+ openstack server list --all-projects -c ID -c Name -c Status -c Host\n+ true\n"
+}
+{
+    "Status": "Failed",
+    "StdOut": "nova-compute-default-vlmk5                 1/1     Running     0             43m     10.0.1.129       ip-10-0-1-129   <none>           <none>\nnova-compute-default-zdwd6                 1/1     Running     0             32m     10.0.1.174       ip-10-0-1-174   <none>           <none>\n7:cd /opt/openstack-helm/openstack-helm\n8:helm upgrade --install libvirt ./libvirt --namespace=openstack   --set conf.ceph.enabled=false   --set conf.dynamic_options.libvirt.listen_address=0.0.0.0   $(helm osh get-values-overrides -p ./values_overrides -c libvirt $FEATURES)\n10:kubectl get pods -n openstack | grep neutron-ovs\n11:kubectl -n openstack delete pod neutron-ovs-agent-default-9xx2v\n15:kubectl -n openstack delete pod neutron-ovs-agent-default-9xx2v\n16:kubectl get pods -n openstack | grep neutron-ovs\n",
+    "StdErr": "failed to run commands: exit status 1"
+}
+{
+    "Status": "Success",
+    "StdOut": "keystone-api-5fb5f79d74-6w4m2              1/1     Running     0             56m\nnova-api-metadata-6c68798b94-x627q         1/1     Running     0             48m\nnova-api-osapi-64c4b48785-2p9m2            1/1     Running     0             48m\nnova-conductor-85b7d7bb4c-nhf98            1/1     Running     0             48m\nDefaulted container \"nova-osapi\" out of: nova-osapi, init (init)\nUnable to use a TTY - input is not a terminal or the right kind of file\ncommand terminated with exit code 1\npod/nova-api-metadata-6c68798b94-x627q\npod/nova-api-osapi-64c4b48785-2p9m2\npod/nova-bootstrap-fwlqw\npod/nova-cell-setup-29830560-52fjp\npod/nova-cell-setup-kpw5f\npod/nova-compute-default-vlmk5\npod/nova-compute-default-zdwd6\npod/nova-conductor-85b7d7bb4c-nhf98\npod/nova-db-init-m4c5n\npod/nova-db-sync-ngkzd\npod/nova-ks-endpoints-dfwlm\npod/nova-ks-service-6tcbj\npod/nova-ks-user-dg7d6\npod/nova-novncproxy-5f6848ccf9-8n77f\npod/nova-rabbit-init-wfllb\npod/nova-scheduler-7b4ff99c75-smk5g\npod/nova-service-cleaner-29830560-trmf9\n",
+    "StdErr": ""
+}
+{
+    "Status": "Success",
+    "StdOut": " 241 /opt/live-migration-webhook/main.go\n   3 /opt/live-migration-webhook/go.mod\n 244 total\na42af3f692d2ecf4251c97f5e34e3f476bd53e57ab7c105c60d9b9a2859c8778  /opt/live-migration-webhook/main.go\n",
+    "StdErr": ""
+}
+{
+    "Status": "Success",
+    "StdOut": "Selecting previously unselected package golang-1.22-src.\r\n(Reading database ... \r(Reading database ... 5%\r(Reading database ... 10%\r(Reading database ... 15%\r(Reading database ... 20%\r(Reading database ... 25%\r(Reading database ... 30%\r(Reading database ... 35%\r(Reading database ... 40%\r(Reading database ... 45%\r(Reading database ... 50%\r(Reading database ... 55%\r(Reading database ... 60%\r(Reading database ... 65%\r(Reading database ... 70%\r(Reading database ... 75%\r(Reading database ... 80%\r(Reading database ... 85%\r(Reading database ... 90%\r(Reading database ... 95%\r(Reading database ... 100%\r(Reading database ... 86885 files and directories currently installed.)\r\nPreparing to unpack .../0-golang-1.22-src_1.22.2-2ubuntu0.4_all.deb ...\r\nUnpacking golang-1.22-src (1.22.2-2ubuntu0.4) ...\r\nSelecting previously unselected package golang-1.22-go.\r\nPreparing to unpack .../1-golang-1.22-go_1.22.2-2ubuntu0.4_amd64.deb ...\r\nUnpacking golang-1.22-go (1.22.2-2ubuntu0.4) ...\r\nSelecting previously unselected package golang-src.\r\nPreparing to unpack .../2-golang-src_2%3a1.22~2build1_all.deb ...\r\nUnpacking golang-src (2:1.22~2build1) ...\r\nSelecting previously unselected package golang-go:amd64.\r\nPreparing to unpack .../3-golang-go_2%3a1.22~2build1_amd64.deb ...\r\nUnpacking golang-go:amd64 (2:1.22~2build1) ...\r\nSelecting previously unselected package libpkgconf3:amd64.\r\nPreparing to unpack .../4-libpkgconf3_1.8.1-2build1_amd64.deb ...\r\nUnpacking libpkgconf3:amd64 (1.8.1-2build1) ...\r\nSelecting previously unselected package pkgconf-bin.\r\nPreparing to unpack .../5-pkgconf-bin_1.8.1-2build1_amd64.deb ...\r\nUnpacking pkgconf-bin (1.8.1-2build1) ...\r\nSelecting previously unselected package pkgconf:amd64.\r\nPreparing to unpack .../6-pkgconf_1.8.1-2build1_amd64.deb ...\r\nUnpacking pkgconf:amd64 (1.8.1-2build1) ...\r\nSelecting previously unselected package pkg-config:amd64.\r\nPreparing to unpack .../7-pkg-config_1.8.1-2build1_amd64.deb ...\r\nUnpacking pkg-config:amd64 (1.8.1-2build1) ...\r\nSetting up libpkgconf3:amd64 (1.8.1-2build1) ...\r\nSetting up golang-1.22-src (1.22.2-2ubuntu0.4) ...\r\nSetting up pkgconf-bin (1.8.1-2build1) ...\r\nSetting up golang-src (2:1.22~2build1) ...\r\nSetting up golang-1.22-go (1.22.2-2ubuntu0.4) ...\r\nSetting up pkgconf:amd64 (1.8.1-2build1) ...\r\nSetting up pkg-config:amd64 (1.8.1-2build1) ...\r\nSetting up golang-go:amd64 (2:1.22~2build1) ...\r\nProcessing triggers for man-db (2.12.0-4build2) ...\r\nProcessing triggers for libc-bin (2.39-0ubuntu8.9) ...\r\ntotal 8072\ndrwxr-xr-x 2 root root    4096 Sep 19 16:24 .\ndrwxr-xr-x 7 root root    4096 Sep 19 16:23 ..\n-rw-r--r-- 1 root root      39 Sep 19 16:23 go.mod\n-rwxr-xr-x 1 root root 8244851 Sep 19 16:24 live-migration-webhook\n-rw-r--r-- 1 root root    6657 Sep 19 16:23 main.go\n2026/09/19 16:24:30 ERROR NODE_HOSTS must be exactly two comma-separated hypervisor hostnames\n",
+    "StdErr": "\nRunning kernel seems to be up-to-date.\n\nRestarting services...\n\nService restarts being deferred:\n /etc/needrestart/restart.d/dbus.service\n systemctl restart getty@tty1.service\n systemctl restart networkd-dispatcher.service\n systemctl restart serial-getty@ttyS0.service\n systemctl restart systemd-logind.service\n systemctl restart unattended-upgrades.service\n\nNo containers need to be restarted.\n\nNo user sessions are running outdated binaries.\n\nNo VM guests are running outdated hypervisor (qemu) binaries on this host.\n"
+}
+{
+    "Status": "Success",
+    "StdOut": "keystone_ip=10.97.104.246 nova_ip=10.108.102.209 pw_len=0\n● live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook\n     Loaded: loaded (/run/systemd/transient/live-migration-webhook.service; transient)\n  Transient: yes\n     Active: active (running) since Sat 2026-09-19 16:24:47 UTC; 2s ago\n   Main PID: 144215 (live-migration-)\n      Tasks: 6 (limit: 34583)\n     Memory: 1.2M (peak: 2.2M)\n        CPU: 4ms\n     CGroup: /system.slice/live-migration-webhook.service\n             └─144215 /opt/live-migration-webhook/live-migration-webhook\n\nSep 19 16:24:47 ip-10-0-1-129 systemd[1]: Started live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook.\nSep 19 16:24:47 ip-10-0-1-129 live-migration-webhook[144215]: 2026/09/19 16:24:47 INFO live-migration-webhook listening addr=:8080 nova_url=http://10.108.102.209:8774/v2.1 node_hosts=\"[ip-10-0-1-129.ap-northeast-2.compute.internal ip-10-0-1-174.ap-northeast-2.compute.internal]\"\nSep 19 16:24:47 ip-10-0-1-129 systemd[1]: Started live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook.\nSep 19 16:24:47 ip-10-0-1-129 live-migration-webhook[144215]: 2026/09/19 16:24:47 INFO live-migration-webhook listening addr=:8080 nova_url=http://10.108.102.209:8774/v2.1 node_hosts=\"[ip-10-0-1-129.ap-northeast-2.compute.internal ip-10-0-1-174.ap-northeast-2.compute.internal]\"\nlocal curl status: 200\n",
+    "StdErr": "Error from server (NotFound): secrets \"keystone-admin\" not found\nRunning as unit: live-migration-webhook.service; invocation ID: f267d484e1b54058b76161728c93c3cb\n"
+}
+{
+    "Status": "Success",
+    "StdOut": "glance-keystone-admin                Opaque               9      56m\nglance-keystone-test                 Opaque               9      56m\nglance-keystone-user                 Opaque               9      56m\nkeystone-credential-keys             Opaque               2      58m\nkeystone-db-admin                    Opaque               1      58m\nkeystone-db-user                     Opaque               1      58m\nkeystone-etc                         Opaque               10     58m\nkeystone-fernet-keys                 Opaque               2      58m\nkeystone-keystone-admin              Opaque               9      58m\nkeystone-keystone-test               Opaque               9      58m\nkeystone-rabbitmq-admin              Opaque               1      58m\nkeystone-rabbitmq-user               Opaque               1      58m\nneutron-keystone-admin               Opaque               9      47m\nneutron-keystone-designate           Opaque               9      47m\nneutron-keystone-ironic              Opaque               9      47m\nneutron-keystone-nova                Opaque               9      47m\nneutron-keystone-placement           Opaque               9      47m\nneutron-keystone-test                Opaque               9      47m\nneutron-keystone-user                Opaque               9      47m\nnova-keystone-admin                  Opaque               9      50m\nnova-keystone-cinder                 Opaque               9      50m\nnova-keystone-ironic                 Opaque               9      50m\nnova-keystone-neutron                Opaque               9      50m\nnova-keystone-placement              Opaque               9      50m\nnova-keystone-service                Opaque               9      50m\nnova-keystone-test                   Opaque               9      50m\nnova-keystone-user                   Opaque               9      50m\nplacement-keystone-admin             Opaque               9      51m\nplacement-keystone-user              Opaque               9      51m\nsh.helm.release.v1.keystone.v1       helm.sh/release.v1   1      58m\nglance-db-admin                      Opaque               1      56m\nglance-keystone-admin                Opaque               9      56m\nglance-rabbitmq-admin                Opaque               1      56m\nkeystone-db-admin                    Opaque               1      58m\nkeystone-keystone-admin              Opaque               9      58m\nkeystone-rabbitmq-admin              Opaque               1      58m\nmariadb-dbadmin-password             Opaque               1      61m\nneutron-db-admin                     Opaque               1      47m\nneutron-keystone-admin               Opaque               9      47m\nneutron-rabbitmq-admin               Opaque               1      47m\nnova-db-admin                        Opaque               1      50m\nnova-db-api-admin                    Opaque               1      50m\nnova-db-cell0-admin                  Opaque               1      50m\nnova-keystone-admin                  Opaque               9      50m\nnova-rabbitmq-admin                  Opaque               2      50m\nplacement-db-admin                   Opaque               1      51m\nplacement-keystone-admin             Opaque               9      51m\nrabbitmq-admin-user                  Opaque               3      59m\n",
+    "StdErr": ""
+}
+{
+    "Status": "Success",
+    "StdOut": "{\n    \"OS_AUTH_URL\": \"<redacted>\",\n    \"OS_DEFAULT_DOMAIN\": \"<redacted>\",\n    \"OS_INTERFACE\": \"<redacted>\",\n    \"OS_PASSWORD\": \"<redacted>\",\n    \"OS_PROJECT_DOMAIN_NAME\": \"<redacted>\",\n    \"OS_PROJECT_NAME\": \"<redacted>\",\n    \"OS_REGION_NAME\": \"<redacted>\",\n    \"OS_USERNAME\": \"<redacted>\",\n    \"OS_USER_DOMAIN_NAME\": \"<redacted>\"\n}\n",
+    "StdErr": ""
+}
+{
+    "Status": "Success",
+    "StdOut": "Failed to stop live-migration-webhook.service: Unit live-migration-webhook.service not loaded.\nkeystone_ip=10.97.104.246 nova_ip=10.108.102.209 pw_len=8\n● live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook\n     Loaded: loaded (/run/systemd/transient/live-migration-webhook.service; transient)\n  Transient: yes\n     Active: active (running) since Sat 2026-09-19 16:25:47 UTC; 2s ago\n   Main PID: 146117 (live-migration-)\n      Tasks: 6 (limit: 34583)\n     Memory: 1.2M (peak: 1.7M)\n        CPU: 3ms\n     CGroup: /system.slice/live-migration-webhook.service\n             └─146117 /opt/live-migration-webhook/live-migration-webhook\n\nSep 19 16:25:47 ip-10-0-1-129 systemd[1]: Started live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook.\nSep 19 16:25:47 ip-10-0-1-129 live-migration-webhook[146117]: 2026/09/19 16:25:47 INFO live-migration-webhook listening addr=:8080 nova_url=http://10.108.102.209:8774/v2.1 node_hosts=\"[ip-10-0-1-129.ap-northeast-2.compute.internal ip-10-0-1-174.ap-northeast-2.compute.internal]\"\nSep 19 16:24:47 ip-10-0-1-129 systemd[1]: Started live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook.\nSep 19 16:24:47 ip-10-0-1-129 live-migration-webhook[144215]: 2026/09/19 16:24:47 INFO live-migration-webhook listening addr=:8080 nova_url=http://10.108.102.209:8774/v2.1 node_hosts=\"[ip-10-0-1-129.ap-northeast-2.compute.internal ip-10-0-1-174.ap-northeast-2.compute.internal]\"\nSep 19 16:25:03 ip-10-0-1-129 systemd[1]: Stopping live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook...\nSep 19 16:25:03 ip-10-0-1-129 systemd[1]: live-migration-webhook.service: Deactivated successfully.\nSep 19 16:25:03 ip-10-0-1-129 systemd[1]: Stopped live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook.\nSep 19 16:25:47 ip-10-0-1-129 systemd[1]: Started live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook.\nSep 19 16:25:47 ip-10-0-1-129 live-migration-webhook[146117]: 2026/09/19 16:25:47 INFO live-migration-webhook listening addr=:8080 nova_url=http://10.108.102.209:8774/v2.1 node_hosts=\"[ip-10-0-1-129.ap-northeast-2.compute.internal ip-10-0-1-174.ap-northeast-2.compute.internal]\"\n",
+    "StdErr": "Running as unit: live-migration-webhook.service; invocation ID: 56e53b1f18ae4c7a9d022a0572c365f6\n"
+}
+{
+    "Status": "Success",
+    "StdOut": "token_len=183\n        \"name\": \"test-vm\",\n        \"status\": \"ACTIVE\",\n                \"name\": \"default\"\n        \"OS-EXT-SRV-ATTR:host\": \"ip-10-0-1-174.ap-northeast-2.compute.internal\",\n",
+    "StdErr": ""
+}
+{
+    "Status": "Failed",
+    "StdOut": "NAME                            READY   STATUS    RESTARTS   AGE     IP              NODE            NOMINATED NODE   READINESS GATES\nalertmanager-58c5b8dffb-zlkhf   1/1     Running   0          7m37s   192.168.201.4   ip-10-0-1-174   <none>           <none>\nprometheus-64bc98dcf6-k87tz     1/1     Running   0          7m36s   192.168.201.5   ip-10-0-1-174   <none>           <none>\nroute:\n  receiver: live-migration-webhook\n  group_by: [alertname, instance_uuid]\n  group_wait: 10s\n  group_interval: 30s\n  repeat_interval: 1h\nreceivers:\n  - name: live-migration-webhook\n    webhook_configs:\n      - url: http://10.0.1.129:8080/webhook\n        send_resolved: false\n---rules---\ngroups:\n  - name: qemu-contention\n    rules:\n      - alert: VMCPUPressureHigh\n        expr: rate(openstack_vm_cpu_pressure_stall_seconds_total{type=\"some\"}[1m]) > 0.005\n        for: 30s\n        labels: {severity: warning}\n        annotations:\n          instance_uuid: '{{ $labels.instance_uuid }}'\n          node: '{{ $labels.node }}'\n---deploy exists---\nError from server (NotFound): deployments.apps \"cpu-hog\" not found\n",
+    "StdErr": "failed to run commands: exit status 1"
+}
+{
+    "Status": "Success",
+    "StdOut": "deployment.apps/cpu-hog created\nNAME                       READY   STATUS              RESTARTS   AGE   IP       NODE            NOMINATED NODE   READINESS GATES\ncpu-hog-7d64d9b6cd-dgj7v   0/1     ContainerCreating   0          0s    <none>   ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-fnw7z   0/1     ContainerCreating   0          0s    <none>   ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-rw487   0/1     ContainerCreating   0          0s    <none>   ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-sp99t   0/1     ContainerCreating   0          0s    <none>   ip-10-0-1-174   <none>           <none>\n",
+    "StdErr": ""
+}
+{
+    "Status": "Success",
+    "StdOut": "NAME                       READY   STATUS    RESTARTS   AGE   IP              NODE            NOMINATED NODE   READINESS GATES\ncpu-hog-7d64d9b6cd-dgj7v   1/1     Running   0          57s   192.168.201.8   ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-fnw7z   1/1     Running   0          57s   192.168.201.6   ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-rw487   1/1     Running   0          57s   192.168.201.9   ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-sp99t   1/1     Running   0          57s   192.168.201.7   ip-10-0-1-174   <none>           <none>\nprom_ip=10.109.200.43\nuuid= da91d986-a8ad-48d2-b5ad-9000fff723a0 rate= 0.002029454545454546\n",
+    "StdErr": ""
+}
+{
+    "Status": "Success",
+    "StdOut": "deployment.apps/cpu-hog scaled\nNAME                       READY   STATUS              RESTARTS   AGE   IP              NODE            NOMINATED NODE   READINESS GATES\ncpu-hog-7d64d9b6cd-b6n6d   0/1     ContainerCreating   0          0s    <none>          ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-dgj7v   1/1     Running             0          67s   192.168.201.8   ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-fnw7z   1/1     Running             0          67s   192.168.201.6   ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-kfbpn   0/1     ContainerCreating   0          0s    <none>          ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-qt7jn   0/1     ContainerCreating   0          0s    <none>          ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-rw487   1/1     Running             0          67s   192.168.201.9   ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-sp99t   1/1     Running             0          67s   192.168.201.7   ip-10-0-1-174   <none>           <none>\ncpu-hog-7d64d9b6cd-tkmvt   0/1     ContainerCreating   0          0s    <none>          ip-10-0-1-174   <none>           <none>\n",
+    "StdErr": ""
+}
+=== poll iteration 1 ===
+
+=== poll iteration 2 ===
+
+=== manual poll @ 2026-09-19T16:30:35Z ===
+TS=16:30:09
+RATE 0.007226109090909085
+ALERT VMCPUPressureHigh active da91d986-a8ad-48d2-b5ad-9000fff723a0
+Sep 19 16:29:58 ip-10-0-1-129 live-migration-webhook[146117]: 2026/09/19 16:29:58 INFO migrate action accepted instance_uuid=da91d986-a8ad-48d2-b5ad-9000fff723a0 from_host=ip-10-0-1-174.ap-northeast-2.compute.internal to_host=ip-10-0-1-129.ap-northeast-2.compute.internal
+Sep 19 16:29:58 ip-10-0-1-129 live-migration-webhook[146117]: 2026/09/19 16:29:58 INFO live migration triggered instance_uuid=da91d986-a8ad-48d2-b5ad-9000fff723a0
+HOST ip-10-0-1-174.ap-northeast-2.compute.internal STATUS MIGRATING
+=== poll iteration 1 @ 16:31:01 ===
+TS=16:30:59
+RATE 0.0019194291966666633
+RATE 0.0010970305777777776
+Sep 19 16:29:58 ip-10-0-1-129 live-migration-webhook[146117]: 2026/09/19 16:29:58 INFO migrate action accepted instance_uuid=da91d986-a8ad-48d2-b5ad-9000fff723a0 from_host=ip-10-0-1-174.ap-northeast-2.compute.internal to_host=ip-10-0-1-129.ap-northeast-2.compute.internal
+Sep 19 16:29:58 ip-10-0-1-129 live-migration-webhook[146117]: 2026/09/19 16:29:58 INFO live migration triggered instance_uuid=da91d986-a8ad-48d2-b5ad-9000fff723a0
+HOST ip-10-0-1-129.ap-northeast-2.compute.internal STATUS ACTIVE
+{"itemNotFound": {"code": 404, "message": "The resource could not be found."}}
+FINAL_HOST ip-10-0-1-129.ap-northeast-2.compute.internal STATUS ACTIVE
+
+deployment.apps "cpu-hog" deleted from default namespace
+Sep 19 16:24:47 ip-10-0-1-129 systemd[1]: Started live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook.
+Sep 19 16:24:47 ip-10-0-1-129 live-migration-webhook[144215]: 2026/09/19 16:24:47 INFO live-migration-webhook listening addr=:8080 nova_url=http://10.108.102.209:8774/v2.1 node_hosts="[ip-10-0-1-129.ap-northeast-2.compute.internal ip-10-0-1-174.ap-northeast-2.compute.internal]"
+Sep 19 16:25:03 ip-10-0-1-129 systemd[1]: Stopping live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook...
+Sep 19 16:25:03 ip-10-0-1-129 systemd[1]: live-migration-webhook.service: Deactivated successfully.
+Sep 19 16:25:03 ip-10-0-1-129 systemd[1]: Stopped live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook.
+Sep 19 16:25:47 ip-10-0-1-129 systemd[1]: Started live-migration-webhook.service - /opt/live-migration-webhook/live-migration-webhook.
+Sep 19 16:25:47 ip-10-0-1-129 live-migration-webhook[146117]: 2026/09/19 16:25:47 INFO live-migration-webhook listening addr=:8080 nova_url=http://10.108.102.209:8774/v2.1 node_hosts="[ip-10-0-1-129.ap-northeast-2.compute.internal ip-10-0-1-174.ap-northeast-2.compute.internal]"
+Sep 19 16:29:58 ip-10-0-1-129 live-migration-webhook[146117]: 2026/09/19 16:29:58 INFO migrate action accepted instance_uuid=da91d986-a8ad-48d2-b5ad-9000fff723a0 from_host=ip-10-0-1-174.ap-northeast-2.compute.internal to_host=ip-10-0-1-129.ap-northeast-2.compute.internal
+Sep 19 16:29:58 ip-10-0-1-129 live-migration-webhook[146117]: 2026/09/19 16:29:58 INFO live migration triggered instance_uuid=da91d986-a8ad-48d2-b5ad-9000fff723a0
+
+{
+    "migrations": [
+        {
+            "id": 2,
+            "uuid": "d983eaca-942a-48b4-8c53-35effa5899cc",
+            "source_compute": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+            "dest_compute": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+            "source_node": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+            "dest_node": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+            "dest_host": null,
+            "old_instance_type_id": 2,
+            "new_instance_type_id": 2,
+            "instance_uuid": "da91d986-a8ad-48d2-b5ad-9000fff723a0",
+            "status": "completed",
+            "migration_type": "live-migration",
+            "user_id": "bf1adce05d6e4bb08244eda1d26e9c5d",
+            "project_id": "d30aeedd264e4c32a5de73d9b99d791b",
+            "created_at": "2026-09-19T16:29:51.000000",
+            "updated_at": "2026-09-19T16:30:22.000000"
+        },
+        {
+            "id": 1,
+            "uuid": "cd116063-2aba-4664-a327-6b4de9345c65",
+            "source_compute": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+            "dest_compute": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+            "source_node": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+            "dest_node": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+            "dest_host": null,
+            "old_instance_type_id": 2,
+            "new_instance_type_id": 2,
+            "instance_uuid": "da91d986-a8ad-48d2-b5ad-9000fff723a0",
+            "status": "completed",
+            "migration_type": "live-migration",
+            "user_id": "bf1adce05d6e4bb08244eda1d26e9c5d",
+            "project_id": "d30aeedd264e4c32a5de73d9b99d791b",
+            "created_at": "2026-09-19T16:14:42.000000",
+            "updated_at": "2026-09-19T16:15:18.000000"
+        }
+    ]
+}
+
+
+=== SUMMARY ===
+- webhook build: go1.22.2, /opt/live-migration-webhook/live-migration-webhook on node-a, systemd-run transient unit, ADMIN_PW read at runtime from k8s secret keystone-keystone-admin (no plaintext in commands)
+- keystone-api ClusterIP 10.97.104.246:5000, nova-api ClusterIP 10.108.102.209:8774 (this session)
+- cpu-hog: replicas=4 -> rate ~0.00203 (below 0.005 threshold) -> scaled to replicas=8 -> rate ~0.0072-0.0074 (above threshold)
+- Alert VMCPUPressureHigh fired (state=active) for instance_uuid=da91d986-a8ad-48d2-b5ad-9000fff723a0
+- webhook log 2026-09-19T16:29:58Z: "migrate action accepted" from_host=ip-10-0-1-174 to_host=ip-10-0-1-129; "live migration triggered"
+- Nova os-migrations record id=2: created_at=2026-09-19T16:29:51, updated_at=2026-09-19T16:30:22, status=completed, migration_type=live-migration, source=ip-10-0-1-174, dest=ip-10-0-1-129 (~31s migration duration)
+- final server state: OS-EXT-SRV-ATTR:host=ip-10-0-1-129.ap-northeast-2.compute.internal, status=ACTIVE
+- cpu-hog deployment deleted after verification (default namespace)

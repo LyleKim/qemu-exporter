@@ -1,0 +1,49 @@
+# Alertmanager: receives Prometheus alerts (VMCPUPressureHigh) and forwards
+# firing alerts to live-migration-webhook (L5), which runs as a plain host
+# process on node-a (not a k8s pod -- no container registry available for
+# this prototype), reachable at its private IP.
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: alertmanager-config, namespace: monitoring}
+data:
+  alertmanager.yml: |
+    route:
+      receiver: live-migration-webhook
+      group_by: [alertname, instance_uuid]
+      group_wait: 10s
+      group_interval: 30s
+      repeat_interval: 1h
+    receivers:
+      - name: live-migration-webhook
+        webhook_configs:
+          - url: http://10.0.1.129:8080/webhook
+            send_resolved: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: alertmanager, namespace: monitoring}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: alertmanager}}
+  template:
+    metadata: {labels: {app: alertmanager}}
+    spec:
+      containers:
+        - name: alertmanager
+          image: prom/alertmanager:v0.27.0
+          args: [--config.file=/etc/alertmanager/alertmanager.yml, --storage.path=/alertmanager]
+          ports: [{containerPort: 9093}]
+          volumeMounts:
+            - {name: config, mountPath: /etc/alertmanager}
+            - {name: data, mountPath: /alertmanager}
+          resources: {requests: {cpu: 10m, memory: 32Mi}, limits: {cpu: 100m, memory: 128Mi}}
+      volumes:
+        - {name: config, configMap: {name: alertmanager-config}}
+        - {name: data, emptyDir: {}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: alertmanager, namespace: monitoring}
+spec:
+  selector: {app: alertmanager}
+  ports: [{name: web, port: 9093, targetPort: 9093}]

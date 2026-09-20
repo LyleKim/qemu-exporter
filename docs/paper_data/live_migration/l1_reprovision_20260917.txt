@@ -1,0 +1,112 @@
+L1 재기동 (2026-09-17) — 지난 세션(2026-09-16) L3 삽질 후 make down으로 삭제된 환경을
+처음부터(L1) 다시 띄운 기록. terraform 코드/SG 룰은 이미 지난 세션에서 반영되어 있어
+새로 작성하지 않고 `make up`으로 재기동만 했다.
+================================================================================
+
+--- terraform state 확인 (재기동 전) ---
+$ cat terraform/terraform.tfstate
+{
+  "version": 4, "serial": 100,
+  "lineage": "b323fad8-f337-7d0d-ad12-bb4c512bf1e2",
+  "outputs": {}, "resources": [], "check_results": null
+}
+(state 비어있음 — make down이 정상적으로 다 지웠음을 확인)
+
+--- git status (terraform 레포, 별개 git) ---
+ M Makefile
+ M terraform/ec2.tf
+ M terraform/outputs.tf
+ M terraform/vpc.tf
+?? osh-node-env-handoff.md
+?? terraform/user_data_compute.sh
+(지난 세션 수정사항 그대로 남아있음 — node-b 리소스, SG 룰, osh-deploy/osh-vm 타겟 등)
+
+--- terraform init ---
+$ terraform init -input=false
+Terraform has been successfully initialized!
+(fresh init 아님 — 기존 .terraform 캐시 재사용, provider 재다운로드 없음)
+
+--- terraform plan (apply 전) ---
+Plan: 11 to add, 0 to change, 0 to destroy.
+리소스 목록 (grep "^  # " plan output):
+  aws_iam_instance_profile.ssm
+  aws_iam_role.ssm
+  aws_iam_role_policy_attachment.ssm_core
+  aws_instance.compute       (node-b)
+  aws_instance.node          (node-a)
+  aws_internet_gateway.main
+  aws_route_table.public
+  aws_route_table_association.public
+  aws_security_group.node
+  aws_subnet.public
+  aws_vpc.main
+→ 지난 세션(2026-09-16, l1_terraform_2node.txt)의 "11 to add, 0 to change, 0 to destroy"와
+  정확히 일치. terraform 코드가 그대로임을 확인.
+
+--- vpc.tf 보안그룹 룰 재확인 (apply 전) ---
+ingress 49152-49215 tcp self=true (live-migration 포트) — 있음
+ingress 0-0 protocol=-1 self=true "all traffic between node-a/node-b" — 있음 (L2에서 추가된 룰,
+  이미 코드에 반영되어 있음을 확인, 재작성 불필요)
+
+--- make up (terraform apply -auto-approve) ---
+Apply complete! Resources: 11 added, 0 changed, 0 destroyed.
+
+Outputs:
+  compute_instance_id = "i-027146e2336a9f23f"   (node-b)
+  compute_public_ip   = "43.201.16.119"
+  instance_id         = "i-07c9a9e048b7d6e14"   (node-a)
+  public_ip           = "54.180.248.121"
+  region              = "ap-northeast-2"
+
+(주: 지난 세션과 인스턴스 ID/IP는 당연히 다름 — 신규 생성)
+
+--- 부트스트랩 대기 (~4분) 후 make ready / make ready-compute ---
+node-a (i-07c9a9e048b7d6e14): K8S_READY
+node-b (i-027146e2336a9f23f): K8S_READY
+(둘 다 AWS-StartInteractiveCommand 세션 종료 시 "Cannot perform start session: EOF" 로그가
+ 붙는데 이는 기존 known issue — l1_terraform_2node.txt에 기록된 세션매니저 플러그인 호환성
+ 문제와 동일, K8S_READY 판정 자체엔 영향 없음)
+
+--- cgroup v2 / PSI 재확인 (AWS-RunShellScript, non-interactive로 대체) ---
+node-a (i-07c9a9e048b7d6e14):
+  stat -fc %T /sys/fs/cgroup -> cgroup2fs
+  ls /proc/pressure/        -> cpu io memory
+
+node-b (i-027146e2336a9f23f):
+  stat -fc %T /sys/fs/cgroup -> cgroup2fs
+  ls /proc/pressure/        -> cpu io memory
+
+--- make osh-deploy (node-a, OSH 2026.1.0 compute-core stack 설치) ---
+$ make osh-deploy
+(SSM send-command + polling, ~수 분 소요)
+status=Success (exit code 0)
+차트 빌드/린트/설치 로그(helm-toolkit, horizon, ironic, keystone, ... 등 OSH 전체 차트) 정상 진행,
+에러 없음.
+
+--- make osh-vm (CirrOS 테스트 VM 부팅으로 검증) ---
+$ make osh-vm
+status=Success (exit code 0)
+스크립트(osh/cirros-boot.sh) 진행 순서: osc(openstack-client) 파드 기동 → compute
+service/hypervisor/network agent sanity → cirros 이미지 업로드 → m1.tiny flavor →
+demo-net/demo-subnet 생성 → test-vm 부팅(flavor=m1.tiny, image=cirros) → ACTIVE까지 최대
+4분 폴링.
+(주: Makefile의 run_osh_script가 SSM StandardOutputContent를 `tail -50`으로 캡처하기 때문에
+"boot test-vm" 단계의 긴 테이블 출력이 뒤쪽 wait-loop/FINAL 섹션을 밀어냄 — 로그에는 서버
+생성 직후 상태(task_state=scheduling, vm_state=building)까지만 보임)
+
+--- test-vm 최종 상태 직접 재확인 (osc 파드, tail 잘림 보완) ---
+$ kubectl -n openstack exec osc -- openstack server list -f value -c ID -c Name -c Status -c Networks -c Host
+ec945434-d728-4738-ac4d-4fdf16d0ffce test-vm ACTIVE {'demo-net': ['10.10.10.241']} ip-10-0-1-88.ap-northeast-2.compute.internal
+→ ACTIVE 확인. node-a 단일 하이퍼바이저(ip-10-0-1-88)에 스케줄됨(node-b는 아직 K8s 미join,
+  L2에서 처리 예정이므로 예상된 결과).
+
+================================================================================
+L1 완료 요약 (2026-09-17)
+- node-a: instance_id=i-07c9a9e048b7d6e14, public_ip=54.180.248.121 (control+data plane)
+- node-b: instance_id=i-027146e2336a9f23f, public_ip=43.201.16.119 (compute-only, K8s 미join)
+- region: ap-northeast-2
+- terraform: 11 added / 0 changed / 0 destroyed (지난 세션과 리소스 구성 100% 일치)
+- cgroup v2(cgroup2fs) + PSI(cpu io memory): 양쪽 노드 확인
+- OSH 배포(osh-deploy) + test-vm 부팅(osh-vm): 성공, test-vm ACTIVE(10.10.10.241, node-a)
+- 과금 시작: $1.6/h (2노드) — 세션 종료 시 양쪽 make down 필요
+- 다음 단계: L2(node-b K8s join) — 별도 서브에이전트가 담당, 이 세션에서는 진행하지 않음

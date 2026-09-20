@@ -1,0 +1,334 @@
+# L1 - 2-node reprovision raw log
+# Date: 2026-09-20
+# node-a: i-0533a052301376202 (15.165.77.116, private 10.0.1.129)
+# node-b (compute): i-0d466ea20e5b18c00 (43.203.209.162, private 10.0.1.174)
+# region: ap-northeast-2
+2026-09-19T15:21:50Z INIT log created
+
+=== 2026-09-20 00:21:58 KST CMD: check node-a bootstrap status ===
+CMD_ID=101019c3-a3de-458b-9f86-8ab2ad74adfc
+K8S_READY
+---TAIL---
++ grep -qx Ready
++ sleep 5
++ for i in $(seq 1 60)
++ awk '{print $2}'
++ grep -qx Ready
++ kubectl get nodes --no-headers
++ sleep 5
++ for i in $(seq 1 60)
++ awk '{print $2}'
++ grep -qx Ready
++ kubectl get nodes --no-headers
++ sleep 5
++ for i in $(seq 1 60)
++ kubectl get nodes --no-headers
++ awk '{print $2}'
++ grep -qx Ready
++ sleep 5
++ for i in $(seq 1 60)
++ kubectl get nodes --no-headers
++ awk '{print $2}'
++ grep -qx Ready
++ sleep 5
++ for i in $(seq 1 60)
++ awk '{print $2}'
++ grep -qx Ready
++ kubectl get nodes --no-headers
++ echo 'Node is Ready.'
+Node is Ready.
++ break
++ touch /var/log/user-data-complete
++ echo ================================================================
+================================================================
++ echo 'user_data done. Single-node Kubernetes is up.'
+user_data done. Single-node Kubernetes is up.
++ echo 'Verify from your laptop:  make status'
+Verify from your laptop:  make status
++ echo 'Or open a shell:          make ssm'
+Or open a shell:          make ssm
++ echo ================================================================
+================================================================
+
+
+=== 2026-09-20 00:22:23 KST CMD: node-a boot time & user-data-complete mtime, k8s node status, cgroup2fs/PSI check ===
+CMD_ID=a81af65b-9df1-4c5d-a526-784936776ac3
+---UPTIME---
+2026-09-19 15:17:44
+---COMPLETE-MTIME---
+2026-09-19 15:20:02.248869939 +0000
+---NODES---
+NAME            STATUS   ROLES           AGE     VERSION    INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION   CONTAINER-RUNTIME
+ip-10-0-1-129   Ready    control-plane   3m14s   v1.34.11   10.0.1.129    <none>        Ubuntu 24.04.4 LTS   7.0.0-1012-aws   containerd://2.2.1
+---CGROUP---
+cgroup2fs
+---PSI---
+cpu
+io
+memory
+
+
+=== 2026-09-20 00:22:48 KST CMD: node-b bootstrap status + cgroup2fs/PSI check ===
+CMD_ID=2fd61404-bfe4-4af9-b346-2bd972648114
+K8S_READY
+---UPTIME---
+2026-09-19 15:17:43
+---CGROUP---
+cgroup2fs
+---PSI---
+cpu
+io
+memory
+---TAIL---
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
++ apt-mark hold kubelet kubeadm kubectl
+kubelet set on hold.
+kubeadm set on hold.
+kubectl set on hold.
++ touch /var/log/user-data-complete
++ echo ================================================================
+================================================================
++ echo 'user_data done. node-b has K8s binaries installed, not yet joined to a cluster.'
+user_data done. node-b has K8s binaries installed, not yet joined to a cluster.
++ echo 'Verify from your laptop:  make ready-compute'
+Verify from your laptop:  make ready-compute
++ echo 'Or open a shell:          make ssm-compute'
+Or open a shell:          make ssm-compute
++ echo ================================================================
+================================================================
+
+
+=== 2026-09-20 00:23:22 KST CMD: make osh-deploy (node-a) - START (timeout 3600s) ===
+Dispatching osh/deploy.sh to i-0533a052301376202 in ap-northeast-2 (timeout=3600s)...
+CMD_ID=0535458d-a38e-41b6-881f-b0c463e160fe
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+
+=== 2026-09-20 00:37:23 KST NOTE: osh-deploy still InProgress at coordinator check-in (~13min elapsed of 3600s timeout) ===
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=InProgress
+  status=Success
+===== STDOUT (tail) =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f helm-toolkit/Makefile ]; then make -C helm-toolkit; fi
+if grep -qE "^dependencies:" helm-toolkit/Chart.yaml; then helm dep up helm-toolkit; fi
+Saving 0 charts
+Deleting outdated charts
+if [ -d helm-toolkit ]; then helm lint helm-toolkit; fi
+==> Linting helm-toolkit
+
+1 chart(s) linted, 0 chart(s) failed
+if [ -d helm-toolkit ]; then \
+	helm package helm-toolkit --version $(tools/chart_version.sh helm-toolkit 2026.1.0) ; \
+fi
+Successfully packaged chart and saved it to: /opt/openstack-helm/openstack-helm/helm-toolkit-2026.1.0+c665eed.tgz
+make[1]: Leaving directory '/opt/openstack-helm/openstack-helm'
+
+===== Processing [horizon] chart =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f horizon/Makefile ]; then make -C horizon; fi
+if grep -qE "^dependencies:" horizon/Chart.yaml; then helm dep up horizon; fi
+Saving 1 charts
+Deleting outdated charts
+if [ -d horizon ]; then helm lint horizon; fi
+==> Linting horizon
+
+1 chart(s) linted, 0 chart(s) failed
+if [ -d horizon ]; then \
+	helm package horizon --version $(tools/chart_version.sh horizon 2026.1.0) ; \
+fi
+Successfully packaged chart and saved it to: /opt/openstack-helm/openstack-helm/horizon-2026.1.0+c665eed.tgz
+make[1]: Leaving directory '/opt/openstack-helm/openstack-helm'
+
+===== Processing [ironic] chart =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f ironic/Makefile ]; then make -C ironic; fi
+if grep -qE "^dependencies:" ironic/Chart.yaml; then helm dep up ironic; fi
+Saving 1 charts
+Deleting outdated charts
+if [ -d ironic ]; then helm lint ironic; fi
+==> Linting ironic
+
+1 chart(s) linted, 0 chart(s) failed
+if [ -d ironic ]; then \
+	helm package ironic --version $(tools/chart_version.sh ironic 2026.1.0) ; \
+fi
+Successfully packaged chart and saved it to: /opt/openstack-helm/openstack-helm/ironic-2026.1.0+c665eed.tgz
+make[1]: Leaving directory '/opt/openstack-helm/openstack-helm'
+
+===== Processing [keystone] chart =====
+make[1]: Entering directory '/opt/openstack-helm/openstack-helm'
+if [ -f keystone/Makefile ]; then make -C keyston--output truncated--
+EXIT_CODE=0
+
+=== 2026-09-20 00:43:19 KST NOTE: osh-deploy background task reported Success/exit 0. Verifying actual pod state directly on node-a (script's own exit code is not trustworthy due to '|| true' on wait-for-pods) ===
+---PODS-STATUS-COUNT---
+     36 Completed
+     22 Running
+---NON-RUNNING-NON-COMPLETED---
+---HELM-LIST---
+10
+
+
+=== 2026-09-20 00:43:44 KST VERIFIED: osh-deploy pods all Running/Completed (36 Completed, 22 Running), 10 helm releases, no stuck pods ===
+
+=== 2026-09-20 00:43:44 KST CMD: make osh-vm (node-a) - START (timeout 900s) ===
+Dispatching osh/cirros-boot.sh to i-0533a052301376202 in ap-northeast-2 (timeout=900s)...
+CMD_ID=d8469025-c31f-4866-8de6-6e7a5a82d5c5
+  status=InProgress
+  status=InProgress
+  status=Success
+===== STDOUT (tail) =====
+| ipv6_ra_mode         | None                                 |
+| name                 | demo-subnet                          |
+| network_id           | 97642159-ea3e-4e10-a45c-4dbe275a23d5 |
+| project_id           | d30aeedd264e4c32a5de73d9b99d791b     |
+| revision_number      | 0                                    |
+| router:external      | False                                |
+| segment_id           | None                                 |
+| service_types        |                                      |
+| subnetpool_id        | None                                 |
+| tags                 |                                      |
+| updated_at           | 2026-09-19T15:44:12Z                 |
++----------------------+--------------------------------------+
+===== boot test-vm =====
++-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field                               | Value                                                                                                                                                                                   |
++-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| OS-DCF:diskConfig                   | MANUAL                                                                                                                                                                                  |
+| OS-EXT-AZ:availability_zone         | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:host                | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:hostname            | test-vm                                                                                                                                                                                 |
+| OS-EXT-SRV-ATTR:hypervisor_hostname | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:instance_name       | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:kernel_id           | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:launch_index        | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:ramdisk_id          | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:reservation_id      | r-xnp7kgm5                                                                                                                                                                              |
+| OS-EXT-SRV-ATTR:root_device_name    | None                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:user_data           | None                                                                                                                                                                                    |
+| OS-EXT-STS:power_state              | N/A                                                                                                                                                                                     |
+| OS-EXT-STS:task_state               | scheduling                                                                                                                                                                              |
+| OS-EXT-STS:vm_state                 | building                                                                                                                                                                                |
+| OS-SRV-USG:launched_at              | None                                                                                                                                                                                    |
+| OS-SRV-USG:terminated_at            | None                                                                                                                                                                                    |
+| accessIPv4                          | None                                                                                                                                                                                    |
+| accessIPv6                          | None                                                                                                                                                                                    |
+| addresses                           | N/A                                                                                                                                                                                     |
+| adminPass                           | kiJe5otGNDWr                                                                                                                                                                            |
+| config_drive                        | None                                                                                                                                                                                    |
+| created                             | 2026-09-19T15:44:19Z                                                                                                                                                                    |
+| description                         | None                                                                                                                                                                                    |
+| flavor                              | description=, disk='1', ephemeral='0', , id='m1.tiny', is_disabled=, is_public='True', location=, name='m1.tiny', original_name='m1.tiny', ram='512', rxtx_factor=, swap='0', vcpus='1' |
+| hostId                              | None                                                                                                                                                                                    |
+| host_status                         | None                                                                                                                                                                                    |
+| id                                  | da91d986-a8ad-48d2-b5ad-9000fff723a0                                                                                                                                                    |
+| image                               | cirros (9b39fd54-83b4-436d-982e-e2184270ee6d)                                                                                                                                           |
+| key_name                            | None                                                                                                                                                                                    |
+| locked                              | None                                                                                                                                                                                    |
+| locked_reason                       | None                                                                                                                                                                                    |
+| name                                | test-vm                                                                                                                                                                                 |
+| pinned_availability_zone            | None                                                                                                                                                    --output truncated--
+EXIT_CODE=0
+
+=== 2026-09-20 00:45:04 KST NOTE: osh-vm script returned exit 0 but snapshot showed vm_state=building/task_state=scheduling (id da91d986-a8ad-48d2-b5ad-9000fff723a0) — script does not wait for ACTIVE. Verifying independently. ===
+
+=== 2026-09-20 00:45:49 KST CMD: independent verify - openstack server show test-vm via osc pod ===
+NAME   READY   STATUS    RESTARTS   AGE
+osc    1/1     Running   0          2m1s
+---SHOW---
++-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field                               | Value                                                                                                                                                                                   |
++-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| OS-DCF:diskConfig                   | MANUAL                                                                                                                                                                                  |
+| OS-EXT-AZ:availability_zone         | nova                                                                                                                                                                                    |
+| OS-EXT-SRV-ATTR:host                | ip-10-0-1-129.ap-northeast-2.compute.internal                                                                                                                                           |
+| OS-EXT-SRV-ATTR:hostname            | test-vm                                                                                                                                                                                 |
+| OS-EXT-SRV-ATTR:hypervisor_hostname | ip-10-0-1-129.ap-northeast-2.compute.internal                                                                                                                                           |
+| OS-EXT-SRV-ATTR:instance_name       | instance-00000001                                                                                                                                                                       |
+| OS-EXT-SRV-ATTR:kernel_id           |                                                                                                                                                                                         |
+| OS-EXT-SRV-ATTR:launch_index        | 0                                                                                                                                                                                       |
+| OS-EXT-SRV-ATTR:ramdisk_id          |                                                                                                                                                                                         |
+| OS-EXT-SRV-ATTR:reservation_id      | r-xnp7kgm5                                                                                                                                                                              |
+| OS-EXT-SRV-ATTR:root_device_name    | /dev/vda                                                                                                                                                                                |
+| OS-EXT-SRV-ATTR:user_data           | None                                                                                                                                                                                    |
+| OS-EXT-STS:power_state              | Running                                                                                                                                                                                 |
+| OS-EXT-STS:task_state               | None                                                                                                                                                                                    |
+| OS-EXT-STS:vm_state                 | active                                                                                                                                                                                  |
+| OS-SRV-USG:launched_at              | 2026-09-19T15:44:35.000000                                                                                                                                                              |
+| OS-SRV-USG:terminated_at            | None                                                                                                                                                                                    |
+| accessIPv4                          |                                                                                                                                                                                         |
+| accessIPv6                          |                                                                                                                                                                                         |
+| addresses                           | demo-net=10.10.10.16                                                                                                                                                                    |
+| config_drive                        |                                                                                                                                                                                         |
+| created                             | 2026-09-19T15:44:19Z                                                                                                                                                                    |
+| description                         | None                                                                                                                                                                                    |
+| flavor                              | description=, disk='1', ephemeral='0', , id='m1.tiny', is_disabled=, is_public='True', location=, name='m1.tiny', original_name='m1.tiny', ram='512', rxtx_factor=, swap='0', vcpus='1' |
+| hostId                              | 701aff04f859ba8d6c3d491a15ccfe3e8f5f610d0ddb7ead893e4a0d                                                                                                                                |
+| host_status                         | UP                                                                                                                                                                                      |
+| id                                  | da91d986-a8ad-48d2-b5ad-9000fff723a0                                                                                                                                                    |
+| image                               | cirros (9b39fd54-83b4-436d-982e-e2184270ee6d)                                                                                                                                           |
+| key_name                            | None                                                                                                                                                                                    |
+| locked                              | False                                                                                                                                                                                   |
+| locked_reason                       | None                                                                                                                                                                                    |
+| name                                | test-vm                                                                                                                                                                                 |
+| pinned_availability_zone            | None                                                                                                                                                                                    |
+| progress                            | 0                                                                                                                                                                                       |
+| project_id                          | d30aeedd264e4c32a5de73d9b99d791b                                                                                                                                                        |
+| properties                          |                                                                                                                                                                                         |
+| scheduler_hints                     |                                                                                                                                                                                         |
+| security_groups                     | name='default'                                                                                                                                                                          |
+| server_groups                       | None                                                                                                                                                                                    |
+| status                              | ACTIVE                                                                                                                                                                                  |
+| tags                                |                                                                                                                                                                                         |
+| trusted_image_certificates          | None                                                                                                                                                                                    |
+| updated                             | 2026-09-19T15:44:35Z                                                                                                                                                                    |
+| user_id                             | bf1adce05d6e4bb08244eda1d26e9c5d                                                                                                                                                        |
+| volumes_attached                    |                                                                                                                                                                                         |
++-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+---LIST---
++--------------------------------------+---------+--------+----------------------+--------+---------+
+| ID                                   | Name    | Status | Networks             | Image  | Flavor  |
++--------------------------------------+---------+--------+----------------------+--------+---------+
+| da91d986-a8ad-48d2-b5ad-9000fff723a0 | test-vm | ACTIVE | demo-net=10.10.10.16 | cirros | m1.tiny |
++--------------------------------------+---------+--------+----------------------+--------+---------+
+
+
+=== 2026-09-20 00:46:10 KST RESULT: test-vm ACTIVE, id=da91d986-a8ad-48d2-b5ad-9000fff723a0, ip=10.10.10.16 (demo-net), host=ip-10-0-1-129 (node-a). L1 COMPLETE. ===

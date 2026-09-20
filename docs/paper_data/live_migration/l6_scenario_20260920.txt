@@ -1,0 +1,349 @@
+# L6 -- end-to-end scenario, live-migration-webhook (2026-09-20)
+# node-a = i-0533a052301376202 / ip-10-0-1-129 (control-plane + data-plane)
+# node-b = i-0d466ea20e5b18c00 / ip-10-0-1-174 (compute-only)
+# test-vm = da91d986-a8ad-48d2-b5ad-9000fff723a0, starting host = node-a (ip-10-0-1-129)
+# threshold (unchanged, per instructions -- NOT recalibrated this session) = 0.005
+# All commands run from local machine via `aws ssm start-session ... --document-name AWS-StartInteractiveCommand`
+# targeting node-a; inside that session everything runs as root against the node-a
+# kubeconfig (/etc/kubernetes/admin.conf) unless noted. Raw stdout pasted verbatim below.
+
+## Step 1 -- Baseline sample 1 (2026-09-19T16:47:08Z)
+$ date -u; PROM query PSI(some) rate + node-a OSH control-plane cpu rate
+
+Starting session with SessionId: aws-tester1-ujxpvob5xuvhlyxe2kfyd2sn5a
+2026-09-19T16:47:09Z
+PSI:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"flavor":"m1.tiny","instance":"192.168.217.63:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-129","project_id":"d30aeedd264e4c32a5de73d9b99d791b","type":"some"},"value":[1789836429.752,"0.0013116181818181808"]}]}}
+OSHCPU:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1789836429.759,"1.0347978275096124"]}]}}Cannot perform start session: EOF
+
+## Step 1 -- Baseline sample 2 (~60s after sample 1)
+
+Starting session with SessionId: aws-tester1-zl53bl3kq4voy6q6c3ylej9qta
+2026-09-19T16:48:07Z
+PSI:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"flavor":"m1.tiny","instance":"192.168.217.63:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-129","project_id":"d30aeedd264e4c32a5de73d9b99d791b","type":"some"},"value":[1789836487.767,"0.0012773636363636355"]}]}}
+OSHCPU:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1789836487.774,"1.1159583513135143"]}]}}Cannot perform start session: EOF
+
+## Step 1 -- Baseline sample 3 (~60s after sample 2)
+
+Starting session with SessionId: aws-tester1-p6banfv8rihr9jvnvd32qk2hd4
+2026-09-19T16:48:28Z
+PSI:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"flavor":"m1.tiny","instance":"192.168.217.63:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-129","project_id":"d30aeedd264e4c32a5de73d9b99d791b","type":"some"},"value":[1789836508.882,"0.0013585818181818172"]}]}}
+OSHCPU:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1789836508.889,"1.0377395990702074"]}]}}Cannot perform start session: EOF
+
+## Step 2 -- cpu-hog injection, replicas=4, nodeSelector=ip-10-0-1-129 (node-a, current test-vm host)
+$ kubectl apply -f /root/cpu-hog.yaml
+
+Starting session with SessionId: aws-tester1-tyv4l2cp5iyuvfb5v38rfn72sq
+2026-09-19T16:48:46Z
+deployment.apps/cpu-hog created
+NAME                      READY   STATUS              RESTARTS   AGE   IP       NODE            NOMINATED NODE   READINESS GATES
+cpu-hog-64949d98d-62knl   0/1     ContainerCreating   0          0s    <none>   ip-10-0-1-129   <none>           <none>
+cpu-hog-64949d98d-jrm4n   0/1     ContainerCreating   0          0s    <none>   ip-10-0-1-129   <none>           <none>
+cpu-hog-64949d98d-p9hvr   0/1     ContainerCreating   0          0s    <none>   ip-10-0-1-129   <none>           <none>
+cpu-hog-64949d98d-qdxvt   0/1     Pending             0          0s    <none>   ip-10-0-1-129   <none>           <none>
+Cannot perform start session: EOF
+
+## Step 2 -- ~30s after injection: pod status, PSI rate, node-a OSH pod stability check
+
+Starting session with SessionId: aws-tester1-zuohla78gudlfrdye5vjyfpoca
+
+
+SessionId: aws-tester1-zuohla78gudlfrdye5vjyfpoca : Plugin with name InteractiveCommands not found. Step name: InteractiveCommands
+
+
+Starting session with SessionId: aws-tester1-cidla5vzn7pt4699spvzxpeeta
+
+
+SessionId: aws-tester1-cidla5vzn7pt4699spvzxpeeta : Plugin with name InteractiveCommands not found. Step name: InteractiveCommands
+
+
+## Step 2 (cont) -- retry after local SSM session-plugin outage (switched to send-command/RunShellScript, still SSM-only, no SSH)
+Success	2026-09-19T16:50:34Z
+PODS:
+NAME                      READY   STATUS    RESTARTS   AGE    IP               NODE            NOMINATED NODE   READINESS GATES
+cpu-hog-64949d98d-62knl   1/1     Running   0          108s   192.168.217.13   ip-10-0-1-129   <none>           <none>
+cpu-hog-64949d98d-jrm4n   1/1     Running   0          108s   192.168.217.17   ip-10-0-1-129   <none>           <none>
+cpu-hog-64949d98d-p9hvr   1/1     Running   0          108s   192.168.217.16   ip-10-0-1-129   <none>           <none>
+cpu-hog-64949d98d-qdxvt   1/1     Running   0          108s   192.168.217.18   ip-10-0-1-129   <none>           <none>
+PSI:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"flavor":"m1.tiny","instance":"192.168.217.63:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-129","project_id":"d30aeedd264e4c32a5de73d9b99d791b","type":"some"},"value":[1789836634.153,"0.005319727272727275"]}]}}
+OSHPODS:
+NAME                                       READY   STATUS      RESTARTS      AGE   IP               NODE            NOMINATED NODE   READINESS GATES
+glance-api-fbc759fc6-mrcbr                 1/1     Running     0             81m   192.168.217.25   ip-10-0-1-129   <none>           <none>
+keystone-api-5fb5f79d74-6w4m2              1/1     Running     0             84m   192.168.217.15   ip-10-0-1-129   <none>           <none>
+libvirt-libvirt-default-855df              1/1     Running     0             48m   10.0.1.129       ip-10-0-1-129   <none>           <none>
+mariadb-controller-578b897b9c-pmlgt        1/1     Running     0             86m   192.168.217.10   ip-10-0-1-129   <none>           <none>
+mariadb-server-0                           1/1     Running     0             86m   192.168.217.11   ip-10-0-1-129   <none>           <none>
+memcached-memcached-0                      1/1     Running     0             84m   192.168.217.14   ip-10-0-1-129   <none>           <none>
+neutron-dhcp-agent-default-qt7qr           1/1     Running     0             71m   10.0.1.129       ip-10-0-1-129   <none>           <none>
+neutron-l3-agent-default-wwd8p             1/1     Running     0             71m   10.0.1.129       ip-10-0-1-129   <none>           <none>
+neutron-metadata-agent-default-jrsdj       1/1     Running     0             73m   10.0.1.129       ip-10-0-1-129   <none>           <none>
+neutron-netns-cleanup-cron-default-hq7w9   1/1     Running     0             73m   10.0.1.129       ip-10-0-1-129   <none>           <none>
+neutron-ovs-agent-default-dh729            1/1     Running     2 (11m ago)   73m   10.0.1.129       ip-10-0-1-129   <none>           <none>
+neutron-rpc-server-67c7b8b54d-jf9hn        1/1     Running     0             73m   192.168.217.53   ip-10-0-1-129   <none>           <none>
+neutron-server-68fcfccb9f-788q9            1/1     Running     0             73m   192.168.217.52   ip-10-0-1-129   <none>           <none>
+nova-api-metadata-6c68798b94-x627q         1/1     Running     0             75m   192.168.217.44   ip-10-0-1-129   <none>           <none>
+nova-api-osapi-64c4b48785-2p9m2            1/1     Running     0             75m   192.168.217.41   ip-10-0-1-129   <none>           <none>
+nova-compute-default-vlmk5                 1/1     Running     0             71m   10.0.1.129       ip-10-0-1-129   <none>           <none>
+nova-conductor-85b7d7bb4c-nhf98            1/1     Running     0             75m   192.168.217.43   ip-10-0-1-129   <none>           <none>
+nova-novncproxy-5f6848ccf9-8n77f           1/1     Running     0             75m   10.0.1.129       ip-10-0-1-129   <none>           <none>
+nova-scheduler-7b4ff99c75-smk5g            1/1     Running     0             75m   192.168.217.40   ip-10-0-1-129   <none>           <none>
+openvswitch-xprt7                          2/2     Running     0             79m   10.0.1.129       ip-10-0-1-129   <none>           <none>
+osc                                        1/1     Running     0             66m   192.168.217.60   ip-10-0-1-129   <none>           <none>
+placement-api-5555848fb6-dh6xp             1/1     Running     0             77m   192.168.217.34   ip-10-0-1-129   <none>           <none>
+qemu-exporter-7mdpd                        1/1     Running     0             31m   192.168.217.63   ip-10-0-1-129   <none>           <none>
+rabbitmq-rabbitmq-0                        1/1     Running     0             85m   192.168.217.12   ip-10-0-1-129   <none>           <none>
+	
+
+## Step 3 -- range query to find exact threshold-crossing timestamp (injection started 2026-09-19T16:48:46Z)
+Success	{"status":"success","data":{"resultType":"matrix","result":[{"metric":{"flavor":"m1.tiny","instance":"192.168.217.63:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-129","project_id":"d30aeedd264e4c32a5de73d9b99d791b","type":"some"},"values":[[1789836520,"0.001312872727272728"],[1789836525,"0.001289290909090908"],[1789836530,"0.001418381818181819"],[1789836535,"0.0014496181818181807"],[1789836540,"0.0016661636363636367"],[1789836545,"0.001784509090909093"],[1789836550,"0.0020107090909090917"],[1789836555,"0.00224478181818182"],[1789836560,"0.002568581818181815"],[1789836565,"0.0027716727272727266"],[1789836570,"0.003252709090909089"],[1789836575,"0.0034295090909090904"],[1789836580,"0.003746818181818182"],[1789836585,"0.004093254545454548"],[1789836590,"0.0049631818181818214"],[1789836595,"0.004955690909090911"],[1789836600,"0.005171345454545454"],[1789836605,"0.005189109090909091"],[1789836610,"0.005116563636363637"],[1789836615,"0.005004363636363639"],[1789836620,"0.005206436363636363"],[1789836625,"0.005483963636363635"],[1789836630,"0.005477090909090908"],[1789836635,"0.005319727272727275"],[1789836640,"0.0053631636363636334"],[1789836645,"0.004629636363636362"],[1789836650,"0.004795709090909089"],[1789836655,"0.004947054545454543"],[1789836660,"0.004741584944999997"]]}]}}	
+
+## Step 3 (cont) -- current alert state + rule eval interval check + current PSI
+Success	2026-09-19T16:51:27Z
+ALERTS:
+[]
+
+RULES:
+{"status":"success","data":{"groups":[{"name":"qemu-contention","file":"/etc/prometheus/rules/qemu-contention.rules.yml","rules":[{"state":"pending","name":"VMCPUPressureHigh","query":"rate(openstack_vm_cpu_pressure_stall_seconds_total{type=\"some\"}[1m]) \u003e 0.005","duration":30,"keepFiringFor":0,"labels":{"severity":"warning"},"annotations":{"instance_uuid":"{{ $labels.instance_uuid }}","node":"{{ $labels.node }}"},"alerts":[{"labels":{"alertname":"VMCPUPressureHigh","flavor":"m1.tiny","instance":"192.168.217.63:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-129","project_id":"d30aeedd264e4c32a5de73d9b99d791b","severity":"warning","type":"some"},"annotations":{"instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","node":"ip-10-0-1-129"},"state":"pending","activeAt":"2026-09-19T16:50:40.729949095Z","value":"5.3631636363636334e-03"}],"health":"ok","evaluationTime":0.000433097,"lastEvaluation":"2026-09-19T16:50:40.730891567Z","type":"alerting"}],"interval":60,"limit":0,"evaluationTime":0.000457802,"lastEvaluation":"2026-09-19T16:50:40.73087003Z"}]}}
+PSI-now:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"flavor":"m1.tiny","instance":"192.168.217.63:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-129","project_id":"d30aeedd264e4c32a5de73d9b99d791b","type":"some"},"value":[1789836687.691,"0.008114090909090908"]}]}}	
+
+## Step 3 (cont2) -- poll for alert firing (~20s later)
+Success	2026-09-19T16:51:52Z
+ALERTS:
+[{"annotations":{"instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","node":"ip-10-0-1-129"},"endsAt":"2026-09-19T16:55:40.729Z","fingerprint":"8f915fa9ee444a76","receivers":[{"name":"live-migration-webhook"}],"startsAt":"2026-09-19T16:51:40.729Z","status":{"inhibitedBy":[],"silencedBy":[],"state":"active"},"updatedAt":"2026-09-19T16:51:40.738Z","generatorURL":"http://prometheus-64bc98dcf6-k87tz:9090/graph?g0.expr=rate%28openstack_vm_cpu_pressure_stall_seconds_total%7Btype%3D%22some%22%7D%5B1m%5D%29+%3E+0.005\u0026g0.tab=1","labels":{"alertname":"VMCPUPressureHigh","flavor":"m1.tiny","instance":"192.168.217.63:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-129","project_id":"d30aeedd264e4c32a5de73d9b99d791b","severity":"warning","type":"some"}}]
+
+PSI-now:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"flavor":"m1.tiny","instance":"192.168.217.63:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-129","project_id":"d30aeedd264e4c32a5de73d9b99d791b","type":"some"},"value":[1789836712.874,"0.007736363636363636"]}]}}	
+
+## Step 4 -- webhook journal + migration list + server host/status
+Success	2026-09-19T16:52:14Z
+WEBHOOKLOG:
+Sep 19 16:51:58 ip-10-0-1-129 live-migration-webhook[146117]: 2026/09/19 16:51:58 INFO migrate action accepted instance_uuid=da91d986-a8ad-48d2-b5ad-9000fff723a0 from_host=ip-10-0-1-129.ap-northeast-2.compute.internal to_host=ip-10-0-1-174.ap-northeast-2.compute.internal
+Sep 19 16:51:58 ip-10-0-1-129 live-migration-webhook[146117]: 2026/09/19 16:51:58 INFO live migration triggered instance_uuid=da91d986-a8ad-48d2-b5ad-9000fff723a0
+MIGLIST:
+[
+  {
+    "Id": 3,
+    "UUID": "ada4add5-2df4-4f58-a5fc-813a2c5e1a53",
+    "Source Node": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Dest Node": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Source Compute": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Dest Compute": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Dest Host": null,
+    "Status": "running",
+    "Server UUID": "da91d986-a8ad-48d2-b5ad-9000fff723a0",
+    "Old Flavor": 2,
+    "New Flavor": 2,
+    "Type": "live-migration",
+    "Created At": "2026-09-19T16:51:51.000000",
+    "Updated At": "2026-09-19T16:52:07.000000"
+  },
+  {
+    "Id": 2,
+    "UUID": "d983eaca-942a-48b4-8c53-35effa5899cc",
+    "Source Node": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Dest Node": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Source Compute": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Dest Compute": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Dest Host": null,
+    "Status": "completed",
+    "Server UUID": "da91d986-a8ad-48d2-b5ad-9000fff723a0",
+    "Old Flavor": 2,
+    "New Flavor": 2,
+    "Type": "live-migration",
+    "Created At": "2026-09-19T16:29:51.000000",
+    "Updated At": "2026-09-19T16:30:22.000000"
+  },
+  {
+    "Id": 1,
+    "UUID": "cd116063-2aba-4664-a327-6b4de9345c65",
+    "Source Node": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Dest Node": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Source Compute": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Dest Compute": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Dest Host": null,
+    "Status": "completed",
+    "Server UUID": "da91d986-a8ad-48d2-b5ad-9000fff723a0",
+    "Old Flavor": 2,
+    "New Flavor": 2,
+    "Type": "live-migration",
+    "Created At": "2026-09-19T16:14:42.000000",
+    "Updated At": "2026-09-19T16:15:18.000000"
+  }
+]
+SERVER:
+ip-10-0-1-174.ap-northeast-2.compute.internal
+ACTIVE
+	
+
+## Step 4 (cont) -- confirm final migration status (id=3)
+Success	2026-09-19T16:52:42Z
+usage: openstack server migration show [-h] [-f {json,shell,table,value,yaml}]
+                                       [-c COLUMN] [--noindent]
+                                       [--prefix PREFIX]
+                                       [--max-width <integer>] [--fit-width]
+                                       [--print-empty]
+                                       <server> <migration>
+openstack server migration show: error: unrecognized arguments: --server
+command terminated with exit code 2
+[
+  {
+    "Id": 3,
+    "UUID": "ada4add5-2df4-4f58-a5fc-813a2c5e1a53",
+    "Source Node": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Dest Node": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Source Compute": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Dest Compute": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Dest Host": null,
+    "Status": "completed",
+    "Server UUID": "da91d986-a8ad-48d2-b5ad-9000fff723a0",
+    "Old Flavor": 2,
+    "New Flavor": 2,
+    "Type": "live-migration",
+    "Created At": "2026-09-19T16:51:51.000000",
+    "Updated At": "2026-09-19T16:52:19.000000"
+  },
+  {
+    "Id": 2,
+    "UUID": "d983eaca-942a-48b4-8c53-35effa5899cc",
+    "Source Node": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Dest Node": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Source Compute": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Dest Compute": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Dest Host": null,
+    "Status": "completed",
+    "Server UUID": "da91d986-a8ad-48d2-b5ad-9000fff723a0",
+    "Old Flavor": 2,
+    "New Flavor": 2,
+    "Type": "live-migration",
+    "Created At": "2026-09-19T16:29:51.000000",
+    "Updated At": "2026-09-19T16:30:22.000000"
+  },
+  {
+    "Id": 1,
+    "UUID": "cd116063-2aba-4664-a327-6b4de9345c65",
+    "Source Node": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Dest Node": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Source Compute": "ip-10-0-1-129.ap-northeast-2.compute.internal",
+    "Dest Compute": "ip-10-0-1-174.ap-northeast-2.compute.internal",
+    "Dest Host": null,
+    "Status": "completed",
+    "Server UUID": "da91d986-a8ad-48d2-b5ad-9000fff723a0",
+    "Old Flavor": 2,
+    "New Flavor": 2,
+    "Type": "live-migration",
+    "Created At": "2026-09-19T16:14:42.000000",
+    "Updated At": "2026-09-19T16:15:18.000000"
+  }
+]
+	
+
+## Step 5 -- host transition confirmed (already shown above: host=ip-10-0-1-174, status=ACTIVE). Cleaning up cpu-hog now that migration is confirmed complete.
+$ kubectl delete deployment cpu-hog
+Success	2026-09-19T16:53:09Z
+deployment.apps "cpu-hog" deleted from default namespace
+	No resources found in default namespace.
+
+
+## Step 6 -- post-migration recovery sample 1 (node-a OSH control-plane CPU, cpu-hog removed)
+Success	2026-09-19T16:53:21Z
+OSHCPU:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1789836801.837,"1.812376467464958"]}]}}
+PSI-vm-on-node-b-now:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"flavor":"m1.tiny","instance":"192.168.201.3:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-174","project_id":"d30aeedd264e4c32a5de73d9b99d791b","type":"some"},"value":[1789836801.845,"0.0015974545454545454"]}]}}	
+
+## Step 6 -- post-migration recovery sample 2 (~60s after sample 1)
+Success	2026-09-19T16:53:41Z
+OSHCPU:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1789836821.545,"1.608167810437171"]}]}}
+PSI-node-b:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"flavor":"m1.tiny","instance":"192.168.201.3:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-174","project_id":"d30aeedd264e4c32a5de73d9b99d791b","type":"some"},"value":[1789836821.553,"0.0016315272727272722"]}]}}	
+
+## Step 6 -- post-migration recovery sample 3 (remote sleep 60s, then sample -- proper 60s spacing)
+Success	2026-09-19T16:55:05Z
+OSHCPU:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1789836905.229,"1.2205436847791375"]}]}}
+PSI-node-b:
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{"flavor":"m1.tiny","instance":"192.168.201.3:9179","instance_name":"instance-00000001","instance_uuid":"da91d986-a8ad-48d2-b5ad-9000fff723a0","job":"qemu-exporter","node":"ip-10-0-1-174","project_id":"d30aeedd264e4c32a5de73d9b99d791b","type":"some"},"value":[1789836905.249,"0.0015765454545454546"]}]}}	
+
+## Step 2/6 retro -- node-a OSH control-plane CPU during cpu-hog load window (instant queries at fixed past timestamps, Prometheus retains 2d)
+Success	at=2026-09-19T16:49:30Z
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1789836570,"1.1880086313672398"]}]}}
+at=2026-09-19T16:50:30Z
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1789836630,"1.5950162863109691"]}]}}
+at=2026-09-19T16:51:30Z
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1789836690,"3.3608542224868736"]}]}}
+at=2026-09-19T16:52:30Z
+{"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1789836750,"2.141747825854253"]}]}}
+	
+
+## Final stability check -- any non-Running/non-Completed pods in openstack namespace after the whole scenario?
+Success	2026-09-19T16:55:43Z
+NAME                                       READY   STATUS      RESTARTS      AGE   IP               NODE            NOMINATED NODE   READINESS GATES
+---NODES---
+NAME            STATUS   ROLES           AGE   VERSION
+ip-10-0-1-129   Ready    control-plane   96m   v1.34.11
+ip-10-0-1-174   Ready    <none>          66m   v1.34.11
+	
+
+## SUMMARY -- 3 measured metrics (2026-09-19 session, node clock; local wall-clock date was 2026-09-20)
+
+Scenario ran once, end-to-end, no OSH instability, no threshold recalibration (per
+task scope -- 0.005 kept as-is).
+
+1. 임계치초과 -> alert 발생 지연:
+   - PSI(some) rate first crossed 0.005 at 2026-09-19T16:50:00Z (value 0.005171,
+     confirmed via Prometheus range query, step=5s; see Step 3 range dump above).
+   - Alertmanager alert `VMCPUPressureHigh` reached state=active (startsAt) at
+     2026-09-19T16:51:40.729Z.
+   - **지연 = 100.7s** (limited mostly by the Prometheus rule evaluation interval
+     of 60s -- global `evaluation_interval` was left at its 1m default; the
+     alert's own `for: 30s` only added on top of that. Prometheus pending state
+     began at the first post-crossing evaluation, 16:50:40.729Z, and fired at the
+     next evaluation 60s later since the condition was still true then.)
+
+2. alert -> 마이그레이션 완료 지연 (다운타임 포함):
+   - Alert active: 2026-09-19T16:51:40.729Z
+   - webhook log "live migration triggered": 2026-09-19T16:51:58Z (+17.3s, mostly
+     Alertmanager group_wait=10s + webhook Keystone/Nova auth round trip)
+   - Nova migration record id=3 created: 2026-09-19T16:51:51.000000Z
+   - Nova migration record id=3 completed (Status=completed, Updated At):
+     2026-09-19T16:52:19.000000Z
+   - **지연 = 38.3s** (16:52:19.000 - 16:51:40.729)
+   - Host confirmed switched: `OS-EXT-SRV-ATTR:host` = ip-10-0-1-174
+     (node-b), status=ACTIVE.
+
+3. 마이그레이션 전/후 node-a 다른 워크로드(OSH 컨트롤플레인) CPU 경합 변화
+   (sum(rate(container_cpu_usage_seconds_total{namespace="openstack",
+   instance="ip-10-0-1-129"}[1m]))):
+   - baseline (3 samples, 16:47:08 / 16:48:07 / 16:48:28Z, pre-injection):
+     1.035, 1.116, 1.038 cores/s  (avg ~1.06)
+   - 부하중 (cpu-hog replicas=4 active, instant queries at fixed past
+     timestamps): 1.19 (16:49:30Z) -> 1.60 (16:50:30Z) -> **3.36 (16:51:30Z,
+     peak, overlaps alert firing + migration trigger)** -> 2.14 (16:52:30Z,
+     just after migration completed)
+   - 마이그레이션 후 (cpu-hog deleted 16:53:09Z; 3 samples): 1.81 (16:53:21Z,
+     12s after cleanup, still inside the 1m rate window that includes load) ->
+     1.61 (16:53:41Z) -> 1.22 (16:55:05Z, ~2min after cleanup, clearly trending
+     back down toward the 1.03-1.12 baseline band)
+   - **baseline=~1.06, 부하중 피크=3.36, 마이그레이션+정리 후(최종 샘플)=1.22**
+     -- clear downward recovery trend confirmed; did not sit and wait long
+     enough for it to fully re-touch the exact baseline band (would need
+     another ~1-2min), but it more than halved from peak and kept falling
+     monotonically across all 3 post-cleanup samples, which is the evidence
+     the scenario asked for ("선제적 회피" -- competing load left the node
+     regardless of whether the alert crossed instantaneously; contention
+     receded once cpu-hog was removed instead of continuing to climb).
+
+cpu-hog replicas used: 4 (sufficient to cross threshold 0.005 -- did not need
+to scale to 8). OSH stability: no CrashLoopBackOff/Evicted pods observed on
+node-a at any point (checked at injection+~30s, and again after the full
+scenario -- all Running/Completed throughout).
+
+test-vm final location: node-b (ip-10-0-1-174), status=ACTIVE.

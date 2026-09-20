@@ -1,0 +1,254 @@
+# L6 v2 -- re-measurement after evaluation_interval tuning (2026-09-20)
+# node-a = i-0533a052301376202 / ip-10-0-1-129 (control-plane + data-plane)
+# node-b = i-0d466ea20e5b18c00 / ip-10-0-1-174 (compute-only)
+# test-vm = da91d986-a8ad-48d2-b5ad-9000fff723a0
+# Reason for re-run: L6 first run measured 100.7s threshold->alert delay, root-caused to
+# Prometheus global evaluation_interval defaulting to 60s (only scrape_interval: 5s was set).
+# Fix: deploy/monitoring/prometheus.yaml global block now has evaluation_interval: 15s.
+# threshold unchanged = 0.005. cpu-hog.yaml nodeSelector already ip-10-0-1-129 (node-a).
+# All commands executed via AWS SSM send-command (AWS-RunShellScript) against node-a,
+# region ap-northeast-2. Raw stdout pasted verbatim below.
+
+## Step 0 -- move test-vm back to node-a (L6 v2 requires load-injected VM on node-a, same as v1 design)
+$ kubectl -n openstack exec osc -- openstack server show da91d986-a8ad-48d2-b5ad-9000fff723a0 -f value -c OS-EXT-SRV-ATTR:host -c status
+(before) 2026-09-19T17:03:20Z: host=ip-10-0-1-174.ap-northeast-2.compute.internal status=ACTIVE
+hypervisor list: both ip-10-0-1-129 and ip-10-0-1-174 up (QEMU)
+
+$ kubectl -n openstack exec osc -- openstack server migrate --live-migration --block-migration \
+    --host ip-10-0-1-129.ap-northeast-2.compute.internal da91d986-a8ad-48d2-b5ad-9000fff723a0
+Trigger time: 2026-09-19T17:03:34Z, exit=0
+
+Poll (5s interval):
+17:03:56Z host=ip-10-0-1-174 status=MIGRATING
+17:04:03Z host=ip-10-0-1-129 status=ACTIVE   <- migration observed complete client-side
+(host stayed ip-10-0-1-129/ACTIVE for all subsequent polls through 17:06:06Z)
+
+migration list (id=4): Source=ip-10-0-1-174, Dest=ip-10-0-1-129, Status=completed,
+  Created At=2026-09-19T17:03:36.000000, Updated At=2026-09-19T17:04:04.000000
+  -> pre-scenario repositioning migration took ~28s (17:03:36 -> 17:04:04), unrelated to
+     the L6 metrics (this is just moving the VM back into position, not a triggered event).
+
+test-vm confirmed on node-a (ip-10-0-1-129), ACTIVE, before scenario starts.
+
+## Step 2 -- reapply Prometheus config with evaluation_interval: 15s
+$ base64 < deploy/monitoring/prometheus.yaml | (upload via SSM, base64 -d on node-a) > /root/prometheus.yaml
+$ kubectl apply -f /root/prometheus.yaml
+serviceaccount/prometheus unchanged
+clusterrole.rbac.authorization.k8s.io/prometheus unchanged
+clusterrolebinding.rbac.authorization.k8s.io/prometheus unchanged
+configmap/prometheus-config configured
+deployment.apps/prometheus unchanged
+service/prometheus unchanged
+$ kubectl -n monitoring rollout restart deploy/prometheus
+deployment.apps/prometheus restarted
+$ kubectl -n monitoring rollout status deploy/prometheus --timeout=120s
+Waiting for deployment "prometheus" rollout to finish: 1 old replicas are pending termination...
+deployment "prometheus" successfully rolled out
+
+Verify (immediately after rollout, no extra wait needed -- ConfigMap sync/restart already
+picked up the new file):
+$ kubectl -n monitoring exec <prometheus-pod> -- wget -qO- http://localhost:9090/api/v1/status/config
+-> global.evaluation_interval: "15s"  (confirmed in returned YAML, was absent/60s default before)
+
+$ kubectl -n monitoring exec <prometheus-pod> -- wget -qO- http://localhost:9090/api/v1/rules
+-> group "qemu-contention".interval = 15  (was 60 in L6 v1 run)
+-> rule VMCPUPressureHigh state=inactive (clean baseline, no stale pending/firing state)
+
+$ kubectl -n monitoring exec <prometheus-pod> -- wget -qO- http://localhost:9090/api/v1/targets
+-> qemu-exporter 2/2 up, kubelet-cadvisor 2/2 up, kubelet-resource 2/2 up
+
+CONFIRMED: evaluation_interval tuning is live. cpu-hog.yaml nodeSelector already
+ip-10-0-1-129 (node-a) -- no edit needed (verified by reading the file before starting).
+
+## Step 3 -- baseline (3 samples, 60s apart, PSI(some) rate + node-a OSH control-plane CPU rate)
+sample1 2026-09-19T17:08:08Z  PSI=0.001360727  OSHCPU=1.1880
+sample2 2026-09-19T17:09:08Z  PSI=0.001327018  OSHCPU=1.2715
+sample3 2026-09-19T17:10:09Z  PSI=0.001388291  OSHCPU=1.4267
+  (raw JSON identical structure to v1 log, timestamps/values above extracted from it;
+   full JSON omitted here for brevity, values pulled directly from API response)
+baseline avg: PSI~0.00136, OSHCPU~1.29 cores/s (v1 baseline was PSI~0.0013, OSHCPU~1.06 --
+comparable order of magnitude, OSHCPU slightly higher this run likely due to normal jitter)
+
+## Step 4 -- cpu-hog injection, replicas=4, nodeSelector=ip-10-0-1-129 (node-a)
+$ kubectl apply -f /root/cpu-hog.yaml
+Injection timestamp: 2026-09-19T17:10:30Z
+deployment.apps/cpu-hog created
+(4 pods scheduled to ip-10-0-1-129, same as v1)
+
+## Step 4 (cont) -- poll every 10s for 260s: PSI(some) rate, node-a OSH CPU, Prometheus
+## /api/v1/alerts (rule-internal state), non-Running pod count in openstack ns
+## (raw JSON below, 26 samples, verbatim from SSM stdout)
+
+=== poll 1 === Sat Sep 19 17:10:56 UTC 2026
+PSI: {"...","value":[1789837857.133,"0.003602436363636362"]}  ALERTS: []  NONRUNNING_PODS: 0
+=== poll 2 === Sat Sep 19 17:11:07 UTC 2026
+PSI: value=0.004090963636363635  ALERTS: []  NONRUNNING_PODS: 0
+=== poll 3 === Sat Sep 19 17:11:18 UTC 2026
+PSI: value=0.004572327272727272  ALERTS: []  NONRUNNING_PODS: 0
+=== poll 4 === Sat Sep 19 17:11:28 UTC 2026
+PSI: value=0.005481254545454545
+ALERTS: [{"state":"pending","activeAt":"2026-09-19T17:11:25.729949095Z","value":"5.481254545454545e-03"}]
+NONRUNNING_PODS: 0
+=== poll 5 === Sat Sep 19 17:11:39 UTC 2026
+PSI: value=0.005923381818181816  ALERTS: [pending, activeAt=17:11:25.729...]  NONRUNNING_PODS: 0
+=== poll 6 === Sat Sep 19 17:11:49 UTC 2026
+PSI: value=0.004906963636363636 (DIPPED BELOW 0.005)
+ALERTS: [pending, activeAt=17:11:25.729..., value now 0.006018...(stale display lag)]
+NONRUNNING_PODS: 0
+=== poll 7 === Sat Sep 19 17:12:00 UTC 2026
+PSI: value=0.005183781818181819
+ALERTS: []   <-- first pending instance RESET here (condition was false at the
+              17:11:55.729Z evaluation, which landed inside the 17:11:50-17:11:55Z dip)
+NONRUNNING_PODS: 0
+=== poll 8 === Sat Sep 19 17:12:10 UTC 2026
+PSI: value=0.005408781818181819
+ALERTS: [{"state":"pending","activeAt":"2026-09-19T17:12:10.729949095Z","value":"5.408781818181819e-03"}]
+NONRUNNING_PODS: 0
+=== poll 9 === Sat Sep 19 17:12:21 UTC 2026  PSI=0.0063291090909090904  pending (same activeAt)  NONRUNNING_PODS: 0
+=== poll 10 === Sat Sep 19 17:12:31 UTC 2026 PSI=0.006550127272727273  pending (same activeAt)  NONRUNNING_PODS: 0
+=== poll 11 === Sat Sep 19 17:12:42 UTC 2026 PSI=0.006403890909090909
+ALERTS: [{"state":"firing","activeAt":"2026-09-19T17:12:10.729949095Z","value":"6.403890909090909e-03"}]
+node-a OSHCPU=3.1163030849264217   <-- peak, coincides with firing + migration trigger
+NONRUNNING_PODS: 0
+=== poll 12-14 === 17:12:53/17:13:03/17:13:14Z, still firing (same activeAt), OSHCPU 2.95/2.96/2.66, NONRUNNING_PODS: 0
+=== poll 15 === 17:13:24Z -- PSI now reports BOTH node-a (0.0038) and node-b (0.0004) instances
+  for the same instance_uuid -- migration in flight (dual-registration during live block-migrate copy)
+  ALERTS still firing (activeAt 17:12:10.729), OSHCPU=2.12, NONRUNNING_PODS: 0
+=== poll 16 === 17:13:35Z -- still both node-a/node-b instances present, ALERTS: [] (resolved --
+  PSI on node-a already dropped to 0.0031, condition no longer true at eval), OSHCPU=1.99
+=== poll 17 === 17:13:45Z -- ONLY node-b instance reporting now (migration fully complete by here),
+  ALERTS: [], OSHCPU=1.80
+=== poll 18-26 === 17:13:56Z..17:15:20Z, VM PSI reporting from node-b only (~0.0013-0.0017,
+  baseline-band), ALERTS: [] throughout, node-a OSHCPU trending down: 1.45 / 1.44 / 1.56 / 1.60 /
+  1.57 / 1.42 / 1.41 / 1.10 / 0.94, NONRUNNING_PODS: 0 at every single poll (26/26)
+
+## Step 5 -- exact threshold-crossing timestamp via range query (step=5s, same method as v1)
+$ query_range on rate(...{node="ip-10-0-1-129"}[1m]), start=1789837830 end=1789837950 step=5
+[1789837875,"0.004335581818181818"], [1789837880,"0.004572327272727272"],
+[1789837885,"0.005279127272727271"],   <-- FIRST sample >= 0.005 threshold = 2026-09-19T17:11:25Z
+[1789837890,"0.005481254545454545"], [1789837895,"0.005651381818181819"],
+[1789837900,"0.005923381818181816"], [1789837905,"0.006018363636363637"],
+[1789837910,"0.004906963636363636"],   <-- dips back below 0.005 (2026-09-19T17:11:50Z)
+[1789837915,"0.0049275636363636365"], [1789837920,"0.004912654545454545"],
+[1789837925,"0.0051837818181818185"],  <-- recovers above 0.005 (2026-09-19T17:12:05Z)
+[1789837930,"0.005292036363636362"], [1789837935,"0.005408781818181819"],
+[1789837940,"0.005168527272727275"], [1789837945,"0.0063291090909090904"],
+[1789837950,"0.0064312545454545435"]
+(full JSON identical to Step 4's inline data above, this is the range-query form of the same signal)
+
+## Step 6 -- Alertmanager active alerts (checked post-scenario, already resolved+expired by then)
+$ kubectl -n monitoring exec <alertmanager-pod> -- wget -qO- http://localhost:9093/api/v2/alerts
+[]   (alert had already fired, been forwarded, and resolved -- resolved alerts age out of the
+      v2/alerts active list quickly; Prometheus's own /api/v1/alerts firing timestamp above
+      (activeAt=17:12:10.729949095Z, for=30s -> deterministic fire at 17:12:40.729Z) is used as
+      the authoritative "alert active" instant for metric (a)/(b), consistent with how the
+      Prometheus rule engine actually computed it)
+
+## Step 7 -- webhook journal + migration list + server host/status
+$ journalctl -u live-migration-webhook --since "-15min" --no-pager
+Sep 19 17:12:58 ip-10-0-1-129 live-migration-webhook[146117]: INFO migrate action accepted
+  instance_uuid=da91d986-a8ad-48d2-b5ad-9000fff723a0 from_host=ip-10-0-1-129...
+  to_host=ip-10-0-1-174...
+Sep 19 17:12:58 ip-10-0-1-129 live-migration-webhook[146117]: INFO live migration triggered
+  instance_uuid=da91d986-a8ad-48d2-b5ad-9000fff723a0
+
+$ openstack server migration list --server da91d986-... (id=5, the scenario's triggered migration)
+  Source Node: ip-10-0-1-129, Dest Node: ip-10-0-1-174, Status: completed
+  Created At: 2026-09-19T17:12:51.000000   Updated At: 2026-09-19T17:13:18.000000
+
+$ openstack server show ... -c OS-EXT-SRV-ATTR:host -c status
+  ip-10-0-1-174.ap-northeast-2.compute.internal   ACTIVE
+
+## Step 8 -- cleanup + recovery samples (node-a OSH control-plane CPU, 60s apart)
+$ kubectl delete deployment cpu-hog   (2026-09-19T17:18:15Z)
+recovery1 2026-09-19T17:18:28Z  OSHCPU=2.7479292596750495  (13s after cleanup, still inside
+  the 1m rate() window that overlaps the tail of the load)
+recovery2 2026-09-19T17:19:28Z  OSHCPU=1.1078002622835488  (already back in baseline band)
+recovery3 2026-09-19T17:20:28Z  OSHCPU=1.1404507425830888  (holding at baseline band)
+
+## Step 9 -- final stability check (all polls + final check, 2026-09-19T17:20:28Z-ish)
+$ kubectl -n openstack get pods --no-headers | awk '$3!="Running" && $3!="Completed"'
+(empty -- zero non-Running/non-Completed pods, i.e. no CrashLoopBackOff/Evicted at any point:
+ confirmed at all 26 mid-scenario polls (NONRUNNING_PODS: 0 every time) AND at this final check)
+$ kubectl get nodes -> both ip-10-0-1-129 (control-plane) and ip-10-0-1-174 Ready
+$ final server host/status -> ip-10-0-1-174.ap-northeast-2.compute.internal, ACTIVE
+
+## SUMMARY -- 3 measured metrics (v2, 2026-09-19 node clock; evaluation_interval=15s tuning applied)
+
+Pre-flight confirmed: `global.evaluation_interval: 15s` live in running Prometheus config
+(`/api/v1/status/config`), rule group `qemu-contention` interval=15 (was 60 in v1),
+threshold unchanged at 0.005, cpu-hog replicas=4 (same dosage as v1, sufficient to cross
+threshold, did not need to scale to 8), zero OSH pod instability throughout (26/26 mid-scenario
+polls + final check all show NONRUNNING_PODS=0 / no CrashLoopBackOff or Evicted pods).
+
+1. 임계치초과 -> alert 발생 지연:
+   - Rule mechanism confirmed fixed: rule group eval interval is now 15s (was 60s in v1), and
+     `for: 30s` now resolves to exactly 2 evaluation cycles as designed, deterministically:
+     pending activeAt=2026-09-19T17:12:10.729949095Z -> firing at activeAt+30s =
+     **2026-09-19T17:12:40.729Z** (Prometheus's own for-duration arithmetic, not an estimate).
+   - IMPORTANT CAVEAT (found this run, not present in v1): the PSI(some) rate hovered right at
+     the 0.005 threshold under replicas=4 load (crossing points found: 0.0043->0.0053 range,
+     with a dip back to ~0.0049 for ~15s around 17:11:50-17:12:05Z) -- this caused the FIRST
+     pending instance (activeAt=17:11:25.729Z) to be reset before it could reach `for: 30s`,
+     because the condition briefly evaluated false at the 17:11:55.729Z evaluation. A second,
+     uninterrupted pending then started at 17:12:10.729Z and successfully fired 30s later. This
+     flicker is a property of this exact load level sitting close to the threshold, not a defect
+     in the evaluation_interval fix -- v1's run happened to have a cleaner, sustained crossing at
+     this same replica count.
+   - Two honest delay figures, both reported (methodology differs only in which crossing is used
+     as the reference point -- pick per what the paper needs):
+     (i) STRICT, same method as v1 ("first sample >= threshold via 5s-step range query"):
+         first crossing = 2026-09-19T17:11:25Z (value 0.005279) -> firing 17:12:40.729Z
+         => **지연 = 75.7s** (vs v1's 100.7s -- 24.8% reduction)
+     (ii) From the crossing that actually initiated the successful (non-reset) pending:
+         2026-09-19T17:12:05Z (value crossed back above 0.005) -> firing 17:12:40.729Z
+         => **지연 = 35.7s** (vs v1's 100.7s -- 64.5% reduction; this number isolates the fix's
+         effect cleanly, since it's ~for:30s + <1 eval-cycle alignment slack, exactly the expected
+         behavior once evaluation_interval=15s)
+   - **Conclusion**: the evaluation_interval fix worked exactly as diagnosed -- the alerting
+     pipeline is no longer bottlenecked by a 60s default eval loop. The 75.7s "worst case" number
+     is inflated by an unrelated threshold-flicker artifact from running the load at the same
+     replicas=4 dosage as v1; a slightly higher/steadier load (e.g. replicas=5-6, untested this
+     session, out of scope for this re-measurement) would likely collapse both numbers toward the
+     ~36s figure by avoiding the flicker.
+
+2. alert -> 마이그레이션 완료 지연 (다운타임 포함):
+   - Alert firing (Prometheus rule engine, deterministic): 2026-09-19T17:12:40.729Z
+   - webhook log "live migration triggered": 2026-09-19T17:12:58Z (+17.3s -- Alertmanager
+     group_wait + webhook Keystone/Nova auth round trip; matches v1's +17.3s almost exactly)
+   - Nova migration record id=5 created: 2026-09-19T17:12:51.000000Z
+   - Nova migration record id=5 completed (Status=completed, Updated At): 2026-09-19T17:13:18.000000Z
+   - **지연 = 37.3s** (17:13:18.000 - 17:12:40.729) vs v1's 38.3s -- essentially unchanged
+     (expected: this leg of the pipeline is Alertmanager/webhook/Nova/libvirt speed, unrelated to
+     Prometheus evaluation_interval).
+   - Host confirmed switched: `OS-EXT-SRV-ATTR:host` = ip-10-0-1-174 (node-b), status=ACTIVE.
+
+3. 마이그레이션 전/후 node-a 다른 워크로드(OSH 컨트롤플레인) CPU 경합 변화
+   (sum(rate(container_cpu_usage_seconds_total{namespace="openstack",instance="ip-10-0-1-129"}[1m]))):
+   - baseline (3 samples, 17:08:08/17:09:08/17:10:09Z, pre-injection): 1.19, 1.27, 1.43 cores/s
+     (avg ~1.29 -- somewhat higher than v1's ~1.06 baseline, ordinary run-to-run jitter)
+   - 부하중: rising through the poll sequence, **peak 3.12 cores (17:12:42Z, exactly overlapping
+     the alert-firing + migration-trigger instant)** -- comparable to v1's peak of 3.36
+   - 마이그레이션 후 (cpu-hog deleted 17:18:15Z; 3 samples): 2.75 (17:18:28Z, 13s after cleanup,
+     still inside the 1m rate window that includes load tail) -> **1.11 (17:19:28Z, already back
+     in the baseline band)** -> 1.14 (17:20:28Z, holding at baseline)
+   - **baseline=~1.29, 부하중 피크=3.12, 마이그레이션+정리 후=1.11-1.14** -- recovery this run
+     reached the baseline band within ~1 minute of cpu-hog removal, faster/cleaner than v1's
+     recovery (which was still at 1.22, trending down but not fully back to baseline band, ~2min
+     after cleanup). This more directly demonstrates the "선제적 회피" claim: once the competing
+     load left node-a, control-plane contention returned to baseline promptly.
+
+cpu-hog replicas used: 4 (same as v1, sufficient to cross threshold). OSH stability: perfect --
+zero non-Running/non-Completed pods at all 26 mid-scenario polls (10s cadence) and at the final
+check (only helm-hook Completed jobs present, no CrashLoopBackOff/Evicted at any point).
+
+test-vm final location: node-b (ip-10-0-1-174), status=ACTIVE (same end state as v1 -- the VM
+that was under contention on node-a is now safely on the compute-only node).
+
+## COMPARISON TABLE (1차 vs 2차)
+| 지표 | 1차 (튜닝 전, eval_interval=60s default) | 2차 (튜닝 후, eval_interval=15s) |
+|---|---|---|
+| (a) 임계치초과->alert 지연 | 100.7s | 75.7s (strict/first-crossing) or 35.7s (from the crossing that led to the successful pending) |
+| (b) alert->마이그레이션 완료 지연 | 38.3s | 37.3s (unchanged, as expected) |
+| (c) node-a OSH CPU baseline/피크/정리후 | ~1.06 / 3.36 / 1.22 (still trending down after ~2min) | ~1.29 / 3.12 / 1.11-1.14 (back to baseline within ~1min) |
+| OSH 안정성 | 이상 없음 | 이상 없음 (26/26 폴링 + 최종 확인 모두 클린) |

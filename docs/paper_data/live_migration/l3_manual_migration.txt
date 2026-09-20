@@ -1,0 +1,530 @@
+L3 — 수동 block live-migration 시도 (2026-09-16)
+================================================================
+
+목적: node-a(ip-10-0-1-216)에서 돌고 있는 test-vm을 node-b(ip-10-0-1-84)로 수동 block
+live-migration 1회 성공시키는 게이트 단계. 자동화(L4~L6)는 이게 성공해야 진행.
+접근: SSM Session Manager (send-command + get-command-invocation), osc 파드 경유
+`openstack` CLI. HOME 환경변수가 SSM 세션에서 비어 있어 모든 명령에
+`export KUBECONFIG=/root/.kube/config` 명시 필요(root의 kubeconfig).
+
+--- 1. 마이그레이션 대상 VM 확정 ---
+
+$ kubectl -n openstack exec osc -- openstack server list -f json
+[
+  {
+    "ID": "5101f966-2bab-483d-807c-87ff8732f2ab",
+    "Name": "test-vm",
+    "Status": "ACTIVE",
+    "Networks": { "demo-net": ["10.10.10.212"] },
+    "Image": "cirros",
+    "Flavor": "m1.tiny"
+  }
+]
+
+$ kubectl -n openstack exec osc -- openstack server show 5101f966-2bab-483d-807c-87ff8732f2ab -f json
+(발췌)
+  "OS-EXT-SRV-ATTR:host": "ip-10-0-1-216.ap-northeast-2.compute.internal",
+  "OS-EXT-SRV-ATTR:hypervisor_hostname": "ip-10-0-1-216.ap-northeast-2.compute.internal",
+  "OS-EXT-STS:power_state": 1,
+  "OS-EXT-STS:task_state": null,
+  "OS-EXT-STS:vm_state": "active",
+  "status": "ACTIVE",
+  "flavor": {"name": "m1.tiny", "vcpus": 1, "ram": 512, "disk": 1},
+  "id": "5101f966-2bab-483d-807c-87ff8732f2ab",
+  "name": "test-vm"
+
+원본 상태: test-vm, ACTIVE, node-a(ip-10-0-1-216)에서 실행 중. 이걸 마이그레이션 대상으로 사용.
+
+--- 2. 정확한 live-migration 문법 확인 ---
+
+$ kubectl -n openstack exec osc -- openstack server migrate --help
+usage: openstack server migrate [-h] [--live-migration] [--host <hostname>]
+                                [--shared-migration | --block-migration]
+                                [--disk-overcommit | --no-disk-overcommit]
+                                [--wait]
+                                <server>
+...
+  --live-migration      Live migrate the server; use the ``--host`` option to
+                        specify a target host for the migration which will be
+                        validated by the scheduler
+  --host <hostname>     Migrate the server to the specified host. (supported
+                        with --os-compute-api-version 2.30 or above when used
+                        with the --live-migration option) ...
+  --block-migration     Perform a block live migration (auto-configured from
+                        --os-compute-api-version 2.25)
+
+확인된 정확한 커맨드(구식 `nova live-migration --block-migrate`가 아님):
+  openstack server migrate --live-migration --block-migration \
+    --host ip-10-0-1-84.ap-northeast-2.compute.internal 5101f966-2bab-483d-807c-87ff8732f2ab
+
+--- 3. 마이그레이션 실행 (타임스탬프 기록) ---
+
+로컬(맥) 실행 전 시각: 2026-09-16T07:51:23Z
+
+$ date -u +'%Y-%m-%dT%H:%M:%S.%3NZ'
+2026-09-16T07:51:24.186Z
+$ kubectl -n openstack exec osc -- openstack server migrate --live-migration --block-migration \
+    --host ip-10-0-1-84.ap-northeast-2.compute.internal 5101f966-2bab-483d-807c-87ff8732f2ab
+(출력 없음 — osc CLI, 비동기 트리거 정상)
+$ date -u +'%Y-%m-%dT%H:%M:%S.%3NZ'
+2026-09-16T07:51:34.249Z
+
+커맨드 트리거 자체는 07:51:24.186Z 시작 ~ 07:51:34.249Z 리턴 (약 10초, SSM/kubectl exec RTT 포함).
+
+--- 4. 상태 폴링 시계열 ---
+
+폴링 스크립트(node-a에서 2초 간격, osc 파드로 `openstack server show -c status
+-c OS-EXT-SRV-ATTR:host -c OS-EXT-STS:task_state` 반복 — 컬럼 출력 순서는 osc가 알파벳
+순으로 재정렬: host, task_state, status):
+
+2026-09-16T07:52:08.176Z  ip-10-0-1-216.ap-northeast-2.compute.internal  None  ERROR
+
+폴링 루프의 "ERROR 상태 감지 시 중단" 조건에 걸려 첫 샘플에서 바로 종료됨
+(host는 원래 노드에서 안 바뀜, status=ERROR). 마이그레이션 트리거 후 약 34초 만에
+이미 에러 상태로 확정된 것으로 보임(아래 5번 nova-compute 로그의 07:51:52.961Z
+"Live migration failed." 로그와 일치).
+
+$ openstack server migration list --server 5101f966-2bab-483d-807c-87ff8732f2ab -f json
+[
+  {
+    "Id": 1,
+    "UUID": "eaf95442-8b9c-4f92-86a2-c6597bcfe63f",
+    "Source Node": "ip-10-0-1-216.ap-northeast-2.compute.internal",
+    "Dest Node": "ip-10-0-1-84.ap-northeast-2.compute.internal",
+    "Source Compute": "ip-10-0-1-216.ap-northeast-2.compute.internal",
+    "Dest Compute": "ip-10-0-1-84.ap-northeast-2.compute.internal",
+    "Dest Host": null,
+    "Status": "error",
+    "Server UUID": "5101f966-2bab-483d-807c-87ff8732f2ab",
+    "Old Flavor": 1,
+    "New Flavor": 1,
+    "Type": "live-migration",
+    "Created At": "2026-09-16T07:51:26.000000",
+    "Updated At": "2026-09-16T07:51:52.000000"
+  }
+]
+
+공식 통계: Created 07:51:26.000000Z, Updated(=실패 확정) 07:51:52.000000Z →
+**총 소요시간 약 26초** (성공이 아니라 실패까지 걸린 시간). block-migration이 실제로
+디스크를 복사하지 못하고 pre_live_migration 단계 직후 libvirt RPC 연결 실패로 즉시
+중단됐기 때문에 디스크/메모리 전송 통계는 없음(migration list에 관련 필드 없음 —
+disk_remaining/memory_remaining 등은 in-progress live-migration에만 존재, 이미
+error로 확정된 뒤라 `server migration show`로도 조회 불가, 아래 참고).
+
+$ kubectl -n openstack exec osc -- openstack server migration show 5101f966-2bab-483d-807c-87ff8732f2ab 1
+(오탐: 인자 순서를 <server> <migration>이 아니라 반대로 넣어 처음 실패했었음 — 아래는
+정정된 정확한 문법)
+$ kubectl -n openstack exec osc -- openstack server migration show --help
+usage: openstack server migration show [-h] ... <server> <migration>
+Show an in-progress live migration for a given server. Note that it is not
+possible to show cold migrations or completed live-migrations.
+$ kubectl -n openstack exec osc -- openstack server migration show 5101f966-2bab-483d-807c-87ff8732f2ab 1
+No Server found for 1
+(→ 이미 종료(error)된 마이그레이션은 `migration show`로 조회 불가라는 openstackclient의
+공식 제약 — 정상 동작. `migration list`가 유일한 조회 수단.)
+
+--- 5. 실패 원인 조사 ---
+
+nova-compute 파드(node-a, nova-compute-default-9jkrt) 로그, --since-time=2026-09-16T07:51:00Z:
+
+2026-09-16 07:51:46.300 ... [instance: 5101f966-...] Took 10.52 seconds for
+  pre_live_migration on destination host ip-10-0-1-84.ap-northeast-2.compute.internal.
+  (→ 목적지 준비 단계는 성공: 디스크 스테이징/네트워크 vif plug까지는 문제 없었음)
+
+2026-09-16 07:51:49.815 ERROR nova.virt.libvirt.driver ... Live Migration failure:
+  unable to connect to server at '10.0.1.84:16509': Connection refused:
+  libvirt.libvirtError: unable to connect to server at '10.0.1.84:16509': Connection refused
+
+2026-09-16 07:51:50.312 ERROR nova.virt.libvirt.driver ... Migration operation has aborted
+
+2026-09-16 07:51:52.948 ERROR ... guest.migrate() -> self._domain.migrateToURI3() ->
+  libvirt.libvirtError: unable to connect to server at '10.0.1.84:16509': Connection refused
+  (전체 파이썬 트레이스백: nova/virt/libvirt/driver.py:11383 _live_migration_operation
+   -> guest.py:662 migrate -> libvirt.py:2174 migrateToURI3)
+
+2026-09-16 07:51:52.961 ERROR nova.compute.manager ... Live migration failed.:
+  libvirt.libvirtError: unable to connect to server at '10.0.1.84:16509': Connection refused
+
+2026-09-16 07:51:55.380 WARNING nova.compute.manager ... instance with vm_state error
+  and task_state None.
+  (→ VM이 ERROR 상태로 전환, node-a에 그대로 남음 — 마이그레이션 자체는 롤백되지 않고
+  인스턴스가 error 상태에 머무름)
+
+근본 원인 직접 확인 (node-b libvirt 파드, libvirt-libvirt-default-h5cdc):
+
+$ ss -tlnp | grep 16509
+LISTEN 0 1000 127.0.0.1:16509 0.0.0.0:* users:(("libvirtd",pid=22937,fd=12))
+
+$ grep -E 'listen_tcp|listen_tls|auth_tcp|listen_addr' /etc/libvirt/libvirtd.conf
+listen_addr = "127.0.0.1"
+listen_tcp = 1
+listen_tls = 0
+auth_tcp = "none"
+
+node-a libvirt 파드(libvirt-libvirt-default-g8945)도 동일하게 확인(대조):
+$ ss -tlnp | grep 16509
+LISTEN 0 1000 127.0.0.1:16509 0.0.0.0:* users:(("libvirtd",pid=60372,fd=12))
+$ grep -E 'listen_tcp|listen_addr|listen_tls|auth_tcp' /etc/libvirt/libvirtd.conf
+auth_tcp = "none"
+listen_addr = "127.0.0.1"
+listen_tcp = 1
+listen_tls = 0
+
+→ 양쪽 노드 모두 libvirtd가 TCP(16509)로 listen은 하고 있으나 **listen_addr이
+"127.0.0.1"로 고정되어 루프백에만 바인딩** — 외부 인터페이스(10.0.1.x)에서는 아예
+아무것도 듣고 있지 않음. "Connection refused"(= 타임아웃이 아니라 즉시 RST)인 이유가
+바로 이것: 패킷은 목적지에 도달했지만(SG/네트워크 경로는 정상) 16509 포트에 바인딩된
+프로세스가 없어 커널이 RST로 즉시 거절.
+
+nova-compute 설정 확인(live_migration_uri override 여부):
+$ kubectl -n openstack exec nova-compute-default-9jkrt -- grep -riE 'live_migration' /etc/nova/nova.conf
+(매치 없음, exit 1) → live_migration_uri를 명시적으로 오버라이드하지 않고 있으며 Nova
+libvirt 드라이버 기본 URI(`qemu+tcp://<dest>/system`)를 그대로 사용 — 기본 URI가
+가리키는 목적지 TCP 16509는 원래도 도달 불가능한 구성이었음.
+
+**결론: SG/Calico 네트워크 문제가 아니라 OSH libvirt 차트의 `listen_addr = "127.0.0.1"`
+설정이 원인.** TDL 리스크 섹션에 적힌 "libvirtd 제어채널(16509/16514) 추가 필요할 수
+있음"은 반은 맞고 반은 부정확함 — SG 포트 자체는(49152-49215, self all-traffic 등)
+L1/L2에서 이미 열려 있어 네트워크 경로 문제가 아니라, **libvirtd 프로세스가애초에
+루프백 밖으로 그 포트를 노출하지 않는 설정**이 진짜 원인. SG를 추가로 열어도 해결되지
+않음 — OSH `libvirt` 차트의 values에서 `listen_addr`(혹은 이를 만드는 libvirtd.conf
+템플릿)를 노드의 실제 IP나 `0.0.0.0`으로 바꿔야 함. 이건 CLAUDE.md 목표2 예외 조항이
+허용하는 "Nova/libvirt 설정 변경" 범위 안이지만, 사용자 승인 없이 지금 라운드에서
+수정하지 않음(작업 지시 범위 밖).
+
+--- 6. 현재 VM 상태 (수정하지 않고 그대로 남겨둠) ---
+
+$ openstack server show 5101f966-2bab-483d-807c-87ff8732f2ab -f value -c status \
+    -c OS-EXT-SRV-ATTR:host -c OS-EXT-STS:task_state -c OS-EXT-STS:vm_state
+(2026-09-16T07:54:49Z 기준)
+host: ip-10-0-1-216.ap-northeast-2.compute.internal (변경 없음, node-a 그대로)
+task_state: None
+vm_state: error
+status: ERROR
+
+VM은 node-a에 그대로 남아있고 status=ERROR로 전환된 채 정지됨. `openstack server
+reset-state`로 되돌릴 수 있으나 이번 라운드에서는 실행하지 않음(수정은 사용자 승인 후).
+
+================================================================
+결론 요약
+================================================================
+- **실패**. 마이그레이션 트리거(07:51:24Z) → 실패 확정(migration list Updated At
+  07:51:52.000000Z) 까지 **약 26~28초**. block-migration 디스크 복사가 시작되기도 전에
+  libvirt RPC 연결 단계에서 즉시 실패.
+- **원인(확정)**: OSH libvirt 차트가 배포한 `/etc/libvirt/libvirtd.conf`가 양쪽 노드 모두
+  `listen_addr = "127.0.0.1"`로 설정되어 있어, TCP 16509이 루프백에만 바인딩되고 원격
+  노드의 외부 IP(10.0.1.84 등)로는 도달 불가. SG/Calico/네트워크 경로 문제 아님
+  ("Connection refused"가 이를 뒷받침 — 타임아웃이 아니라 즉시 거절).
+- **부작용**: VM(test-vm)이 ERROR 상태로 남음, node-a에서 그대로 정지(active→error).
+  아직 되돌리지 않음.
+- **다음 라운드에서 사용자가 결정할 것**: OSH `libvirt` 차트 values(또는 libvirtd.conf를
+  만드는 템플릿)에서 `listen_addr`를 노드 실제 IP 또는 `0.0.0.0`으로 바꾸는 것을 승인할지
+  (CLAUDE.md 목표2 예외 조항 범위 내). 승인되면 재시도 전에 `openstack server
+  reset-state --active 5101f966-2bab-483d-807c-87ff8732f2ab`로 VM을 ACTIVE로 복구 필요.
+
+================================================================
+=== L3 재시도 (listen_address 수정 + neutron-ovs-agent 프로브 이슈 해결) ===
+================================================================
+
+배경: 사용자가 직접 아래 helm upgrade를 node-a에서 실행해 libvirt 차트의
+listen_addr를 0.0.0.0으로 바꾸려 시도함:
+  helm upgrade --install libvirt ./libvirt --namespace=openstack \
+    --set conf.ceph.enabled=false \
+    --set conf.dynamic_options.libvirt.listen_address=0.0.0.0 \
+    $(helm osh get-values-overrides -p ./values_overrides -c libvirt 2026.1 ubuntu_noble)
+직후 `kubectl -n openstack rollout status ds libvirt-libvirt-default`가
+"1 out of 2 new pods have been updated"에서 정지된 상태로 이번 라운드 시작.
+
+접근: 이전 라운드와 동일 — SSM send-command(AWS-RunShellScript) + get-command-invocation
+폴링, node-a(i-0280f3badaba22a4d)에서 KUBECONFIG=/root/.kube/config로 kubectl 실행.
+
+--- 1. 현재 상태 재확인 ---
+
+$ kubectl -n openstack get pods -o wide | grep -E 'libvirt|neutron-ovs|nova-compute'
+libvirt-libvirt-default-h5cdc              1/1     Running     0             80m   10.0.1.84    ip-10-0-1-84    (구버전, node-b)
+libvirt-libvirt-default-rh7tb              0/1     Init:0/2    0             7m42s 10.0.1.216   ip-10-0-1-216   (신버전, node-a, 대기중)
+neutron-ovs-agent-default-2k4mq            0/1     Running     0             36m   10.0.1.84    ip-10-0-1-84
+neutron-ovs-agent-default-llnd6            0/1     Running     3(18m ago)    108m  10.0.1.216   ip-10-0-1-216
+nova-compute-default-9jkrt                 1/1     Running     0             106m  10.0.1.216   ip-10-0-1-216
+nova-compute-default-dflhd                 1/1     Running     0             80m   10.0.1.84    ip-10-0-1-84
+
+$ uptime
+08:17:09 up 2:08, load average: 6.22, 5.75, 4.81   (8 vCPU 중 6.2 — 중간 부하, 프로브
+타임아웃을 의심할 정도로 극단적이진 않음)
+
+--- 2. neutron-ovs-agent readiness probe 정의 확인 ---
+
+$ kubectl -n openstack get pod neutron-ovs-agent-default-llnd6 -o yaml | grep -A8 readinessProbe
+readinessProbe:
+  exec:
+    command: [/tmp/neutron-openvswitch-agent-readiness.sh]
+  failureThreshold: 3
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 10
+
+--- 3. 프로브 스크립트 수동 실행 — 가설(CPU 경합으로 인한 타임아웃) 기각 ---
+
+$ kubectl -n openstack exec neutron-ovs-agent-default-llnd6 -c neutron-ovs-agent -- \
+    cat /tmp/neutron-openvswitch-agent-readiness.sh
+#!/bin/bash
+set -e
+OVS_PID=$(cat /run/openvswitch/ovs-vswitchd.pid)
+OVS_CTL=/run/openvswitch/ovs-vswitchd.${OVS_PID}.ctl
+ovs-vsctl list-br | grep -q br-int
+[ -z "$(/usr/bin/ovs-vsctl show | grep error:)" ]
+
+$ kubectl -n openstack exec neutron-ovs-agent-default-llnd6 -c neutron-ovs-agent -- sh -c \
+    'S=$(date +%s.%N); /tmp/neutron-openvswitch-agent-readiness.sh; E=$?; T=$(date +%s.%N); \
+     echo EXIT=$E; echo START=$S; echo END=$T'
+EXIT=1
+START=1789546677.369359746
+END=1789546677.383921180
+
+→ 실행 시간 약 14ms — timeoutSeconds=10과 비교하면 전혀 타임아웃이 아님. CPU 경합 가설
+기각. 스크립트 자체가 EXIT=1로 진짜로 실패하고 있음(set -e에 의해 첫 실패 지점에서 중단).
+
+--- 4. 진짜 원인 — 라인별 분리 실행으로 특정 ---
+
+$ kubectl -n openstack exec neutron-ovs-agent-default-llnd6 -c neutron-ovs-agent -- sh -c \
+    'ovs-vsctl list-br; echo RC=$?; /usr/bin/ovs-vsctl show; echo RC=$?'
+br-ex
+br-int
+br-tun
+RC=0
+(... ovs-vsctl show 전체 출력 중 br-tun 브리지 아래 ...)
+    Bridge br-tun
+        Port vxlan-0a000154
+            Interface vxlan-0a000154
+                type: vxlan
+                options: {..., local_ip="10.0.1.216", remote_ip="10.0.1.84"}
+                error: "could not add network device vxlan-0a000154 to ofproto (Address already in use)"
+RC=0
+
+→ list-br는 통과(RC=0). 하지만 `ovs-vsctl show`에 "error:" 라인이 존재 —
+readiness 스크립트의 세 번째 조건 `[ -z "$(...| grep error:)" ]`가 여기서 실패.
+Neutron이 node-b(10.0.1.84)로 가는 VXLAN 터널 포트를 OVS datapath에 추가하지
+못하고 있음 — "Address already in use".
+
+노드-b 대조 확인(node-a의 kubectl로 node-b 파드 exec, symmetric 확인):
+$ kubectl -n openstack exec neutron-ovs-agent-default-2k4mq -c neutron-ovs-agent -- \
+    /usr/bin/ovs-vsctl show 2>&1 | grep -B3 'error:'
+            Interface vxlan-0a0001d8
+                type: vxlan
+                options: {..., local_ip="10.0.1.84", remote_ip="10.0.1.216"}
+                error: "could not add network device vxlan-0a0001d8 to ofproto (Address already in use)"
+
+→ node-b도 동일 증상(node-a로 가는 반대 방향 터널). 양방향 모두 실패 — 특정 노드의
+일시적 문제가 아니라 구조적 충돌.
+
+--- 5. "Address already in use"의 실제 원인 — UDP 4789 포트 충돌 ---
+
+$ ip -d link show type vxlan
+Segmentation fault (core dumped)   (호스트의 ip 유틸 버전 이슈로 조회 실패, 우회)
+
+$ sudo ss -ulnp | grep -i 4789
+UNCONN 0      0              0.0.0.0:4789      0.0.0.0:*
+
+$ kubectl get felixconfiguration default -o yaml | grep -iE vxlan
+vxlanPort: 4789
+vxlanVNI: 4096
+
+→ **근본원인 확정**: L2에서 cross-subnet pod 통신 문제를 해결하기 위해 Calico
+IPPool encapsulation을 VXLAN(Always)으로 바꿨는데, Calico Felix의 기본 vxlanPort가
+IANA 표준 VXLAN 포트인 **UDP 4789** — 이게 Neutron ML2/OVS 에이전트가 테넌트 네트워크
+터널에 쓰는 포트와 **동일**함. 호스트 루트 네트워크 네임스페이스에서 UDP 4789는
+이미 Calico의 vxlan.calico 커널 디바이스가 점유 중이라(`ss -ulnp` 확인), 같은 호스트에서
+Neutron OVS가 같은 포트로 자신의 vxlan 커널 디바이스를 새로 만들려 하면 커널이 거부함
+(같은 netns 안에서 같은 UDP 포트를 두 개의 vxlan 수신 소켓이 동시에 바인딩할 수 없음).
+이건 OVS 에이전트가 매 rpc_loop마다 재시도해도 절대 해소되지 않는 영구적 충돌 —
+애초 이번 태스크가 가정했던 "CPU 경합으로 인한 프로브 타임아웃"이 아니라, L2에서
+채택한 Calico VXLAN 수정(B안)이 도입한 **부작용(side effect)**이었음.
+
+nova-compute/ovs-agent 자체 애플리케이션 로직은 정상(참고로 기록):
+$ kubectl -n openstack logs neutron-ovs-agent-default-llnd6 -c neutron-ovs-agent --tail=5
+... Agent rpc_loop - iteration:775 completed. Processed ports statistics: ... Elapsed:0.031
+→ rpc_loop가 2초 간격으로 계속 정상 완료(에러 없음) — 애플리케이션 헬스는 문제 없고,
+readiness probe가 확인하는 OVS 포트 상태만 영구적으로 비정상.
+
+--- 6. 수정 시도 — 하니스에 의해 차단됨(사용자 승인 필요) ---
+
+가장 작은 blast-radius의 수정안(Calico 쪽 포트만 IANA 기본값에서 옮김,
+Neutron/OSH 설정은 안 건드림):
+
+$ kubectl patch felixconfiguration default --type merge -p '{"spec":{"vxlanPort":4790}}'
+→ **차단됨**: "Permission for this action was denied by the Claude Code auto mode
+classifier. Reason: [Modify Shared Resources]."
+L2에서 Calico IPPool patch가 차단됐던 것과 동일한 카테고리(클러스터 공유/글로벌 리소스
+수정) — 이번에도 서브에이전트가 직접 실행 못 함. 우회 시도하지 않고 여기서 중단.
+
+**결론: neutron-ovs-agent 문제는 "CPU 경합/프로브 타임아웃"이 아니라 "Calico VXLAN
+포트(4789)와 Neutron VXLAN 포트(4789) 충돌"이 근본원인. 수정안은 확인됐으나
+(felixconfiguration.vxlanPort를 4789 아닌 값으로 변경) 하니스의 공유리소스 보호에
+막혀 사용자 직접 실행 필요. 이게 풀리기 전까지 libvirt DaemonSet 롤아웃도,
+L3 마이그레이션 재시도도 진행 불가.**
+
+--- 7. libvirt DaemonSet 롤아웃 — 여전히 정지 (위 문제의 직접 결과) ---
+
+$ kubectl -n openstack rollout status ds libvirt-libvirt-default
+Waiting for daemon set "libvirt-libvirt-default" rollout to finish: 1 out of 2 new pods have been updated...
+(5초 타임아웃까지 진행 없음, L3 1차 시도 때와 동일하게 정지)
+
+$ kubectl -n openstack get pods -o wide | grep -E 'libvirt|neutron-ovs'
+libvirt-libvirt-default-h5cdc     1/1  Running    0          87m  10.0.1.84   ip-10-0-1-84   (구버전, listen_addr=127.0.0.1 그대로)
+libvirt-libvirt-default-rh7tb     0/1  Init:0/2   0          15m  10.0.1.216  ip-10-0-1-216  (신버전, 여전히 Init 대기)
+neutron-ovs-agent-default-2k4mq   0/1  Running    1(4m ago)  44m  10.0.1.84
+neutron-ovs-agent-default-llnd6   0/1  Running    3(25m ago) 116m 10.0.1.216
+
+$ kubectl -n openstack logs libvirt-libvirt-default-rh7tb -c init | tail -3
+Entrypoint WARNING: ... Resolving dependency Pod on same host with labels
+  map[application:neutron component:neutron-ovs-agent] ... failed: found 2 pods on host,
+  but none ready, matching labels ...
+(2초 간격 반복, 변화 없음)
+
+listen_addr 수정 전/후 대조(수정 후 상태는 롤아웃이 못 넘어가 아직 확인 불가):
+$ kubectl -n openstack exec libvirt-libvirt-default-h5cdc -- \
+    grep -E 'listen_addr|listen_tcp' /etc/libvirt/libvirtd.conf
+listen_addr = "127.0.0.1"
+listen_tcp = 1
+(node-b는 구버전 파드가 아직 그대로 살아있어 listen_addr 변경이 반영 안 됨 —
+node-a의 신버전 파드가 Ready가 돼야 롤아웃이 node-b로 넘어가서 이 값이 바뀐다.
+"수정 후" 값은 이번 라운드에서 확인 불가능.)
+
+--- 8. test-vm 복구 ---
+
+$ openstack server show 5101f966-2bab-483d-807c-87ff8732f2ab -f value -c status \
+    -c OS-EXT-SRV-ATTR:host -c OS-EXT-STS:task_state -c OS-EXT-STS:vm_state
+ip-10-0-1-216.ap-northeast-2.compute.internal
+None
+error
+ERROR
+(1차 시도 이후 상태 그대로, 변화 없음 재확인)
+
+$ openstack server reset-state --active 5101f966-2bab-483d-807c-87ff8732f2ab
+openstack: 'server reset-state --active ...' is not an openstack command.
+(→ 이 openstackclient 버전에선 `reset-state`가 없고 `server set --state`로 대체됨,
+TDL/이전 라운드의 커맨드 표기가 구버전 기준이었음 — 정정)
+
+$ openstack server set --state active 5101f966-2bab-483d-807c-87ff8732f2ab
+Resetting the server state can make it much harder to recover a server from an error
+state. ... Do you wish to continue? [y/n]:
+(대화형 확인 프롬프트 — SSM 1회성 커맨드엔 stdin 없어 그대로 실패, exit 1)
+
+$ openstack server set --state active --auto-approve 5101f966-2bab-483d-807c-87ff8732f2ab
+(출력 없음, RC=0)
+$ openstack server show 5101f966-2bab-483d-807c-87ff8732f2ab -f value -c status \
+    -c OS-EXT-SRV-ATTR:host -c OS-EXT-STS:vm_state
+ip-10-0-1-216.ap-northeast-2.compute.internal
+active
+ACTIVE
+
+→ **test-vm 복구 완료**. node-a에 그대로 위치, status=ACTIVE. (2026-09-16T08:24:20~24Z)
+
+--- 9. L3 재시도 자체는 미실행 ---
+
+libvirt 롤아웃이 정지된 채라 양쪽 libvirtd의 listen_addr가 아직 바뀌지 않았고
+(node-b 구파드는 확인상 127.0.0.1 그대로), 애초 L3 1차 실패의 원인이었던 조건이
+아직 해소되지 않음 — 재시도해도 동일하게 "Connection refused"로 즉시 실패할 게
+자명하므로 실행하지 않음(추가 ERROR 상태 유발 방지, 논문 데이터로서 의미 없는
+중복 실패 로그 방지).
+
+================================================================
+결론 요약 (재시도)
+================================================================
+- **neutron-ovs-agent 문제 원인**: 과제 지시서의 가설(CPU 경합으로 인한 프로브
+  타임아웃)은 **기각됨** — 프로브 스크립트 자체 실행시간 14ms로 timeoutSeconds=10에
+  전혀 못 미침, rpc_loop도 정상. 실제 원인은 **L2에서 도입한 Calico VXLAN
+  encapsulation(vxlanPort 기본값 4789)과 Neutron OVS VXLAN 터널(역시 4789)의 UDP
+  포트 충돌** — 호스트 루트 netns에서 같은 포트를 두 vxlan 디바이스가 동시에 바인딩
+  못해 Neutron 쪽 터널 인터페이스 생성이 "Address already in use"로 영구 실패,
+  readiness probe의 `ovs-vsctl show | grep error:` 조건에 걸려 계속 Not Ready.
+  양쪽 노드 모두 동일 증상(대칭적) — 노드 개별 문제 아님.
+- **조치**: 가장 작은 수정안(`felixconfiguration.vxlanPort`를 4789 아닌 값(예: 4790)로
+  patch)을 식별했으나 **하니스가 "Modify Shared Resources"로 차단** — L2의 Calico
+  IPPool 수정 때와 동일 패턴, 사용자 직접 실행 필요. 우회 시도 안 함.
+- **listen_addr 수정**: 검증 불가 — 롤아웃이 이 문제로 정지된 채라 node-b(구버전
+  파드)는 아직 listen_addr=127.0.0.1 그대로. node-a 신버전 파드도 Init 단계에서 멈춰
+  아직 기동조차 안 함.
+- **test-vm**: `openstack server set --state active --auto-approve`로 ACTIVE 복구 완료
+  (2026-09-16T08:24Z 경, node-a에 그대로 위치).
+- **L3 재마이그레이션**: **미실행**. 선행 조건(양쪽 libvirtd listen_addr 반영)이
+  아직 충족되지 않아 시도해도 1차와 동일하게 실패할 것이 자명 → 실행하지 않음.
+- **다음 라운드에서 사용자가 결정할 것**: `kubectl patch felixconfiguration default
+  --type merge -p '{"spec":{"vxlanPort":4790}}'`를 승인/직접 실행할지. 승인되면:
+  (a) 두 neutron-ovs-agent 파드가 Ready로 전환되는지 확인 → (b) libvirt 롤아웃이
+  node-a부터 순차로 마저 진행되는지 확인 → (c) 양쪽 listen_addr=0.0.0.0(또는 지정값)
+  반영 실측 → (d) 그제서야 L3 마이그레이션 재시도.
+
+================================================================
+L3 — 재시도 성공 (2026-09-19, 새 인스턴스, L1/L2 재기동 이후)
+================================================================
+
+접근: 메인 세션이 AWS CLI(`aws ssm send-command`/`get-command-invocation`)로 node-a
+(i-0ee904b7547b9ee9f)에 직접 SSM 커맨드 실행. 사용자가 이미 patch a(Calico VXLAN
+Always)/b(felix vxlanPort 4790)/c(libvirt listen_address=0.0.0.0)를 node-a SSM에서
+순서대로 적용 완료한 뒤, rollout이 "1/2"에서 멈춘 것도 CrashLoopBackOff 파드
+(`neutron-ovs-agent-default-ss94v`, patch 적용 이전 타이밍에 뜬 파드) 삭제로 해소하고
+`openstack hypervisor list`에 두 호스트 모두 `up` 확인된 상태에서 시작.
+
+--- 1. 대상 VM 확인 ---
+
+$ kubectl -n openstack exec -t osc -- openstack server list -f value -c ID -c Name -c Status -c Host
+1bfa7dda-638f-42a4-b377-287144591b6a test-vm ACTIVE ip-10-0-1-4.ap-northeast-2.compute.internal
+
+$ kubectl -n openstack exec -t osc -- openstack hypervisor list -f value -c "Hypervisor Hostname"
+ip-10-0-1-4.ap-northeast-2.compute.internal
+ip-10-0-1-207.ap-northeast-2.compute.internal
+
+--- 2. 마이그레이션 트리거 ---
+
+트리거 시각: 2026-09-19T06:22:40Z
+
+$ kubectl -n openstack exec -t osc -- openstack server migrate --live-migration \
+    --block-migration --host ip-10-0-1-207.ap-northeast-2.compute.internal \
+    1bfa7dda-638f-42a4-b377-287144591b6a
+(출력 없음, exit=0 — 비동기 접수)
+
+트리거 커맨드 완료: 2026-09-19T06:22:51Z (약 11초, SSM 왕복 포함)
+
+--- 3. 진행 상태 폴링 ---
+
+poll 06:23:09 —
+  server status: ip-10-0-1-4.ap-northeast-2.compute.internal / MIGRATING
+  migration list: id=1 source=ip-10-0-1-4... dest=ip-10-0-1-207... status=running
+                  updated_at=2026-09-19T06:23:04.000000
+
+poll 06:23:27 —
+  server status: ip-10-0-1-207.ap-northeast-2.compute.internal / ACTIVE
+  migration list: id=1 source=ip-10-0-1-4... dest=ip-10-0-1-207... status=completed
+                  updated_at=2026-09-19T06:23:16.000000
+
+--- 4. 결과 ---
+
+- **성공**: status=ACTIVE 유지, OS-EXT-SRV-ATTR:host가 node-a → node-b로 전환 확인.
+- migration 레코드 기준 running→completed까지 약 12초(06:23:04 → 06:23:16).
+  트리거(06:22:40)부터 completed 관측(06:23:27, 폴링 주기 제약으로 상한값)까지 총 47초.
+- test-vm 복구 조치 불필요(ERROR 상태 거치지 않음) — 1차 시도(2026-09-16)와 달리
+  listen_addr/vxlanPort patch가 이미 반영된 상태에서 첫 시도부터 성공.
+- **결론**: 지난 세션에서 규명한 두 근본원인(libvirt listen_addr=127.0.0.1,
+  Calico/Neutron VXLAN 포트 4789 충돌)이 재개 절차의 patch a/b/c로 실제로 해소됨을
+  실측으로 검증. L3 게이트 통과 — L4(Alertmanager)부터 진행 가능.
+
+=== L3 재기동 세션 (2026-09-19, 2노드 재기동 후 재실행) ===
+사전 상태: test-vm(ee75b45b-66ad-4e4a-9498-6ace843b5087) ACTIVE, host=ip-10-0-1-14(node-a)
+
+$ openstack server migrate --live-migration --block-migration \
+    --host ip-10-0-1-76.ap-northeast-2.compute.internal ee75b45b-66ad-4e4a-9498-6ace843b5087
+트리거 시각: 2026-09-19T10:59:27Z
+
+$ openstack server show ee75b45b-... -c OS-EXT-SRV-ATTR:host -c status  (확인, 10:59:27Z 트리거 후 첫 폴)
+ip-10-0-1-76.ap-northeast-2.compute.internal
+ACTIVE
+확인 시각: 2026-09-19T11:00:17Z (트리거~확인 약 50초, 첫 폴에 이미 완료)
+
+$ openstack server migration list --server ee75b45b-...
+id=1, source=ip-10-0-1-14, dest=ip-10-0-1-76, status=completed
+Created At: 2026-09-19T10:59:30, Updated At: 2026-09-19T11:00:04 (약 34초)
+
+결과: status=ACTIVE 유지, host 전환 확인, ERROR 없이 첫 시도부터 성공.
+patch a/b/c가 재기동 후 인프라에서도 동일하게 유효함을 재검증.
+=== L3 완료 (2026-09-19 재기동 세션) ===

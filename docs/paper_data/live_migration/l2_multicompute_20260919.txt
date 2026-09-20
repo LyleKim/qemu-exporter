@@ -1,0 +1,372 @@
+
+===================================================================
+=== L2 세션 (2026-09-19, 재기동 후 두번째 세션) ===
+node-a = i-0b29a1676600d5303 (public 3.39.254.210, private 10.0.1.14)
+node-b = i-006fae231dc69ca23 (public 43.200.255.205, private 10.0.1.76)
+region = ap-northeast-2
+===================================================================
+--- $ kubeadm token create --print-join-command (on node-a) ---
+=== STATUS: Success ===
+kubeadm join 10.0.1.14:6443 --token xmb4ku.6agrg61qysmv86v9 --discovery-token-ca-cert-hash sha256:a8b895673db08724b72c7c626e69c20fccc3ee3a31ddd83396db42c9c05b27ae 
+
+--- STDERR ---
+--- $ kubeadm join 10.0.1.14:6443 --token xmb4ku.6agrg61qysmv86v9 --discovery-token-ca-cert-hash sha256:a8b895673db08724b72c7c626e69c20fccc3ee3a31ddd83396db42c9c05b27ae (on node-b, as root) ---
+=== STATUS: Success ===
+[preflight] Running pre-flight checks
+[preflight] Reading configuration from the "kubeadm-config" ConfigMap in namespace "kube-system"...
+[preflight] Use 'kubeadm init phase upload-config kubeadm --config your-config-file' to re-upload it.
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/instance-config.yaml"
+[patches] Applied patch of type "application/strategic-merge-patch+json" to target "kubeletconfiguration"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Starting the kubelet
+[kubelet-check] Waiting for a healthy kubelet at http://127.0.0.1:10248/healthz. This can take up to 4m0s
+[kubelet-check] The kubelet is healthy after 501.576912ms
+[kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap
+
+This node has joined the cluster:
+* Certificate signing request was sent to apiserver and a response was received.
+* The Kubelet was informed of the new secure connection details.
+
+Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
+
+
+--- STDERR ---
+W0919 10:39:30.204904    4923 utils.go:69] The recommended value for "bindAddress" in "KubeProxyConfiguration" is: ::; the provided value is: 0.0.0.0
+
+--- $ kubectl get nodes -o wide (node-a) ---
+=== STATUS: Success ===
+NAME           STATUS     ROLES           AGE   VERSION    INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION   CONTAINER-RUNTIME
+ip-10-0-1-14   Ready      control-plane   28m   v1.34.11   10.0.1.14     <none>        Ubuntu 24.04.4 LTS   7.0.0-1012-aws   containerd://2.2.1
+ip-10-0-1-76   NotReady   <none>          15s   v1.34.11   10.0.1.76     <none>        Ubuntu 24.04.4 LTS   7.0.0-1012-aws   containerd://2.2.1
+
+--- STDERR ---
+
+
+--- $ kubectl get node ip-10-0-1-14 --show-labels (node-a labels) ---
+=== STATUS: Success ===
+NAME           STATUS   ROLES           AGE   VERSION    LABELS
+ip-10-0-1-14   Ready    control-plane   28m   v1.34.11   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,ceph-mds=enabled,ceph-mgr=enabled,ceph-mon=enabled,ceph-osd=enabled,ceph-rgw=enabled,dhcp-agent=enabled,kubernetes.io/arch=amd64,kubernetes.io/hostname=ip-10-0-1-14,kubernetes.io/os=linux,l3-agent=enabled,linuxbridge=enabled,metadata-agent=enabled,node-role.kubernetes.io/control-plane=,node.kubernetes.io/exclude-from-external-load-balancers=,openstack-compute-node=enabled,openstack-control-plane=enabled,openvswitch=enabled,ovs-host=enabled
+
+--- STDERR ---
+
+--- $ kubectl -n openstack get ds -o custom-columns (nodeSelectors) ---
+=== STATUS: Failed ===
+
+--- STDERR ---
+  File "<string>", line 1
+    \nimport json,sys\nd=json.load(sys.stdin)\nfor i in d["items"]:\n    name=i["metadata"]["name"]\n    ns=i["spec"]["template"]["spec"].get("nodeSelector",{})\n    print(name, ns)\n
+     ^
+SyntaxError: unexpected character after line continuation character
+failed to run commands: exit status 1
+--- $ kubectl -n openstack get ds -o custom-columns=NAME,NODESELECTOR ---
+=== STATUS: Success ===
+libvirt-libvirt-default	{"openstack-compute-node":"enabled"}
+neutron-dhcp-agent-default	{"dhcp-agent":"enabled"}
+neutron-l3-agent-default	{"l3-agent":"enabled"}
+neutron-metadata-agent-default	{"metadata-agent":"enabled"}
+neutron-netns-cleanup-cron-default	{"openstack-control-plane":"enabled"}
+neutron-ovs-agent-default	{"openvswitch":"enabled"}
+nova-compute-default	{"openstack-compute-node":"enabled"}
+openvswitch	{"openvswitch":"enabled"}
+
+--- STDERR ---
+
+--- $ kubectl label node ip-10-0-1-76 openstack-compute-node=enabled openvswitch=enabled ---
+=== STATUS: Success ===
+node/ip-10-0-1-76 labeled
+
+--- STDERR ---
+
+
+--- $ kubectl get nodes -o wide (after label, wait a bit for calico) ---
+=== STATUS: Success ===
+NAME           STATUS   ROLES           AGE    VERSION    INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION   CONTAINER-RUNTIME
+ip-10-0-1-14   Ready    control-plane   30m    v1.34.11   10.0.1.14     <none>        Ubuntu 24.04.4 LTS   7.0.0-1012-aws   containerd://2.2.1
+ip-10-0-1-76   Ready    <none>          104s   v1.34.11   10.0.1.76     <none>        Ubuntu 24.04.4 LTS   7.0.0-1012-aws   containerd://2.2.1
+
+--- STDERR ---
+
+--- wait 60s for pods to schedule/pull on node-b ---
+--- $ kubectl -n openstack get pods -o wide | grep ip-10-0-1-76 ---
+=== STATUS: Success ===
+NAME                                       READY   STATUS      RESTARTS   AGE     IP               NODE           NOMINATED NODE   READINESS GATES
+libvirt-libvirt-default-dcqp5              0/1     Init:0/2    0          111s    10.0.1.76        ip-10-0-1-76   <none>           <none>
+neutron-ovs-agent-default-nx5sz            0/1     Init:1/3    0          111s    10.0.1.76        ip-10-0-1-76   <none>           <none>
+nova-compute-default-95m67                 0/1     Init:0/3    0          111s    10.0.1.76        ip-10-0-1-76   <none>           <none>
+openvswitch-bt9pb                          2/2     Running     0          111s    10.0.1.76        ip-10-0-1-76   <none>           <none>
+
+--- STDERR ---
+
+
+--- $ kubectl get pods -A -o wide | grep ip-10-0-1-76 (calico etc) ---
+=== STATUS: Success ===
+NAMESPACE            NAME                                       READY   STATUS      RESTARTS   AGE     IP               NODE           NOMINATED NODE   READINESS GATES
+calico-system        calico-node-nqwc2                          1/1     Running     0          3m15s   10.0.1.76        ip-10-0-1-76   <none>           <none>
+calico-system        csi-node-driver-9fh8g                      2/2     Running     0          3m15s   192.168.217.65   ip-10-0-1-76   <none>           <none>
+kube-system          kube-proxy-5qvcn                           1/1     Running     0          3m15s   10.0.1.76        ip-10-0-1-76   <none>           <none>
+openstack            libvirt-libvirt-default-dcqp5              0/1     Init:0/2    0          118s    10.0.1.76        ip-10-0-1-76   <none>           <none>
+openstack            neutron-ovs-agent-default-nx5sz            0/1     Init:1/3    0          118s    10.0.1.76        ip-10-0-1-76   <none>           <none>
+openstack            nova-compute-default-95m67                 0/1     Init:0/3    0          118s    10.0.1.76        ip-10-0-1-76   <none>           <none>
+openstack            openvswitch-bt9pb                          2/2     Running     0          118s    10.0.1.76        ip-10-0-1-76   <none>           <none>
+
+--- STDERR ---
+
+--- $ kubectl get ippool default-ipv4-ippool -o yaml (check current vxlanMode/encapsulation) ---
+=== STATUS: Success ===
+apiVersion: crd.projectcalico.org/v1
+kind: IPPool
+metadata:
+  annotations:
+    projectcalico.org/metadata: '{"generation":1,"creationTimestamp":"2026-09-19T10:11:21Z","labels":{"app.kubernetes.io/managed-by":"tigera-operator"}}'
+  creationTimestamp: "2026-09-19T10:11:21Z"
+  generation: 1
+  name: default-ipv4-ippool
+  resourceVersion: "1205"
+  uid: f467288a-9363-421e-9b25-7f161059fc73
+spec:
+  allowedUses:
+  - Workload
+  - Tunnel
+  assignmentMode: Automatic
+  blockSize: 26
+  cidr: 192.168.0.0/16
+  ipipMode: Never
+  natOutgoing: true
+  nodeSelector: all()
+  vxlanMode: CrossSubnet
+
+--- STDERR ---
+
+--- $ ping -c4 192.168.217.65 (node-b pod IP, from node-a host netns) ---
+=== STATUS: Failed ===
+PING 192.168.217.65 (192.168.217.65) 56(84) bytes of data.
+
+--- 192.168.217.65 ping statistics ---
+4 packets transmitted, 0 received, 100% packet loss, time 3076ms
+
+
+--- STDERR ---
+failed to run commands: exit status 1
+--- wait 90s more, re-check pod status on node-b ---
+=== STATUS: Success ===
+NAME                                       READY   STATUS             RESTARTS      AGE     IP               NODE           NOMINATED NODE   READINESS GATES
+libvirt-libvirt-default-dcqp5              0/1     Init:0/2           0             4m28s   10.0.1.76        ip-10-0-1-76   <none>           <none>
+neutron-ovs-agent-default-nx5sz            0/1     CrashLoopBackOff   4 (17s ago)   4m28s   10.0.1.76        ip-10-0-1-76   <none>           <none>
+nova-compute-default-95m67                 0/1     Init:0/3           0             4m28s   10.0.1.76        ip-10-0-1-76   <none>           <none>
+openvswitch-bt9pb                          2/2     Running            0             4m28s   10.0.1.76        ip-10-0-1-76   <none>           <none>
+
+--- STDERR ---
+
+
+--- $ kubectl -n openstack describe pod neutron-ovs-agent-default-nx5sz | tail -40 ---
+=== STATUS: Success ===
+    HostPathType:  
+  host-rootfs:
+    Type:          HostPath (bare host directory volume)
+    Path:          /
+    HostPathType:  
+  kube-api-access-2zf6m:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              openvswitch=enabled
+Tolerations:                 node.kubernetes.io/disk-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/memory-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/network-unavailable:NoSchedule op=Exists
+                             node.kubernetes.io/not-ready:NoExecute op=Exists
+                             node.kubernetes.io/pid-pressure:NoSchedule op=Exists
+                             node.kubernetes.io/unreachable:NoExecute op=Exists
+                             node.kubernetes.io/unschedulable:NoSchedule op=Exists
+Events:
+  Type     Reason     Age                  From               Message
+  ----     ------     ----                 ----               -------
+  Normal   Scheduled  4m35s                default-scheduler  Successfully assigned openstack/neutron-ovs-agent-default-nx5sz to ip-10-0-1-76
+  Normal   Pulling    4m35s                kubelet            Pulling image "quay.io/airshipit/kubernetes-entrypoint:latest-ubuntu_noble"
+  Normal   Pulled     4m26s                kubelet            Successfully pulled image "quay.io/airshipit/kubernetes-entrypoint:latest-ubuntu_noble" in 579ms (8.463s including waiting). Image size: 112391032 bytes.
+  Normal   Created    4m26s                kubelet            Created container: init
+  Normal   Started    4m26s                kubelet            Started container init
+  Normal   Pulling    2m45s                kubelet            Pulling image "quay.io/airshipit/neutron:2026.1-ubuntu_noble"
+  Normal   Started    2m35s                kubelet            Started container neutron-openvswitch-agent-kernel-modules
+  Normal   Created    2m35s                kubelet            Created container: neutron-openvswitch-agent-kernel-modules
+  Normal   Pulled     2m35s                kubelet            Successfully pulled image "quay.io/airshipit/neutron:2026.1-ubuntu_noble" in 10.548s (10.548s including waiting). Image size: 153411769 bytes.
+  Normal   Pulled     2m31s                kubelet            Container image "quay.io/airshipit/neutron:2026.1-ubuntu_noble" already present on machine
+  Normal   Created    2m31s                kubelet            Created container: neutron-ovs-agent-init
+  Normal   Started    2m31s                kubelet            Started container neutron-ovs-agent-init
+  Normal   Started    77s (x4 over 2m10s)  kubelet            Started container neutron-ovs-agent
+  Normal   Pulled     29s (x5 over 2m10s)  kubelet            Container image "quay.io/airshipit/neutron:2026.1-ubuntu_noble" already present on machine
+  Normal   Created    29s (x5 over 2m10s)  kubelet            Created container: neutron-ovs-agent
+  Warning  Unhealthy  27s (x10 over 2m9s)  kubelet            Readiness probe failed:
+  Warning  BackOff    13s (x8 over 2m)     kubelet            Back-off restarting failed container neutron-ovs-agent in pod neutron-ovs-agent-default-nx5sz_openstack(26cce861-21bd-493f-912d-5fdc31bf9968)
+
+--- STDERR ---
+
+--- $ kubectl -n openstack logs neutron-ovs-agent-default-nx5sz -c neutron-ovs-agent --tail=40 ---
+=== STATUS: Success ===
+2026-09-19 10:44:57.749 153 ERROR neutron     raise ValueError("Cannot have an empty hostname")
+2026-09-19 10:44:57.749 153 ERROR neutron ValueError: Cannot have an empty hostname
+2026-09-19 10:44:57.749 153 ERROR neutron 
+2026-09-19 10:44:57.749 153 ERROR neutron During handling of the above exception, another exception occurred:
+2026-09-19 10:44:57.749 153 ERROR neutron 
+2026-09-19 10:44:57.749 153 ERROR neutron Traceback (most recent call last):
+2026-09-19 10:44:57.749 153 ERROR neutron   File "/var/lib/openstack/lib/python3.12/site-packages/oslo_config/cfg.py", line 3120, in _do_get
+2026-09-19 10:44:57.749 153 ERROR neutron     return (convert(val), alt_loc)
+2026-09-19 10:44:57.749 153 ERROR neutron             ^^^^^^^^^^^^
+2026-09-19 10:44:57.749 153 ERROR neutron   File "/var/lib/openstack/lib/python3.12/site-packages/oslo_config/cfg.py", line 3085, in convert
+2026-09-19 10:44:57.749 153 ERROR neutron     return self._convert_value(
+2026-09-19 10:44:57.749 153 ERROR neutron            ^^^^^^^^^^^^^^^^^^^^
+2026-09-19 10:44:57.749 153 ERROR neutron   File "/var/lib/openstack/lib/python3.12/site-packages/oslo_config/cfg.py", line 3226, in _convert_value
+2026-09-19 10:44:57.749 153 ERROR neutron     return opt.type(value)
+2026-09-19 10:44:57.749 153 ERROR neutron            ^^^^^^^^^^^^^^^
+2026-09-19 10:44:57.749 153 ERROR neutron   File "/var/lib/openstack/lib/python3.12/site-packages/oslo_config/types.py", line 908, in __call__
+2026-09-19 10:44:57.749 153 ERROR neutron     raise ValueError(f"{value} is not a valid host address")
+2026-09-19 10:44:57.749 153 ERROR neutron ValueError:  is not a valid host address
+2026-09-19 10:44:57.749 153 ERROR neutron 
+2026-09-19 10:44:57.749 153 ERROR neutron During handling of the above exception, another exception occurred:
+2026-09-19 10:44:57.749 153 ERROR neutron 
+2026-09-19 10:44:57.749 153 ERROR neutron Traceback (most recent call last):
+2026-09-19 10:44:57.749 153 ERROR neutron   File "/var/lib/openstack/bin/neutron-openvswitch-agent", line 10, in <module>
+2026-09-19 10:44:57.749 153 ERROR neutron     sys.exit(main())
+2026-09-19 10:44:57.749 153 ERROR neutron              ^^^^^^
+2026-09-19 10:44:57.749 153 ERROR neutron   File "/var/lib/openstack/lib/python3.12/site-packages/neutron/cmd/agents/ovs_neutron_agent.py", line 27, in main
+2026-09-19 10:44:57.749 153 ERROR neutron     agent_main.main()
+2026-09-19 10:44:57.749 153 ERROR neutron   File "/var/lib/openstack/lib/python3.12/site-packages/neutron/plugins/ml2/drivers/openvswitch/agent/main.py", line 38, in main
+2026-09-19 10:44:57.749 153 ERROR neutron     profiler.setup("neutron-ovs-agent", cfg.CONF.host)
+2026-09-19 10:44:57.749 153 ERROR neutron                                         ^^^^^^^^^^^^^
+2026-09-19 10:44:57.749 153 ERROR neutron   File "/var/lib/openstack/lib/python3.12/site-packages/oslo_config/cfg.py", line 2608, in __getattr__
+2026-09-19 10:44:57.749 153 ERROR neutron     return self._get(name)
+2026-09-19 10:44:57.749 153 ERROR neutron            ^^^^^^^^^^^^^^^
+2026-09-19 10:44:57.749 153 ERROR neutron   File "/var/lib/openstack/lib/python3.12/site-packages/oslo_config/cfg.py", line 3053, in _get
+2026-09-19 10:44:57.749 153 ERROR neutron     value, loc = self._do_get(name, group, namespace)
+2026-09-19 10:44:57.749 153 ERROR neutron                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-09-19 10:44:57.749 153 ERROR neutron   File "/var/lib/openstack/lib/python3.12/site-packages/oslo_config/cfg.py", line 3138, in _do_get
+2026-09-19 10:44:57.749 153 ERROR neutron     raise ConfigFileValueError(message)
+2026-09-19 10:44:57.749 153 ERROR neutron oslo_config.cfg.ConfigFileValueError: Value for option host from LocationInfo(location=<Locations.user: (4, True)>, detail='/tmp/pod-shared/neutron-agent.ini') is not valid:  is not a valid host address
+2026-09-19 10:44:57.749 153 ERROR neutron 
+
+--- STDERR ---
+
+--- $ kubectl -n kube-system get pods -o wide | grep coredns ---
+=== STATUS: Success ===
+NAME                                   READY   STATUS    RESTARTS   AGE     IP               NODE           NOMINATED NODE   READINESS GATES
+coredns-66bc5c9577-nkzzj               1/1     Running   0          34m     192.168.71.194   ip-10-0-1-14   <none>           <none>
+coredns-66bc5c9577-t7m4d               1/1     Running   0          34m     192.168.71.197   ip-10-0-1-14   <none>           <none>
+
+--- STDERR ---
+
+
+--- confirms coredns is on node-a (10.0.1.14 subnet) while ovs-agent init runs on node-b -> cross-node CNI dependency for DNS ---
+--- $ kubectl -n openstack get pods -o wide (final snapshot before handoff) ---
+=== STATUS: Success ===
+NAME                                       READY   STATUS             RESTARTS      AGE     IP               NODE           NOMINATED NODE   READINESS GATES
+glance-api-6756f68698-7wzzj                1/1     Running            0             26m     192.168.71.217   ip-10-0-1-14   <none>           <none>
+glance-bootstrap-cw248                     0/1     Completed          0             23m     192.168.71.225   ip-10-0-1-14   <none>           <none>
+glance-db-init-6nbk7                       0/1     Completed          0             26m     192.168.71.216   ip-10-0-1-14   <none>           <none>
+glance-db-sync-49bxc                       0/1     Completed          0             25m     192.168.71.218   ip-10-0-1-14   <none>           <none>
+glance-ks-endpoints-crcqq                  0/3     Completed          0             25m     192.168.71.221   ip-10-0-1-14   <none>           <none>
+glance-ks-service-7jtmh                    0/1     Completed          0             25m     192.168.71.220   ip-10-0-1-14   <none>           <none>
+glance-ks-user-h6h7g                       0/1     Completed          0             24m     192.168.71.222   ip-10-0-1-14   <none>           <none>
+glance-metadefs-load-kgrwn                 0/1     Completed          0             24m     192.168.71.223   ip-10-0-1-14   <none>           <none>
+glance-rabbit-init-p7dt5                   0/1     Completed          0             25m     192.168.71.219   ip-10-0-1-14   <none>           <none>
+glance-storage-init-bvrrh                  0/1     Completed          0             24m     192.168.71.224   ip-10-0-1-14   <none>           <none>
+keystone-api-5fb5f79d74-nhcgs              1/1     Running            0             28m     192.168.71.207   ip-10-0-1-14   <none>           <none>
+keystone-bootstrap-vtqsf                   0/1     Completed          0             26m     192.168.71.214   ip-10-0-1-14   <none>           <none>
+keystone-credential-setup-57jgx            0/1     Completed          0             28m     192.168.71.208   ip-10-0-1-14   <none>           <none>
+keystone-db-init-k85mt                     0/1     Completed          0             28m     192.168.71.209   ip-10-0-1-14   <none>           <none>
+keystone-db-sync-hkh65                     0/1     Completed          0             27m     192.168.71.211   ip-10-0-1-14   <none>           <none>
+keystone-domain-manage-2j9q2               0/1     Completed          0             27m     192.168.71.213   ip-10-0-1-14   <none>           <none>
+keystone-fernet-setup-sxhd7                0/1     Completed          0             27m     192.168.71.210   ip-10-0-1-14   <none>           <none>
+keystone-rabbit-init-hkzm9                 0/1     Completed          0             27m     192.168.71.212   ip-10-0-1-14   <none>           <none>
+libvirt-libvirt-default-dcqp5              0/1     Init:0/2           0             5m31s   10.0.1.76        ip-10-0-1-76   <none>           <none>
+libvirt-libvirt-default-z54dl              1/1     Running            0             21m     10.0.1.14        ip-10-0-1-14   <none>           <none>
+mariadb-controller-578b897b9c-clptm        1/1     Running            0             30m     192.168.71.202   ip-10-0-1-14   <none>           <none>
+mariadb-server-0                           1/1     Running            0             30m     192.168.71.203   ip-10-0-1-14   <none>           <none>
+memcached-memcached-0                      1/1     Running            0             28m     192.168.71.206   ip-10-0-1-14   <none>           <none>
+neutron-db-init-ngz6q                      0/1     Completed          0             17m     192.168.71.246   ip-10-0-1-14   <none>           <none>
+neutron-db-sync-sdf9j                      0/1     Completed          0             17m     192.168.71.247   ip-10-0-1-14   <none>           <none>
+neutron-dhcp-agent-default-zqz2n           1/1     Running            0             15m     10.0.1.14        ip-10-0-1-14   <none>           <none>
+neutron-ks-endpoints-gzqc8                 0/3     Completed          0             16m     192.168.71.250   ip-10-0-1-14   <none>           <none>
+neutron-ks-service-tgng9                   0/1     Completed          0             16m     192.168.71.249   ip-10-0-1-14   <none>           <none>
+neutron-ks-user-4f4t6                      0/3     Completed          0             16m     192.168.71.251   ip-10-0-1-14   <none>           <none>
+neutron-l3-agent-default-hsfxz             1/1     Running            0             15m     10.0.1.14        ip-10-0-1-14   <none>           <none>
+neutron-metadata-agent-default-qqhrt       1/1     Running            0             17m     10.0.1.14        ip-10-0-1-14   <none>           <none>
+neutron-netns-cleanup-cron-default-8d6ch   1/1     Running            0             17m     10.0.1.14        ip-10-0-1-14   <none>           <none>
+neutron-ovs-agent-default-ccjzd            1/1     Running            0             17m     10.0.1.14        ip-10-0-1-14   <none>           <none>
+neutron-ovs-agent-default-nx5sz            0/1     CrashLoopBackOff   4 (80s ago)   5m31s   10.0.1.76        ip-10-0-1-76   <none>           <none>
+neutron-rabbit-init-n2l8c                  0/1     Completed          0             16m     192.168.71.248   ip-10-0-1-14   <none>           <none>
+neutron-rpc-server-6b97687bb9-9bfdf        1/1     Running            0             17m     192.168.71.245   ip-10-0-1-14   <none>           <none>
+neutron-server-74876f7cfd-qqjvf            1/1     Running            0             17m     192.168.71.244   ip-10-0-1-14   <none>           <none>
+nova-api-metadata-85bd7b785d-hb4mm         1/1     Running            0             19m     192.168.71.237   ip-10-0-1-14   <none>           <none>
+nova-api-osapi-858b478977-vqv95            1/1     Running            0             19m     192.168.71.232   ip-10-0-1-14   <none>           <none>
+nova-bootstrap-qz4j2                       0/1     Completed          0             19m     192.168.71.234   ip-10-0-1-14   <none>           <none>
+nova-cell-setup-vbts4                      0/1     Completed          0             19m     192.168.71.235   ip-10-0-1-14   <none>           <none>
+nova-compute-default-95m67                 0/1     Init:0/3           0             5m31s   10.0.1.76        ip-10-0-1-76   <none>           <none>
+nova-compute-default-dmblw                 1/1     Running            0             15m     10.0.1.14        ip-10-0-1-14   <none>           <none>
+nova-conductor-7555b44cd7-wtw85            1/1     Running            0             19m     192.168.71.233   ip-10-0-1-14   <none>           <none>
+nova-db-init-stjpp                         0/3     Completed          0             19m     192.168.71.238   ip-10-0-1-14   <none>           <none>
+nova-db-sync-7sbd4                         0/1     Completed          0             19m     192.168.71.239   ip-10-0-1-14   <none>           <none>
+nova-ks-endpoints-rtqbz                    0/3     Completed          0             18m     192.168.71.242   ip-10-0-1-14   <none>           <none>
+nova-ks-service-5qzv4                      0/1     Completed          0             18m     192.168.71.241   ip-10-0-1-14   <none>           <none>
+nova-ks-user-dnvdg                         0/5     Completed          0             18m     192.168.71.243   ip-10-0-1-14   <none>           <none>
+nova-novncproxy-74f476cf67-7nhgd           1/1     Running            0             19m     10.0.1.14        ip-10-0-1-14   <none>           <none>
+nova-rabbit-init-t5zrd                     0/1     Completed          0             18m     192.168.71.240   ip-10-0-1-14   <none>           <none>
+nova-scheduler-79dcbbbb87-jbf44            1/1     Running            0             19m     192.168.71.236   ip-10-0-1-14   <none>           <none>
+openvswitch-bt9pb                          2/2     Running            0             5m31s   10.0.1.76        ip-10-0-1-76   <none>           <none>
+openvswitch-jz9rd                          2/2     Running            0             23m     10.0.1.14        ip-10-0-1-14   <none>           <none>
+osc                                        1/1     Running            0             11m     192.168.71.252   ip-10-0-1-14   <none>           <none>
+placement-api-658c78c764-5lkf8             1/1     Running            0             21m     192.168.71.226   ip-10-0-1-14   <none>           <none>
+placement-db-init-g4x8b                    0/1     Completed          0             21m     192.168.71.227   ip-10-0-1-14   <none>           <none>
+placement-db-sync-hnx2n                    0/1     Completed          0             21m     192.168.71.228   ip-10-0-1-14   <none>           <none>
+placement-ks-endpoints-6p4wj               0/3     Completed          0             20m     192.168.71.231   ip-10-0-1-14   <none>           <none>
+placement-ks-service-x2n8b                 0/1     Completed          0             20m     192.168.71.229   ip-10-0-1-14   <none>           <none>
+placement-ks-user-6js8z                    0/1     Completed          0             20m     192.168.71.230   ip-10-0-1-14   <none>           <none>
+rabbitmq-cluster-wait-d6lfh                0/1     Completed          0             29m     192.168.71.205   ip-10-0-1-14   <none>           <none>
+rabbitmq-rabbitmq-0                        1/1     Running            0             29m     192.168.71.204   ip-10-0-1-14   <none>           <none>
+
+--- STDERR ---
+
+
+--- patch 실행 안 함 (하니스 제약, 사용자 직접 실행 대상) ---
+=== L2 세션 종료 (2026-09-19) — cross-node 네트워킹 재현 확인, patch a/b/c 미실행, 사용자 대기 ===
+
+=== L2 재개 (2026-09-19, 메인 세션 직접 확인, 사용자가 patch a/b/c 적용 완료 후) ===
+$ kubectl get ippool default-ipv4-ippool -o jsonpath='{.spec.vxlanMode}'
+Always
+$ kubectl get felixconfiguration default -o jsonpath='{.spec.vxlanPort}'
+4790
+$ kubectl -n openstack get pods -l application=neutron,component=neutron-ovs-agent -o wide
+neutron-ovs-agent-default-ccjzd   1/1   Running   0   20m   10.0.1.14   ip-10-0-1-14
+neutron-ovs-agent-default-qq6d2   1/1   Running   0   60s   10.0.1.76   ip-10-0-1-76
+(사용자가 CrashLoopBackOff 파드 삭제 후 재생성된 파드가 정상화됨)
+
+$ kubectl -n openstack rollout status ds libvirt-libvirt-default --timeout=120s
+Waiting for daemon set "libvirt-libvirt-default" rollout to finish: 1 of 2 updated pods are available...
+daemon set "libvirt-libvirt-default" successfully rolled out
+
+$ kubectl -n openstack get pods -l application=libvirt -o wide
+libvirt-libvirt-default-h94qc   1/1   Running   0   5m2s    10.0.1.76   ip-10-0-1-76
+libvirt-libvirt-default-rzdsd   1/1   Running   0   2m22s   10.0.1.14   ip-10-0-1-14
+
+$ kubectl -n openstack get pods -l application=nova,component=compute -o wide
+nova-compute-default-95m67   1/1   Running   0   12m   10.0.1.76   ip-10-0-1-76
+nova-compute-default-dmblw   1/1   Running   0   22m   10.0.1.14   ip-10-0-1-14
+
+$ kubectl -n openstack exec <nova-conductor> -- nova-manage cell_v2 discover_hosts --verbose
+Found 2 cell mappings.
+Skipping cell0 since it does not contain hosts.
+Getting computes from cell 'cell1': 1e67b738-523b-4323-93ee-d6e3c5c62db5
+Checking host mapping for compute host 'ip-10-0-1-76.ap-northeast-2.compute.internal'
+Creating host mapping for compute host 'ip-10-0-1-76.ap-northeast-2.compute.internal': 997dfcc9-e997-4039-b8ee-399cae7e32fb
+
+$ kubectl -n openstack exec osc -- openstack compute service list
+nova-compute  ip-10-0-1-14.ap-northeast-2.compute.internal  nova  enabled  up
+nova-compute  ip-10-0-1-76.ap-northeast-2.compute.internal  nova  enabled  up
+
+$ kubectl -n openstack exec osc -- openstack hypervisor list
+78791124-...  ip-10-0-1-14.ap-northeast-2.compute.internal  QEMU  10.0.1.14  up
+997dfcc9-...   ip-10-0-1-76.ap-northeast-2.compute.internal  QEMU  10.0.1.76  up
+
+=== L2 완료 (2026-09-19) — 두 호스트 모두 nova-compute/hypervisor up 확인 ===
